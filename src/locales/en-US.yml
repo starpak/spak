@@ -36,6 +36,8 @@ spak:
     inject:
       added: "injected @spakjs/i18n dependency into {pkg}"
       created: "created locales dir for {pkg}"
+    banner: "spak v{version} · {description}"
+    version_line: "spak/{version} {platform} node-{nodever}"
   cpc:
     title: "Check Plug-in Collection (CPC)"
     help: |
@@ -50,6 +52,7 @@ spak:
     check:
       starting: "Checking plugins and packages..."
       complete: "{valid}/{total} checks passed"
+      ok: "OK"
     sandbox:
       isolating: "Isolating plugin: {name}..."
       isolated: "Plugin {name} isolated (pid={pid})"
@@ -58,6 +61,9 @@ spak:
       usage_stop: "Usage: spak cpc sandbox stop <name>"
       enabled: "Sandbox enabled"
       disabled_warning: "SANDBOX DISABLED — plugins run without isolation (unsafe!)"
+      isolation_aborted: "{msg} — isolation aborted"
+      started: "[sandbox] Plugin {name} started"
+      error: "[sandbox] {name} error: {error}"
     ssetps:
       monitoring: "SSetPS monitoring started"
       memory_warning: "Memory usage at {usage}%"
@@ -66,11 +72,15 @@ spak:
       circuit_open: "Circuit breaker OPEN for {name}"
       circuit_restored: "Circuit breaker restored for {name}"
       firewall_rule: "Firewall rule: {rule}"
+      tip: '  tip: re-run with NODE_OPTIONS="--expose-gc" to let SSetPS force garbage collection when memory is high.'
     test:
       serve: "Starting test server..."
       serve_running: "Test server running at {url}"
       starting: "Running CPC tests..."
       complete: "{pass}/{total} tests passed"
+      debug_enabled: "[DEBUG] Debug mode enabled"
+      debug_level: "[DEBUG] Log level: verbose"
+      debug_env: "[DEBUG] Environment: test"
     config:
       not_available: "CPC is not enabled. Set 'cpc.enabled: true' in config."
     process_isolation:
@@ -83,6 +93,7 @@ spak:
       inactive: "inactive"
       memory: "Memory:"
       unknown: "Unknown command: {sub}"
+      memory_detail: "{used} / {limit}MB (threshold 80%)"
     circuit:
       usage_restore: "Usage: spak cpc circuit restore <name>"
       usage_trigger: "Usage: spak cpc circuit <name>"
@@ -99,24 +110,6 @@ spak:
       language_invalid: "Invalid language: {lang}. You can choose: {options}"
       language_set: "Language set to: {lang}"
       set_success: "Set {key} = {value}"
-  cli:
-    banner: "spak v{version} · {description}"
-    version_line: "spak/{version} {platform} node-{nodever}"
-  cpc:
-    check:
-      ok: "OK"
-    sandbox:
-      isolation_aborted: "{msg} — isolation aborted"
-      started: "[sandbox] Plugin {name} started"
-      error: "[sandbox] {name} error: {error}"
-    ssetps:
-      tip: '  tip: re-run with NODE_OPTIONS="--expose-gc" to let SSetPS force garbage collection when memory is high.'
-    test:
-      debug_enabled: "[DEBUG] Debug mode enabled"
-      debug_level: "[DEBUG] Log level: verbose"
-      debug_env: "[DEBUG] Environment: test"
-    status:
-      memory_detail: "{used} / {limit}MB (threshold 80%)"
   server:
     started: "Spak Server running at http://localhost:{port}"
     desktop: "Desktop: {name}"
@@ -150,6 +143,8 @@ spak:
     packed: "✓ packed {appDir} → {target}"
     pack_error: "error: {error}"
     unknown_command: 'error: unknown command "{cmd}"'
+    manifest_not_found: "spak.app.json not found in {dir}"
+    manifest_parse_error: "failed to parse {file}: {error}"
   loader:
     config_not_found: |
       config file not found
@@ -160,7 +155,7 @@ spak:
       Please create a config file, for example:
         spak.config.yml or spak.config.json or spak.yml or spak.json
   ino:
-    blocked: 'INO: plugin "{declarer}" is blocked from starting because it declared "I don'"'"'t want" plugin "{target}" which is present.'
+    blocked: 'INO: plugin "{declarer}" is blocked from starting because it declared "I don''t want" plugin "{target}" which is present.'
   desktop:
     lock_cannot_unlock: "🔒 Unable to unlock"
     lock_click_hint: "Click anywhere to try unlocking"

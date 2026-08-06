@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
 import { homedir } from 'os'
 import { buildZip, dirToEntries } from './zip'
+import { T } from '@spakjs/i18n'
 
 export interface PackOptions {
   /** app 根目录（含 spak.app.json） */
@@ -27,18 +28,18 @@ export function packApp(opts: PackOptions): string {
   const appDir = resolve(opts.appDir)
   const manifestPath = join(appDir, 'spak.app.json')
   if (!existsSync(manifestPath)) {
-    throw new Error(`spak.app.json not found in ${appDir}`)
+    throw new Error(T('spak.spm.manifest_not_found', { dir: appDir }))
   }
 
   let manifest: any
   try {
     manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
   } catch (err) {
-    throw new Error(`failed to parse ${manifestPath}: ${(err as Error).message}`)
+    throw new Error(T('spak.spm.manifest_parse_error', { file: manifestPath, error: (err as Error).message }))
   }
 
   const name = manifest.name
-  if (!name) throw new Error('manifest.name is required')
+  if (!name) throw new Error(T('spak.server.manifest_name_required'))
   const version = manifest.version || '0.0.0'
 
   // 收集清单 + 资源

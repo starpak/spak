@@ -12,7 +12,7 @@ import { packApp } from './pack'
 import { T } from '@spakjs/i18n'
 
 function usage(): string {
-  return T('spm.usage')
+  return T('spak.spm.usage')
 }
 
 function main(): void {
@@ -25,29 +25,29 @@ function main(): void {
   const cmd = args[0]
 
   if (cmd === 'version' || cmd === '-v' || cmd === '--version') {
-    console.log(T('spm.version'))
+    console.log(T('spak.spm.version'))
     process.exit(0)
   }
 
   if (cmd === 'pack') {
     const appDir = args[1]
     if (!appDir) {
-      console.error(T('spm.pack_requires_dir'))
+      console.error(T('spak.spm.pack_requires_dir'))
       process.exit(1)
     }
     const outIdx = args.indexOf('--out')
     const out = outIdx >= 0 ? args[outIdx + 1] : undefined
     try {
       const target = packApp({ appDir, out })
-      console.log(T('spm.packed', { appDir, target }))
+      console.log(T('spak.spm.packed', { appDir, target }))
       process.exit(0)
     } catch (err) {
-      console.error(T('spm.pack_error', { error: (err as Error).message }))
+      console.error(T('spak.spm.pack_error', { error: (err as Error).message }))
       process.exit(1)
     }
   }
 
-  console.error(T('spm.unknown_command', { cmd }))
+  console.error(T('spak.spm.unknown_command', { cmd }))
   console.log(usage())
   process.exit(1)
 }

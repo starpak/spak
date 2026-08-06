@@ -117,13 +117,19 @@ export function loadYmlTranslation(lang: string, rootDir: string = process.cwd()
 
   const allMessages: Record<string, string> = {}
 
-  // Search all packages/*/locales/, plugins/*/locales/ for yml files, plus the
-  // project's own locales dirs (src/locales, lib/locales) which hold the CLI's
-  // root-level translations (spak.* keys).
-  const searchDirs = [
-    resolve(rootDir, 'packages'),
-    resolve(rootDir, 'plugins'),
-  ]
+  // Build a list of candidate root directories to search for locale files.
+  // When spak is run from the project directory, process.cwd() suffices.
+  // When installed globally and run from an arbitrary directory, we need
+  // to search relative to the @spakjs/i18n package location (__dirname).
+  const i18nDir = typeof __dirname !== 'undefined' ? __dirname : process.cwd()
+  const candidateRoots = new Set<string>([
+    rootDir,
+    resolve(i18nDir, '..', '..', '..'), // monorepo root: packages/i18n/lib → root
+    resolve(i18nDir, '..', '..'),       // packages/i18n → packages/ → root (one less level)
+    resolve(i18nDir, '..'),              // packages/i18n/lib → packages/i18n
+  ])
+  // Also check SPAK_ROOT env var for explicit override
+  if (process.env.SPAK_ROOT) candidateRoots.add(process.env.SPAK_ROOT)
 
   // Loader that reads a single locales directory and merges the flattened
   // messages (lang-specific file picked first, lang-prefixed as fallback).
@@ -148,18 +154,22 @@ export function loadYmlTranslation(lang: string, rootDir: string = process.cwd()
     }
   }
 
-  // Project root-level locales dirs (present in both src and lib).
-  for (const rootLocales of ['src/locales', 'lib/locales']) {
-    loadDir(resolve(rootDir, rootLocales))
-  }
+  // Search each candidate root for locale files
+  for (const cRoot of candidateRoots) {
+    // Project root-level locales dirs (present in both src and lib).
+    for (const rootLocales of ['src/locales', 'lib/locales']) {
+      loadDir(resolve(cRoot, rootLocales))
+    }
 
-  // Nested package/plugin locales dirs.
-  for (const dir of searchDirs) {
-    if (!existsSync(dir)) continue
-    let entries: string[] = []
-    try { entries = readdirSync(dir).filter(d => statSync(resolve(dir, d)).isDirectory()) } catch { continue }
-    for (const entry of entries) {
-      loadDir(resolve(dir, entry, 'locales'))
+    // Nested package/plugin locales dirs.
+    for (const subDir of ['packages', 'plugins']) {
+      const dir = resolve(cRoot, subDir)
+      if (!existsSync(dir)) continue
+      let entries: string[] = []
+      try { entries = readdirSync(dir).filter(d => statSync(resolve(dir, d)).isDirectory()) } catch { continue }
+      for (const entry of entries) {
+        loadDir(resolve(dir, entry, 'locales'))
+      }
     }
   }
 
