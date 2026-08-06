@@ -33,7 +33,7 @@ const configCommands: CommandDeclaration[] = [
       if (val === undefined) {
         console.log(kleur.red(T('spak.ccmd.config.key_not_found', { key: args.key })))
       } else {
-        console.log(`${args.key} = ${JSON.stringify(val)}`)
+        console.log(T('spak.ccmd.config.get_value', { key: args.key, value: JSON.stringify(val) }))
       }
     },
   },

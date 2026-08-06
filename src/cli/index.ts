@@ -62,6 +62,14 @@ const argv = cli.parse()
 if (!cli.matchedCommand && !argv.options.help) {
   const gotFlags = process.argv.slice(2).some(a => a.startsWith('-'))
   if (!gotFlags) {
+    // Check if there are unknown positional args (i.e. an unrecognized command)
+    const positionalArgs = process.argv.slice(2).filter(a => !a.startsWith('-'))
+    if (positionalArgs.length > 0) {
+      // Unknown command — show error, not the banner
+      console.error(kleur.red(`spak: ${T('spak.cli.unknown_command', { cmd: positionalArgs[0] })}`))
+      console.error(kleur.dim(`  ${T('spak.cli.try_help')}`))
+      process.exit(1)
+    }
     const pkgJson = require('../../package.json')
     const banner = `  ${kleur.bold().cyan('spak')} v${kleur.green(pkgJson.version)} · ${T('spak.intro.description')}`
     console.log(banner)

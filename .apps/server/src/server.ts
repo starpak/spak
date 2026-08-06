@@ -161,7 +161,7 @@ app.get('/', (_req: Request, res: Response) => {
 app.get('*', (req: Request, res: Response) => {
   // Skip API routes
   if (req.path.startsWith('/api/')) {
-    res.status(404).json({ error: 'not found' })
+    res.status(404).json({ error: T('spak.server.not_found') })
     return
   }
   // Try desktop app first
@@ -230,9 +230,7 @@ function discoverApps() {
 discoverApps()
 
 app.listen(PORT, () => {
-  console.log(`\n  ╔══════════════════════════════════════╗`)
-  console.log(`  ║       S P A K   S E R V E R          ║`)
-  console.log(`  ╚══════════════════════════════════════╝`)
+  console.log(T('spak.server.banner'))
   console.log(T('spak.server.started', { port: String(PORT) }))
   console.log(T('spak.server.desktop', { name: desktopApp || T('spak.server.desktop_none') }))
   console.log(T('spak.server.routes', { count: String(routes.length) }))

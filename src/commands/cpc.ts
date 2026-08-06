@@ -22,18 +22,18 @@ function checkBuiltinPackage(name: string): PluginCheckResult {
   const requiredFiles = ['package.json']
 
   if (!existsSync(pkgDir)) {
-    return { name, valid: false, reason: 'package directory not found' }
+    return { name, valid: false, reason: T('spak.cpc.check.pkg_not_found') }
   }
 
   for (const dir of requiredDirs) {
     if (!existsSync(resolve(pkgDir, dir))) {
-      return { name, valid: false, reason: `missing directory: ${dir}` }
+      return { name, valid: false, reason: T('spak.cpc.check.missing_dir', { dir }) }
     }
   }
 
   for (const file of requiredFiles) {
     if (!existsSync(resolve(pkgDir, file))) {
-      return { name, valid: false, reason: `missing file: ${file}` }
+      return { name, valid: false, reason: T('spak.cpc.check.missing_file', { file }) }
     }
   }
 
@@ -44,24 +44,24 @@ function checkPlugin(name: string): PluginCheckResult {
   const pluginDir = resolve(PLUGINS_DIR, name)
 
   if (!existsSync(pluginDir)) {
-    return { name, valid: false, reason: 'plugin directory not found' }
+    return { name, valid: false, reason: T('spak.cpc.check.plugin_not_found') }
   }
 
   const pkgPath = resolve(pluginDir, 'package.json')
   if (!existsSync(pkgPath)) {
-    return { name, valid: false, reason: 'package.json not found' }
+    return { name, valid: false, reason: T('spak.cpc.check.pkg_json_not_found') }
   }
 
   let pkg: any
   try {
     pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
   } catch {
-    return { name, valid: false, reason: 'invalid package.json' }
+    return { name, valid: false, reason: T('spak.cpc.check.invalid_pkg_json') }
   }
 
   // Check main entry
   if (pkg.main && !existsSync(resolve(pluginDir, pkg.main))) {
-    return { name, valid: false, reason: `main entry not found: ${pkg.main}` }
+    return { name, valid: false, reason: T('spak.cpc.check.main_not_found', { main: pkg.main }) }
   }
 
   // Check dependencies (warn if missing)
@@ -74,7 +74,7 @@ function checkPlugin(name: string): PluginCheckResult {
       }
     }
     if (missingDeps.length > 0) {
-      return { name, valid: false, reason: `missing dependencies: ${missingDeps.join(', ')}` }
+      return { name, valid: false, reason: T('spak.cpc.check.missing_deps', { deps: missingDeps.join(', ') }) }
     }
   }
 
@@ -114,7 +114,7 @@ function runPluginCheck(): void {
       const result = checkPlugin(plugin)
       if (result.valid) {
         validCount++
-        console.log(`  ${kleur.green('✓')} ${kleur.bold(plugin)}: valid`)
+        console.log(`  ${kleur.green('✓')} ${kleur.bold(plugin)}: ${T('spak.cpc.check.ok')}`)
       } else {
         console.log(`  ${kleur.red('✗')} ${kleur.bold(plugin)}: ${result.reason}`)
       }
@@ -350,7 +350,9 @@ export function initCPC(config: any): void {
 }
 
 function testAction(args: Record<string, string>, options: Record<string, any>) {
-  const sub = args.command || ''
+  // Extract subcommand from argv (e.g. "test serve" → "serve")
+  const testIdx = process.argv.indexOf('test')
+  const sub = testIdx >= 0 ? process.argv.slice(testIdx + 1).filter(a => !a.startsWith('-'))[0] || '' : ''
   if (sub === 'serve') {
     const host = options.host || '0.0.0.0'
     const port = options.port || '4321'
@@ -387,11 +389,22 @@ function cpcAction(args: Record<string, string>, options: Record<string, any>) {
       }
       break
     case 'ssetps': {
-      // When launched manually from CLI, read the memory limit from the
-      // user's config (env still wins via resolveMemoryLimitMB).
-      const cfg = (() => { try { return loadConfig(); } catch { return undefined; } })()
-      const limit = cfg?.cpc?.ssetps?.memoryLimitMB
-      startSSetPS(limit)
+      // CLI one-shot snapshot mode: print the current memory state and exit.
+      // Long-running monitoring is owned by `serve` (via initCPC → startSSetPS),
+      // so a standalone `cpc ssetps` must NOT leave a setInterval keeping the
+      // process alive — otherwise the CLI hangs forever after printing.
+      const ssetpsCfg = (() => { try { return loadConfig(); } catch { return undefined; } })()
+      const limit = resolveMemoryLimitMB(ssetpsCfg?.cpc?.ssetps?.memoryLimitMB)
+      const usedNum = process.memoryUsage().rss / 1024 / 1024
+      const used = usedNum.toFixed(1)
+      const usagePercent = (usedNum / limit) * 100
+      console.log(kleur.cyan(`  ${T('spak.cpc.ssetps.monitoring')} ${kleur.dim(`(limit=${limit}MB)`)}`))
+      console.log(`  ${T('spak.cpc.status.memory_detail', { used, limit: String(limit) })}`)
+      if (usagePercent > 80) {
+        console.log(kleur.yellow(`  ${T('spak.cpc.ssetps.memory_warning', { usage: usagePercent.toFixed(1) })}`))
+      } else {
+        console.log(kleur.green(`  ${T('spak.cpc.ssetps.healthy', { usage: usagePercent.toFixed(1) })}`))
+      }
       break
     }
     case 'circuit':
@@ -403,13 +416,18 @@ function cpcAction(args: Record<string, string>, options: Record<string, any>) {
         triggerCircuitBreaker(arg1)
       }
       break
-    case 'status':
+    case 'status': {
+      // Reflect the effective memory limit (env > config > default) even when
+      // SSetPS hasn't been started, so `cpc status` never shows a stale 512MB.
+      const statusCfg = (() => { try { return loadConfig(); } catch { return undefined; } })()
+      const effectiveLimit = resolveMemoryLimitMB(statusCfg?.cpc?.ssetps?.memoryLimitMB)
       console.log(kleur.cyan(`\n  ${T('spak.cpc.title')}`))
       console.log(`  ${kleur.bold(T('spak.cpc.status.sandbox'))} ${sandboxProcesses.size}`)
       console.log(`  ${kleur.bold(T('spak.cpc.status.circuit_breakers'))} ${circuitBreakers.size}`)
       console.log(`  ${kleur.bold(T('spak.cpc.status.ssetps'))} ${ssetpsInterval ? T('spak.cpc.status.active') : T('spak.cpc.status.inactive')}`)
-      console.log(`  ${kleur.bold(T('spak.cpc.status.memory'))} ${T('spak.cpc.status.memory_detail', { used: (process.memoryUsage().rss / 1024 / 1024).toFixed(1), limit: String(currentMemoryLimitMB) })}\n`)
+      console.log(`  ${kleur.bold(T('spak.cpc.status.memory'))} ${T('spak.cpc.status.memory_detail', { used: (process.memoryUsage().rss / 1024 / 1024).toFixed(1), limit: String(effectiveLimit) })}\n`)
       break
+    }
     default:
       console.log(kleur.red(T('spak.cpc.status.unknown', { sub })))
   }
@@ -440,7 +458,18 @@ const cpcDeclarations: CommandDeclaration[] = [
     command: 'cpc sandbox',
     description: 'Isolate a plugin in sandbox',
     args: [{ name: 'name', description: 'Plugin name', required: true }],
-    action: (args) => { ensureAvailable(); isolatePlugin(args.name); },
+    action: (args) => {
+      ensureAvailable()
+      if (!args.name) { console.log(kleur.red(T('spak.cpc.sandbox.usage_start'))); return }
+      // Handle "sandbox stop <name>" form
+      if (args.name === 'stop') {
+        const stopName = process.argv[process.argv.indexOf('stop') + 1] || ''
+        if (!stopName) { console.log(kleur.red(T('spak.cpc.sandbox.usage_stop'))); return }
+        terminateSandbox(stopName)
+        return
+      }
+      isolatePlugin(args.name)
+    },
   },
   {
     command: 'cpc ssetps',
@@ -451,7 +480,18 @@ const cpcDeclarations: CommandDeclaration[] = [
     command: 'cpc circuit',
     description: 'Trigger circuit breaker for a plugin',
     args: [{ name: 'name', description: 'Plugin name', required: true }],
-    action: (args) => { ensureAvailable(); triggerCircuitBreaker(args.name); },
+    action: (args) => {
+      ensureAvailable()
+      if (!args.name) { console.log(kleur.red(T('spak.cpc.circuit.usage_trigger'))); return }
+      // Handle "circuit restore <name>" form
+      if (args.name === 'restore') {
+        const restoreName = process.argv[process.argv.indexOf('restore') + 1] || ''
+        if (!restoreName) { console.log(kleur.red(T('spak.cpc.circuit.usage_restore'))); return }
+        restoreCircuitBreaker(restoreName)
+        return
+      }
+      triggerCircuitBreaker(args.name)
+    },
   },
   {
     command: 'cpc status',

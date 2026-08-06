@@ -29,7 +29,8 @@
     "cordis": "^3.18.1",
     "cosmokit": "^1.8.1",
     "fastest-levenshtein": "^1.0.16",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "@spakjs/i18n": "workspace:^"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9"

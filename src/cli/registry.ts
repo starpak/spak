@@ -5,10 +5,12 @@ import { T } from '@spakjs/i18n'
 /** Localize a description for help output based on the current language. */
 function l10n(desc: string): string {
   if (!desc) return desc
-  // For help text, we use T() with a convention: spak.cli.help.<desc>
-  // If no translation found, T() returns the key itself, so we fall back
-  // to the original English description.
-  const key = `spak.cli.help.${desc.replace(/[^a-zA-Z0-9]/g, '_')}`
+  // For help text, we use T() with a convention: spak.cli.help.<slug>
+  // where slug is the lowercased description with non-alphanumerics folded
+  // into single underscores. If no translation is found, T() returns the
+  // key itself, so we fall back to the original English description.
+  const slug = desc.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+  const key = `spak.cli.help.${slug}`
   const translated = T(key)
   return translated === key ? desc : translated
 }
@@ -27,8 +29,11 @@ export function generateCommandHelp(rootName: string, declarations: CommandDecla
 
 /** Generate help text for subcommands */
 function generateHelp(rootName: string, rootDecl: CommandDeclaration | undefined, children: CommandDeclaration[]): string {
-  // Prioritize subcommand display over leaf args/options
-  if (children.length > 0) {
+  // When the root command itself has options (e.g. `serve` with --port/--host),
+  // it is a functional leaf command — show its own usage/args/options first,
+  // and list subcommands as a supplement below. Only fall back to a pure
+  // subcommand listing when the root has no options of its own.
+  if (children.length > 0 && !rootDecl?.options?.length) {
     let text = `\nUsage:\n  $ spak ${rootName} <command>\n\nCommands:\n`
     for (const child of children) {
       const parts = child.command.split(' ').slice(1)
@@ -68,8 +73,22 @@ function generateHelp(rootName: string, rootDecl: CommandDeclaration | undefined
         if (opt.default) text += ` (default: ${opt.default})`
         text += '\n'
       }
+      text += '  -h, --help                Display this message\n'
+    } else {
+      text += '\nOptions:\n  -h, --help                Display this message\n'
     }
-    text += '  -h, --help                Display this message\n'
+    // Append subcommands (if any) as a supplement for leaf commands that
+    // also have children (e.g. `serve` + `serve status`).
+    if (children.length > 0) {
+      text += '\nSubcommands:\n'
+      for (const child of children) {
+        const parts = child.command.split(' ').slice(1)
+        const usage = parts.join(' ')
+        const display = `${rootName} ${usage}`
+        const padding = display.length > 28 ? 1 : 28 - display.length
+        text += `  ${display}${' '.repeat(padding)}${l10n(child.description)}\n`
+      }
+    }
     return text
   }
 

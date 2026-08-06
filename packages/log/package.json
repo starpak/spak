@@ -10,5 +10,7 @@
   ],
   "author": "Spak Team",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "@spakjs/i18n": "workspace:^"
+  }
 }
