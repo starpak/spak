@@ -2,6 +2,7 @@ import { Context, Dict, EffectScope, ForkScope, interpolate, isNullable, Logger,
 import { constants, promises as fs } from 'fs'
 import * as yaml from 'js-yaml'
 import * as path from 'path'
+import { T } from '@spakjs/i18n'
 
 export class FullReloadError extends Error {
   constructor(public readonly code: number) {
@@ -224,15 +225,11 @@ export abstract class Loader {
       }
     }
 
-    throw new Error(`config file not found
-
-Spak searched the following locations but could not find a config file:
-  - ${path.resolve(this.baseDir, 'spak.config.*')}
-  - ${path.resolve(process.env.HOME || '/root', '.config', 'spak-cli', 'spak.config.*')}
-  - ${path.resolve(process.env.HOME || '/root', '.spak.config.*')}
-
-Please create a config file, for example:
-  spak.config.yml or spak.config.json or spak.yml or spak.json`)
+    throw new Error(T('spak.loader.config_not_found', {
+      path1: path.resolve(this.baseDir, 'spak.config.*'),
+      path2: path.resolve(process.env.HOME || '/root', '.config', 'spak-cli', 'spak.config.*'),
+      path3: path.resolve(process.env.HOME || '/root', '.spak.config.*'),
+    }))
   }
 
   async readConfig(initial = false) {

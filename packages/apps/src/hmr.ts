@@ -387,7 +387,7 @@ namespace Watcher {
     ]),
     debounce: Schema.natural().role('ms').default(100),
   }).i18n({
-    'zh-CN': readLocaleYml('zh-CN'),
+    'zh-CN': readLocaleYml('zh'),
     'en-US': readLocaleYml('en-US'),
   })
 }

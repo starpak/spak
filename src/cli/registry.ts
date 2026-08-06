@@ -1,51 +1,16 @@
 import { CAC } from 'cac'
 import { CommandDeclaration } from './types'
-import { getCurrentLanguage } from '@spakjs/i18n'
-
-/** English → Chinese translations for command/option descriptions in help. */
-const ZH_DESC: Record<string, string> = {
-  // serve
-  'start spak application': '启动 Spak 应用',
-  'config file path': '配置文件路径',
-  'specify debug namespace': '指定调试命名空间',
-  'specify log level (default: 2)': '指定日志级别（默认：2）',
-  'show timestamp in logs': '在日志中显示时间戳',
-  'specify server host (default: 0.0.0.0)': '指定服务器主机（默认：0.0.0.0）',
-  'specify server port (default: 4321)': '指定服务器端口（默认：4321）',
-  'stop running spak instance': '停止正在运行的 Spak 实例',
-  'restart running spak instance': '重启正在运行的 Spak 实例',
-  'force kill running spak instance': '强制终止正在运行的 Spak 实例',
-  'no-sandbox': '',
-  'disable plugin sandbox (WARNING: unsafe, plugins run without isolation)': '禁用插件沙箱（警告：不安全，插件将无隔离运行）',
-  'show spak service status': '显示 Spak 服务状态',
-  'inject @spakjs/locales dependency and create empty locales dir for each package in workspace': '为工作区每个包注入 i18n 依赖并创建 locales 目录',
-  // config
-  'Manage Spak configuration': '管理 Spak 配置',
-  'List all configuration': '列出所有配置',
-  'Get a configuration value': '获取配置值',
-  'Set a configuration value': '设置配置值',
-  'Configuration key': '配置键',
-  'Configuration value': '配置值',
-  // cpc
-  'Run CPC test suite': '运行 CPC 测试套件',
-  'Check Plug-in Collection commands': '检查插件集合命令',
-  'Subcommand: check, sandbox, ssetps, circuit, status': '子命令：check, sandbox, ssetps, circuit, status',
-  'Plugin name argument': '插件名参数',
-  'Sub-action argument': '子操作参数',
-  'Check all plugins and built-in packages': '检查所有插件和内置包',
-  'Isolate a plugin in sandbox': '在沙箱中隔离插件',
-  'Plugin name': '插件名',
-  'Start SSetPS monitoring (memoryLimitMB from config, or SPAK_SSETPS_MEMORY_LIMIT_MB env)': '启动 SSetPS 监控（从配置读取 memoryLimitMB，或使用 SPAK_SSETPS_MEMORY_LIMIT_MB 环境变量）',
-  'Trigger circuit breaker for a plugin': '触发插件的熔断器',
-  'Show CPC status': '显示 CPC 状态',
-}
+import { T } from '@spakjs/i18n'
 
 /** Localize a description for help output based on the current language. */
 function l10n(desc: string): string {
   if (!desc) return desc
-  const lang = getCurrentLanguage().toLowerCase()
-  if (lang.startsWith('zh')) return ZH_DESC[desc] || desc
-  return desc
+  // For help text, we use T() with a convention: spak.cli.help.<desc>
+  // If no translation found, T() returns the key itself, so we fall back
+  // to the original English description.
+  const key = `spak.cli.help.${desc.replace(/[^a-zA-Z0-9]/g, '_')}`
+  const translated = T(key)
+  return translated === key ? desc : translated
 }
 
 /**

@@ -4,6 +4,12 @@ export default function LockScreen() {
   const [time, setTime] = useState(new Date())
   const [unlocking, setUnlocking] = useState(false)
 
+  // TODO: replace with proper i18n when desktop app has locale support
+  const lang = (typeof navigator !== 'undefined' && navigator.language?.startsWith('zh')) ? 'zh' : 'en'
+  const t = lang === 'zh'
+    ? { lock_cannot_unlock: '🔒 暂时无法解锁', lock_click_hint: '点击任意位置尝试解锁' }
+    : { lock_cannot_unlock: '🔒 Unable to unlock', lock_click_hint: 'Click anywhere to try unlocking' }
+
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(timer)
@@ -50,7 +56,7 @@ export default function LockScreen() {
         transition: 'opacity 0.5s', opacity: unlocking ? 1 : 0.5,
       }}>
         <div style={{ fontSize: '0.9rem', fontWeight: 400, opacity: 0.6, marginBottom: '0.5rem' }}>
-          {unlocking ? '🔒 暂时无法解锁' : '点击任意位置尝试解锁'}
+          {unlocking ? t.lock_cannot_unlock : t.lock_click_hint}
         </div>
         <div style={{
           width: '40px', height: '40px', border: '2px solid rgba(255,255,255,0.2)',

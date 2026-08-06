@@ -9,23 +9,10 @@
 import { join } from 'path'
 import { cwd } from 'process'
 import { packApp } from './pack'
+import { T } from '@spakjs/i18n'
 
 function usage(): string {
-  return [
-    ``,
-    `  spm — Spak Package Manager`,
-    ``,
-    `  Usage:  spm <command> [options]`,
-    ``,
-    `  Commands:`,
-    `    pack <appDir>       pack an app directory into a .pak file`,
-    `    version             show spm version`,
-    ``,
-    `  Options:`,
-    `    --out <file>        output .pak path (default: ~/.spak/.apps/<name>.pak)`,
-    `    -h, --help          display this message`,
-    ``,
-  ].join('\n')
+  return T('spm.usage')
 }
 
 function main(): void {
@@ -38,29 +25,29 @@ function main(): void {
   const cmd = args[0]
 
   if (cmd === 'version' || cmd === '-v' || cmd === '--version') {
-    console.log('spm/0.0.1')
+    console.log(T('spm.version'))
     process.exit(0)
   }
 
   if (cmd === 'pack') {
     const appDir = args[1]
     if (!appDir) {
-      console.error('error: spm pack requires an app directory')
+      console.error(T('spm.pack_requires_dir'))
       process.exit(1)
     }
     const outIdx = args.indexOf('--out')
     const out = outIdx >= 0 ? args[outIdx + 1] : undefined
     try {
       const target = packApp({ appDir, out })
-      console.log(`✓ packed ${appDir} → ${target}`)
+      console.log(T('spm.packed', { appDir, target }))
       process.exit(0)
     } catch (err) {
-      console.error(`error: ${(err as Error).message}`)
+      console.error(T('spm.pack_error', { error: (err as Error).message }))
       process.exit(1)
     }
   }
 
-  console.error(`error: unknown command "${cmd}"`)
+  console.error(T('spm.unknown_command', { cmd }))
   console.log(usage())
   process.exit(1)
 }

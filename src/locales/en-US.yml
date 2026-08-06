@@ -99,3 +99,75 @@ spak:
       language_invalid: "Invalid language: {lang}. You can choose: {options}"
       language_set: "Language set to: {lang}"
       set_success: "Set {key} = {value}"
+  cli:
+    banner: "spak v{version} · {description}"
+    version_line: "spak/{version} {platform} node-{nodever}"
+  cpc:
+    check:
+      ok: "OK"
+    sandbox:
+      isolation_aborted: "{msg} — isolation aborted"
+      started: "[sandbox] Plugin {name} started"
+      error: "[sandbox] {name} error: {error}"
+    ssetps:
+      tip: '  tip: re-run with NODE_OPTIONS="--expose-gc" to let SSetPS force garbage collection when memory is high.'
+    test:
+      debug_enabled: "[DEBUG] Debug mode enabled"
+      debug_level: "[DEBUG] Log level: verbose"
+      debug_env: "[DEBUG] Environment: test"
+    status:
+      memory_detail: "{used} / {limit}MB (threshold 80%)"
+  server:
+    started: "Spak Server running at http://localhost:{port}"
+    desktop: "Desktop: {name}"
+    routes: "Routes: {count} registered"
+    apps: "Apps: {apps}"
+    desktop_none: "none"
+    apps_none: "none"
+    desktop_selected: "[server] Desktop selected: {name}"
+    desktop_auto: "[server] Desktop auto-selected: {name}"
+    app_registered: "[server] App registered: {name}"
+    app_discovered: "[server] App discovered: {name} (from {pak})"
+    app_no_manifest: "[server] {pak}: no spak.app.json inside"
+    app_no_name: "[server] {pak}: manifest.name missing"
+    app_load_failed: "[server] Failed to load {pak}: {error}"
+    app_dir_not_found: "[server] App dir not found: {dir}"
+    app_discovery_failed: "[server] App discovery failed: {error}"
+    manifest_name_required: "manifest.name is required"
+    not_found: "not found"
+  spm:
+    title: "spm — Spak Package Manager"
+    usage: |
+      Usage:  spm <command> [options]
+      Commands:
+        pack <appDir>       pack an app directory into a .pak file
+        version             show spm version
+      Options:
+        --out <file>        output .pak path (default: ~/.spak/.apps/<name>.pak)
+        -h, --help          display this message
+    version: "spm/0.0.1"
+    pack_requires_dir: "error: spm pack requires an app directory"
+    packed: "✓ packed {appDir} → {target}"
+    pack_error: "error: {error}"
+    unknown_command: 'error: unknown command "{cmd}"'
+  loader:
+    config_not_found: |
+      config file not found
+      Spak searched the following locations but could not find a config file:
+        - {path1}
+        - {path2}
+        - {path3}
+      Please create a config file, for example:
+        spak.config.yml or spak.config.json or spak.yml or spak.json
+  ino:
+    blocked: 'INO: plugin "{declarer}" is blocked from starting because it declared "I don'"'"'t want" plugin "{target}" which is present.'
+  desktop:
+    lock_cannot_unlock: "🔒 Unable to unlock"
+    lock_click_hint: "Click anywhere to try unlocking"
+  log:
+    banner_spak: "          S P A K   S E R V E R       "
+    started: "✓ Spak v{version} started (pid={pid})"
+    config: "  config: {path}"
+    listening: "  listening: {host}:{port}"
+    plugins: "  plugins: {list}"
+    shutting_down: "◇ Spak shutting down (pid={pid}, signal={signal}, uptime={uptime})"

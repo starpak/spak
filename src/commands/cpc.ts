@@ -97,7 +97,7 @@ function runPluginCheck(): void {
     const result = checkBuiltinPackage(pkg)
     if (result.valid) {
       validCount++
-      console.log(`  ${kleur.green('✓')} ${kleur.bold(pkg)}: ${result.reason || 'OK'}`)
+      console.log(`  ${kleur.green('✓')} ${kleur.bold(pkg)}: ${result.reason || T('spak.cpc.check.ok')}`)
     } else {
       console.log(`  ${kleur.red('✗')} ${kleur.bold(pkg)}: ${result.reason}`)
     }
@@ -138,7 +138,7 @@ function isolatePlugin(name: string): void {
   // Respect circuit breakers: if the plugin is in the open state, refuse to
   // isolate it — same behaviour as the runtime loader should use.
   if (circuitBreakers.get(name)) {
-    console.log(kleur.red(`  ${T('spak.cpc.ssetps.circuit_open', { name })} – isolation aborted`))
+    console.log(kleur.red(T('spak.cpc.sandbox.isolation_aborted', { msg: T('spak.cpc.ssetps.circuit_open', { name }) })))
     return
   }
 
@@ -162,7 +162,7 @@ function isolatePlugin(name: string): void {
     } catch (err) {
       if (process.env.SPAK_DEBUG) console.debug('[sandbox] plugin load guard:', (err as any)?.message ?? String(err))
     }
-    console.log('[sandbox] Plugin ' + pluginName + ' started');
+    console.log(T('spak.cpc.sandbox.started', { name: pluginName }));
     if (process.send) {
       process.send({ type: 'ready', plugin: pluginName, pid: process.pid });
       process.on('message', (msg) => {
@@ -183,7 +183,7 @@ function isolatePlugin(name: string): void {
   // forward raw stdio to the user's terminal (they are ignored above) but
   // we still want lifecycle notifications.
   child.on('error', (err) => {
-    console.warn(kleur.yellow(`  [sandbox] ${name} error: ${String(err.message)}`))
+    console.warn(kleur.yellow(T('spak.cpc.sandbox.error', { name, error: String(err.message) })))
   })
   child.on('exit', (code) => {
     sandboxProcesses.delete(name)
@@ -238,10 +238,7 @@ function startSSetPS(overrideLimitMB?: number): void {
   console.log(kleur.cyan(`  ${T('spak.cpc.ssetps.monitoring')} ${kleur.dim(`(limit=${currentMemoryLimitMB}MB)`)}`))
   if (!global.gc && !gcHintShown) {
     gcHintShown = true
-    console.log(kleur.yellow(
-      `  tip: re-run with ${kleur.bold('NODE_OPTIONS="--expose-gc"')} `
-      + 'to let SSetPS force garbage collection when memory is high.'
-    ))
+    console.log(kleur.yellow(T('spak.cpc.ssetps.tip')))
   }
 
   ssetpsInterval = setInterval(() => {
@@ -304,9 +301,9 @@ function runTestServe(url: string): void {
   process.env.DEBUG = '*'
   process.env.SPAK_LOG_LEVEL = '3'
 
-  console.log(`  ${kleur.cyan('[DEBUG]')} Debug mode enabled`)
-  console.log(`  ${kleur.cyan('[DEBUG]')} Log level: verbose`)
-  console.log(`  ${kleur.cyan('[DEBUG]')} Environment: test`)
+  console.log(`  ${kleur.cyan('[DEBUG]')} ${T('spak.cpc.test.debug_enabled')}`)
+  console.log(`  ${kleur.cyan('[DEBUG]')} ${T('spak.cpc.test.debug_level')}`)
+  console.log(`  ${kleur.cyan('[DEBUG]')} ${T('spak.cpc.test.debug_env')}`)
 }
 
 // ====== Export ======
@@ -411,7 +408,7 @@ function cpcAction(args: Record<string, string>, options: Record<string, any>) {
       console.log(`  ${kleur.bold(T('spak.cpc.status.sandbox'))} ${sandboxProcesses.size}`)
       console.log(`  ${kleur.bold(T('spak.cpc.status.circuit_breakers'))} ${circuitBreakers.size}`)
       console.log(`  ${kleur.bold(T('spak.cpc.status.ssetps'))} ${ssetpsInterval ? T('spak.cpc.status.active') : T('spak.cpc.status.inactive')}`)
-      console.log(`  ${kleur.bold(T('spak.cpc.status.memory'))} ${(process.memoryUsage().rss / 1024 / 1024).toFixed(1)} / ${currentMemoryLimitMB} MB (threshold 80%)\n`)
+      console.log(`  ${kleur.bold(T('spak.cpc.status.memory'))} ${T('spak.cpc.status.memory_detail', { used: (process.memoryUsage().rss / 1024 / 1024).toFixed(1), limit: String(currentMemoryLimitMB) })}\n`)
       break
     default:
       console.log(kleur.red(T('spak.cpc.status.unknown', { sub })))

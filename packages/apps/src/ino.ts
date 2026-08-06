@@ -9,6 +9,7 @@
 // managers — a way for plugins to declare incompatibilities declaratively
 // rather than crashing at runtime.
 
+import { T } from '@spakjs/i18n'
 import { Context, Logger, Schema } from '@spakjs/core'
 import { createLogger } from '@spakjs/log'
 import type { PluginManifest } from './manifest'
@@ -94,8 +95,7 @@ export class InoService {
       this.blocked.add(pluginName)
       for (const c of conflicts) {
         this.logger.warn(
-          `INO: plugin "${c.declarer}" is blocked from starting because ` +
-          `it declared "I don't want" plugin "${c.target}" which is present.`
+          T('spak.ino.blocked', { declarer: c.declarer, target: c.target })
         )
       }
     }

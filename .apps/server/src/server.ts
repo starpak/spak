@@ -4,6 +4,7 @@ import { resolve, dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { inflateRawSync } from 'zlib'
 import { homedir } from 'os'
+import { T } from '@spakjs/i18n'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -119,20 +120,20 @@ function servePakFile(appName: string, reqPath: string, res: Response): boolean 
 app.post('/api/register', (req: Request, res: Response) => {
   const manifest: AppManifest = req.body
   if (!manifest.name) {
-    res.status(400).json({ error: 'manifest.name is required' })
+    res.status(400).json({ error: T('spak.server.manifest_name_required') })
     return
   }
   registeredApps.set(manifest.name, manifest)
   if (manifest.desktop && !desktopApp) {
     desktopApp = manifest.name
-    console.log(`[server] Desktop selected: ${desktopApp}`)
+    console.log(T('spak.server.desktop_selected', { name: desktopApp }))
   }
   if (manifest.routes) {
     for (const route of manifest.routes) {
       routes.push({ method: route.method, path: route.path, app: manifest.name, handler: route.handler })
     }
   }
-  console.log(`[server] App registered: ${manifest.name}`)
+  console.log(T('spak.server.app_registered', { name: manifest.name }))
   res.json({ ok: true, desktop: desktopApp })
 })
 
@@ -177,14 +178,14 @@ app.get('*', (req: Request, res: Response) => {
   }
   // SPA fallback: serve index.html for client-side routing
   if (desktopApp && servePakFile(desktopApp, 'index.html', res)) return
-  res.status(404).send('Not found')
+  res.status(404).send(T('spak.server.not_found'))
 })
 
 // ===== Auto-discover .pak apps from ~/.spak/.apps =====
 function discoverApps() {
   const appsDir = resolve(homedir(), '.spak', '.apps')
   if (!existsSync(appsDir)) {
-    console.warn(`[server] App dir not found: ${appsDir}`)
+    console.warn(T('spak.server.app_dir_not_found', { dir: appsDir }))
     return
   }
   try {
@@ -196,32 +197,32 @@ function discoverApps() {
         const files = readZip(buf)
         const manifestRaw = files.get('spak.app.json')
         if (!manifestRaw) {
-          console.warn(`[server] ${pakFile}: no spak.app.json inside`)
+          console.warn(T('spak.server.app_no_manifest', { pak: pakFile }))
           continue
         }
         const manifest: AppManifest = JSON.parse(manifestRaw.toString('utf8'))
         if (!manifest.name) {
-          console.warn(`[server] ${pakFile}: manifest.name missing`)
+          console.warn(T('spak.server.app_no_name', { pak: pakFile }))
           continue
         }
         registeredApps.set(manifest.name, manifest)
         appFiles.set(manifest.name, files)
         if (manifest.desktop && !desktopApp) {
           desktopApp = manifest.name
-          console.log(`[server] Desktop auto-selected: ${desktopApp}`)
+          console.log(T('spak.server.desktop_auto', { name: desktopApp }))
         }
         if (manifest.routes) {
           for (const route of manifest.routes) {
             routes.push({ method: route.method, path: route.path, app: manifest.name, handler: route.handler })
           }
         }
-        console.log(`[server] App discovered: ${manifest.name} (from ${pakFile})`)
+        console.log(T('spak.server.app_discovered', { name: manifest.name, pak: pakFile }))
       } catch (err) {
-        console.warn(`[server] Failed to load ${pakFile}:`, (err as Error).message)
+        console.warn(T('spak.server.app_load_failed', { pak: pakFile, error: (err as Error).message }))
       }
     }
   } catch (err) {
-    console.warn('[server] App discovery failed:', (err as Error).message)
+    console.warn(T('spak.server.app_discovery_failed', { error: (err as Error).message }))
   }
 }
 
@@ -232,9 +233,9 @@ app.listen(PORT, () => {
   console.log(`\n  ╔══════════════════════════════════════╗`)
   console.log(`  ║       S P A K   S E R V E R          ║`)
   console.log(`  ╚══════════════════════════════════════╝`)
-  console.log(`  ✓ Spak Server running at http://localhost:${PORT}`)
-  console.log(`  Desktop: ${desktopApp || 'none'}`)
-  console.log(`  Routes: ${routes.length} registered`)
-  console.log(`  Apps: ${[...registeredApps.keys()].join(', ') || 'none'}`)
+  console.log(T('spak.server.started', { port: String(PORT) }))
+  console.log(T('spak.server.desktop', { name: desktopApp || T('spak.server.desktop_none') }))
+  console.log(T('spak.server.routes', { count: String(routes.length) }))
+  console.log(T('spak.server.apps', { apps: [...registeredApps.keys()].join(', ') || T('spak.server.apps_none') }))
   console.log('')
 })

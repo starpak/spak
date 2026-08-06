@@ -99,3 +99,75 @@ spak:
       language_invalid: "无效的语言: {lang}。你可以选择：{options}"
       language_set: "语言已设置为: {lang}"
       set_success: "已设置 {key} = {value}"
+  cli:
+    banner: "spak v{version} · {description}"
+    version_line: "spak/{version} {platform} node-{nodever}"
+  cpc:
+    check:
+      ok: "正常"
+    sandbox:
+      isolation_aborted: "{msg} — 隔离已中止"
+      started: "[沙箱] 插件 {name} 已启动"
+      error: "[沙箱] {name} 错误: {error}"
+    ssetps:
+      tip: "  提示: 使用 NODE_OPTIONS=\"--expose-gc\" 启动可让 SSetPS 在内存过高时强制 GC"
+    test:
+      debug_enabled: "[DEBUG] 调试模式已启用"
+      debug_level: "[DEBUG] 日志级别: verbose"
+      debug_env: "[DEBUG] 环境: test"
+    status:
+      memory_detail: "{used} / {limit}MB (阈值 80%)"
+  server:
+    started: "Spak Server 已在 http://localhost:{port} 启动"
+    desktop: "桌面: {name}"
+    routes: "路由: {count} 已注册"
+    apps: "应用: {apps}"
+    desktop_none: "无"
+    apps_none: "无"
+    desktop_selected: "[server] 桌面已选择: {name}"
+    desktop_auto: "[server] 桌面自动选择: {name}"
+    app_registered: "[server] 应用已注册: {name}"
+    app_discovered: "[server] 应用已发现: {name} (来自 {pak})"
+    app_no_manifest: "[server] {pak}: 内部缺少 spak.app.json"
+    app_no_name: "[server] {pak}: manifest.name 缺失"
+    app_load_failed: "[server] 加载 {pak} 失败: {error}"
+    app_dir_not_found: "[server] 应用目录未找到: {dir}"
+    app_discovery_failed: "[server] 应用发现失败: {error}"
+    manifest_name_required: "manifest.name 为必填项"
+    not_found: "未找到"
+  spm:
+    title: "spm — Spak 包管理器"
+    usage: |
+      用法:  spm <命令> [选项]
+      命令:
+        pack <appDir>       打包 app 目录为 .pak 文件
+        version             显示 spm 版本
+      选项:
+        --out <file>        输出 .pak 路径 (默认: ~/.spak/.apps/<name>.pak)
+        -h, --help          显示此帮助信息
+    version: "spm/0.0.1"
+    pack_requires_dir: "错误: spm pack 需要一个 app 目录"
+    packed: "✓ 已打包 {appDir} → {target}"
+    pack_error: "错误: {error}"
+    unknown_command: '错误: 未知命令 "{cmd}"'
+  loader:
+    config_not_found: |
+      未找到配置文件
+      Spak 搜索了以下位置但未找到配置文件:
+        - {path1}
+        - {path2}
+        - {path3}
+      请创建一个配置文件，例如:
+        spak.config.yml 或 spak.config.json 或 spak.yml 或 spak.json
+  ino:
+    blocked: 'INO: 插件 "{declarer}" 被禁止启动，因为它声明了"我不要"插件 "{target}"（已存在）。'
+  desktop:
+    lock_cannot_unlock: "🔒 暂时无法解锁"
+    lock_click_hint: "点击任意位置尝试解锁"
+  log:
+    banner_spak: "          S P A K   S E R V E R       "
+    started: "✓ Spak v{version} 已启动 (pid={pid})"
+    config: "  config: {path}"
+    listening: "  listening: {host}:{port}"
+    plugins: "  plugins: {list}"
+    shutting_down: "◇ Spak 正在关闭 (pid={pid}, signal={signal}, uptime={uptime})"
