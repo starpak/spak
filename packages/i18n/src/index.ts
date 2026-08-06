@@ -187,15 +187,16 @@ function resolveParams(message: string, params?: Record<string, string | number>
  * Falls back to the key itself if not found.
  */
 export function t(key: string, params?: Record<string, string | number>): string {
+  const lang = getConfig('language') || 'en'
+
+  // Try core i18n first, but fall through to yml if the key isn't found
   if (_i18n) {
-    const locale = getConfig('language') || 'en'
-    const result = _i18n.render([locale], [key], params || {}) as any
+    const result = _i18n.render([lang], [key], params || {}) as any
     const text = result.map((e: any) => (e && (e as any).type === 'text') ? ((e as any).attrs?.content ?? (e as any).children?.[0] ?? '') : String(e)).join('')
     if (text && text !== key) return text
-    return key
+    // Fall through to yml fallback instead of returning the raw key
   }
 
-  const lang = getConfig('language') || 'en'
   const messages = loadYmlTranslation(lang)
   let message = messages[key]
 

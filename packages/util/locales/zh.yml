@@ -1,3 +1,3 @@
-spak.usefor.escape_reg_exp: 已转义正则表达式字符串
-spak.usefor.interpolated: '插值后的字符串：{result}'
-spak.usefor.observed: '已监听对象：{label}'
+spak.util.escape_reg_exp: 已转义正则表达式字符串
+spak.util.interpolated: '插值后的字符串：{result}'
+spak.util.observed: '已监听对象：{label}'

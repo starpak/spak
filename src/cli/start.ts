@@ -102,15 +102,8 @@ async function startService(file?: string) {
   await loader.init(file)
   await loader.readConfig(true)
 
-  const host = process.env.SPAK_HOST
-  const port = process.env.SPAK_PORT
-  const plugins = (loader.config as any).plugins || {}
-  if (host && plugins['@spakjs/plugin-server']) {
-    plugins['@spakjs/plugin-server'].host = host
-  }
-  if (port && plugins['@spakjs/plugin-server']) {
-    plugins['@spakjs/plugin-server'].port = parseInt(port)
-  }
+  // Host/port env overrides are applied directly to the server app config
+  // via process.env (SPAK_HOST / SPAK_PORT), consumed by .apps/server.
 
   const app = await loader.createApp()
   await app.start()

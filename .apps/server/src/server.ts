@@ -154,6 +154,32 @@ app.get('/', (_req: Request, res: Response) => {
   res.json({ server: 'Spak Server', port: PORT, desktop: desktopApp, apps: [...registeredApps.keys()] })
 })
 
+// ===== Catch-all: serve static assets from in-memory pak =====
+// Handles /assets/*, /index.html, and any other static file references
+// that the desktop app's HTML might request.
+app.get('*', (req: Request, res: Response) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({ error: 'not found' })
+    return
+  }
+  // Try desktop app first
+  if (desktopApp && servePakFile(desktopApp, req.path, res)) return
+  // Then try any registered app by matching route prefix
+  for (const [appName, manifest] of registeredApps) {
+    if (appName === desktopApp) continue
+    const prefix = manifest.routes?.find(r => req.path.startsWith(r.path.split('/:')[0]))
+    if (prefix && servePakFile(appName, req.path, res)) return
+  }
+  // Fallback: try every app's pak files
+  for (const appName of registeredApps.keys()) {
+    if (servePakFile(appName, req.path, res)) return
+  }
+  // SPA fallback: serve index.html for client-side routing
+  if (desktopApp && servePakFile(desktopApp, 'index.html', res)) return
+  res.status(404).send('Not found')
+})
+
 // ===== Auto-discover .pak apps from ~/.spak/.apps =====
 function discoverApps() {
   const appsDir = resolve(homedir(), '.spak', '.apps')
