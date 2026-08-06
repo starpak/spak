@@ -1,9 +1,57 @@
-# EN-US locale for spak CLI
+# ==========================================
+# Spak Unified English Locale File (v0.0.8)
+# All module translations are centralized here; per-module locales no longer needed.
+# ==========================================
+
+# ===== Koishi/Core base translations (from core/src/locales) =====
+general:
+  $: General Settings
+  name: English
+  paren: ' ({0}) '
+  quote: '"{0}"'
+  comma: ', '
+  and: and
+  or: or
+  day: day
+  hour: hour
+  minute: minute
+  second: second
+internal:
+  $: Internal Text
+  error-encountered: An unknown error has occurred.
+  low-authority: Low authority.
+  prompt-argument: Please send {0}.
+  insufficient-arguments: Insufficient arguments, type help to see usage.
+  redunant-arguments: Redunant arguments, type help to see usage.
+  invalid-argument: Invalid argument {0}, {1}
+  unknown-option: Unknown option {0}, type help to see usage.
+  invalid-option: Invalid option {0}, {1}
+  check-syntax: Type help to see usage.
+  invalid-number: Expect a number.
+  invalid-integer: Expect an integer.
+  invalid-posint: Expect a positive integer.
+  invalid-natural: Expect a non-negative integer.
+  invalid-date: Expect a valid date.
+  invalid-user: Expect a valid user.
+  invalid-channel: Expect a valid channel.
+  invalid-image: Expect an image.
+  invalid-audio: Expect an audio.
+  invalid-video: Expect a video.
+  invalid-file: Expect a file.
+  suggest-hint: Do you mean {0}?
+  suggest-command: Send a period to apply the suggestion.
+commands:
+  $: Command System
+
+# ===== Spak module translations =====
 spak:
+  # --- Intro (src/locales) ---
   intro:
     description: "multi-file service framework"
   general:
     error: "An error occurred"
+
+  # --- CLI main module (src/locales) ---
   cli:
     serve:
       not_running: "Spak service is not running"
@@ -71,6 +119,8 @@ spak:
       restart_running_spak_instance: "restart running spak instance"
       force_kill_running_spak_instance: "force kill running spak instance"
       disable_plugin_sandbox_warning_unsafe_plugins_run_without_isolation: "disable plugin sandbox (WARNING: unsafe, plugins run without isolation)"
+
+  # --- CPC module (src/locales) ---
   cpc:
     title: "Check Plug-in Collection (CPC)"
     help: |
@@ -94,6 +144,11 @@ spak:
       invalid_pkg_json: "invalid package.json"
       main_not_found: "main entry not found: {main}"
       missing_deps: "missing dependencies: {deps}"
+      # --- New: module whitelist check ---
+      whitelist_checking: "Running module whitelist validation..."
+      whitelist_unknown_module: "Unauthorized module not in whitelist: {name}"
+      whitelist_violation: "CPC whitelist validation failed: {count} unauthorized module(s) detected. Process will exit for security."
+      whitelist_passed: "Module whitelist validation passed: {count}/{total} modules are authorized"
     sandbox:
       isolating: "Isolating plugin: {name}..."
       isolated: "Plugin {name} isolated (pid={pid})"
@@ -139,6 +194,8 @@ spak:
     circuit:
       usage_restore: "Usage: spak cpc circuit restore <name>"
       usage_trigger: "Usage: spak cpc circuit <name>"
+
+  # --- Config command (src/locales) ---
   ccmd:
     config:
       help: |
@@ -153,6 +210,8 @@ spak:
       language_invalid: "Invalid language: {lang}. You can choose: {options}"
       language_set: "Language set to: {lang}"
       set_success: "Set {key} = {value}"
+
+  # --- Server module (src/locales) ---
   server:
     banner: "\n  ╔══════════════════════════════════════╗\n  ║       S P A K   S E R V E R          ║\n  ╚══════════════════════════════════════╝"
     started: "Spak Server running at http://localhost:{port}"
@@ -172,7 +231,12 @@ spak:
     app_discovery_failed: "[server] App discovery failed: {error}"
     manifest_name_required: "manifest.name is required"
     not_found: "not found"
+
+  # --- Loader module (packages/loader/locales) ---
   loader:
+    applied: 'Plugin {name} loaded'
+    applying: 'Applying plugin {name}'
+    config_error: 'Error reading configuration: {error}'
     config_not_found: |
       config file not found
       Spak searched the following locations but could not find a config file:
@@ -181,11 +245,52 @@ spak:
         - {path3}
       Please create a config file, for example:
         spak.config.yml or spak.config.json or spak.yml or spak.json
+    config_read: 'Reading configuration from {path}'
+    failed: 'Failed to load plugin {name}: {error}'
+    reloaded: 'Plugin {name} reloaded'
+    reloading: 'Reloading plugin {name}'
+    searching: 'Searching for config: {path}'
+    starting: Loading plugins...
+    unloaded: 'Plugin {name} unloaded'
+    unloading: 'Unloading plugin {name}'
+
+  # --- Config module (packages/config/locales) ---
+  config:
+    file: 'Config file: {path}'
+    loaded: Configuration loaded
+    not_found: 'Configuration file not found, using defaults'
+    parse_error: 'Failed to parse configuration: {error}'
+    saved: Configuration saved
+
+  # --- Core module (packages/core/locales) ---
+  core:
+    command_registered: 'Command registered: {name}'
+    initialized: Core initialized
+    middleware_applied: Middleware applied
+    plugin_error: 'Plugin error: {name} - {error}'
+    plugin_loaded: 'Plugin loaded: {name}'
+    plugin_unloaded: 'Plugin unloaded: {name}'
+    schema_invalid: 'Schema validation failed: {error}'
+    schema_valid: Schema validation passed
+    session_ended: Session ended
+    session_started: Session started
+
+  # --- Util module (packages/util/locales) ---
+  util:
+    escape_reg_exp: Escaped regular expression string
+    interpolated: 'Interpolated string: {result}'
+    observed: 'Observed object: {label}'
+
+  # --- INO plugin conflict blocker ---
   ino:
     blocked: 'INO: plugin "{declarer}" is blocked from starting because it declared "I don''t want" plugin "{target}" which is present.'
+
+  # --- Desktop lock screen ---
   desktop:
     lock_cannot_unlock: "🔒 Unable to unlock"
     lock_click_hint: "Click anywhere to try unlocking"
+
+  # --- Log startup/shutdown banner ---
   log:
     banner_spak: "          S P A K   S E R V E R       "
     started: "✓ Spak v{version} started (pid={pid})"

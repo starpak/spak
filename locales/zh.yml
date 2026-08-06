@@ -1,9 +1,57 @@
-# zh locale for spak CLI
+# ==========================================
+# Spak 统一中文翻译文件 (v0.0.8)
+# 所有模块翻译都集中在这里，无需每个模块单独配备 locales
+# ==========================================
+
+# ===== Koishi/Core 基础翻译 (来自 core/src/locales) =====
+general:
+  $: 通用设置
+  name: 简体中文
+  paren: '（{0}）'
+  quote: '「{0}」'
+  comma: '、'
+  and: 和
+  or: 或
+  day: 天
+  hour: 小时
+  minute: 分钟
+  second: 秒
+internal:
+  $: 内部文本
+  error-encountered: 发生了未知错误。
+  low-authority: 权限不足。
+  prompt-argument: 请发送 {0}。
+  insufficient-arguments: 参数不足，输入 help 查看用法。
+  redunant-arguments: 参数过多，输入 help 查看用法。
+  invalid-argument: 无效参数 {0}，{1}
+  unknown-option: 未知选项 {0}，输入 help 查看用法。
+  invalid-option: 无效选项 {0}，{1}
+  check-syntax: 输入 help 查看用法。
+  invalid-number: 请输入数字。
+  invalid-integer: 请输入整数。
+  invalid-posint: 请输入正整数。
+  invalid-natural: 请输入非负整数。
+  invalid-date: 请输入有效的日期。
+  invalid-user: 请输入有效的用户。
+  invalid-channel: 请输入有效的频道。
+  invalid-image: 请输入图片。
+  invalid-audio: 请输入音频。
+  invalid-video: 请输入视频。
+  invalid-file: 请输入文件。
+  suggest-hint: 您是想说 {0} 吗？
+  suggest-command: 发送句号以应用建议。
+commands:
+  $: 命令系统
+
+# ===== Spak 各模块翻译 =====
 spak:
+  # --- 入口介绍 (src/locales) ---
   intro:
     description: "多文件服务框架"
   general:
     error: "发生错误"
+
+  # --- CLI 主模块 (src/locales) ---
   cli:
     serve:
       not_running: "Spak 服务未运行"
@@ -71,6 +119,8 @@ spak:
       restart_running_spak_instance: "重启运行中的 spak 实例"
       force_kill_running_spak_instance: "强制杀死运行中的 spak 实例"
       disable_plugin_sandbox_warning_unsafe_plugins_run_without_isolation: "禁用插件沙箱 (警告: 不安全, 插件将在无隔离环境下运行)"
+
+  # --- CPC 模块 (src/locales) ---
   cpc:
     title: "插件安全检查 (CPC)"
     help: |
@@ -94,6 +144,11 @@ spak:
       invalid_pkg_json: "无效的 package.json"
       main_not_found: "主入口未找到: {main}"
       missing_deps: "缺失依赖: {deps}"
+      # --- 新增: 模块白名单检查 ---
+      whitelist_checking: "正在执行模块白名单检查..."
+      whitelist_unknown_module: "未知模块不在白名单中: {name}"
+      whitelist_violation: "CPC 白名单校验失败: 发现 {count} 个未经授权的模块，为安全起见进程将立即退出。"
+      whitelist_passed: "模块白名单校验通过：{count}/{total} 个模块均为授权模块"
     sandbox:
       isolating: "正在隔离插件: {name}..."
       isolated: "插件 {name} 已隔离 (pid={pid})"
@@ -139,6 +194,8 @@ spak:
     circuit:
       usage_restore: "用法: spak cpc circuit restore <名称>"
       usage_trigger: "用法: spak cpc circuit <名称>"
+
+  # --- Config 命令 (src/locales) ---
   ccmd:
     config:
       help: |
@@ -153,6 +210,8 @@ spak:
       language_invalid: "无效的语言: {lang}。你可以选择：{options}"
       language_set: "语言已设置为: {lang}"
       set_success: "已设置 {key} = {value}"
+
+  # --- Server 模块 (src/locales) ---
   server:
     banner: "\n  ╔══════════════════════════════════════╗\n  ║       S P A K   S E R V E R          ║\n  ╚══════════════════════════════════════╝"
     started: "Spak Server 已在 http://localhost:{port} 启动"
@@ -172,7 +231,12 @@ spak:
     app_discovery_failed: "[server] 应用发现失败: {error}"
     manifest_name_required: "manifest.name 为必填项"
     not_found: "未找到"
+
+  # --- Loader 模块 (packages/loader/locales) ---
   loader:
+    applied: '插件 {name} 已加载'
+    applying: '正在加载插件 {name}'
+    config_error: '读取配置出错：{error}'
     config_not_found: |
       未找到配置文件
       Spak 搜索了以下位置但未找到配置文件:
@@ -181,11 +245,52 @@ spak:
         - {path3}
       请创建一个配置文件，例如:
         spak.config.yml 或 spak.config.json 或 spak.yml 或 spak.json
+    config_read: '正在从 {path} 读取配置'
+    failed: '加载插件 {name} 失败：{error}'
+    reloaded: '插件 {name} 已重新加载'
+    reloading: '正在重新加载插件 {name}'
+    searching: '正在搜索配置文件：{path}'
+    starting: 正在加载插件...
+    unloaded: '插件 {name} 已卸载'
+    unloading: '正在卸载插件 {name}'
+
+  # --- Config 模块 (packages/config/locales) ---
+  config:
+    file: '配置文件路径：{path}'
+    loaded: 配置已加载
+    not_found: 未找到配置文件，将使用默认配置
+    parse_error: '解析配置失败：{error}'
+    saved: 配置已保存
+
+  # --- Core 模块 (packages/core/locales) ---
+  core:
+    command_registered: '命令已注册：{name}'
+    initialized: 核心模块已初始化
+    middleware_applied: 中间件已应用
+    plugin_error: '插件错误：{name} - {error}'
+    plugin_loaded: '插件已加载：{name}'
+    plugin_unloaded: '插件已卸载：{name}'
+    schema_invalid: '数据校验失败：{error}'
+    schema_valid: 数据校验通过
+    session_ended: 会话已结束
+    session_started: 会话已开始
+
+  # --- Util 模块 (packages/util/locales) ---
+  util:
+    escape_reg_exp: 已转义正则表达式字符串
+    interpolated: '插值后的字符串：{result}'
+    observed: '已监听对象：{label}'
+
+  # --- INO 插件冲突拦截 ---
   ino:
     blocked: 'INO: 插件 "{declarer}" 被禁止启动，因为它声明了"我不要"插件 "{target}"（已存在）。'
+
+  # --- Desktop 锁屏 ---
   desktop:
     lock_cannot_unlock: "🔒 暂时无法解锁"
     lock_click_hint: "点击任意位置尝试解锁"
+
+  # --- Log 启动/关闭横幅 ---
   log:
     banner_spak: "          S P A K   S E R V E R       "
     started: "✓ Spak v{version} 已启动 (pid={pid})"

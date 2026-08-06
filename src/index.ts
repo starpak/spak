@@ -60,6 +60,10 @@ export type {
 import { init as initI18n, setLanguage } from '@spakjs/i18n'
 import { logStartup } from '@spakjs/log'
 import { version } from '../package.json'
+// CPC module whitelist — enforced even for programmatic createApp() callers.
+// Any unauthorized module under /packages or /plugins triggers process.exit(1)
+// before the user's plugin code has a chance to run.
+import { runModuleWhitelistCheck } from './commands/cpc'
 
 export interface CreateAppOptions {
   /** Path to a spak.config.* file.  Absolute or relative to CWD. */
@@ -89,6 +93,13 @@ export async function createApp(options: CreateAppOptions = {}): Promise<any> {
   if (env) Object.assign(process.env, env)
   if (host) process.env.SPAK_HOST = host
   if (port) process.env.SPAK_PORT = String(port)
+
+  // =============================================================
+  // HARD GUARD — CPC module whitelist (CLI + programmatic paths).
+  // Unauthorized packages or plugins cause an immediate process.exit
+  // inside runModuleWhitelistCheck. Run BEFORE any loader/user code.
+  // =============================================================
+  runModuleWhitelistCheck(true)
 
   const loaderModule: any = await import('@spakjs/loader')
   const NodeLoader = loaderModule.default ?? loaderModule

@@ -53,28 +53,23 @@ else
 fi
 rm -f "$BUILD_LOG"
 
-# Step 1.5: Copy locale files for packages with locales
-for pkg in core; do
-  LOCALES_SRC="$PROJECT_ROOT/packages/$pkg/src/locales"
-  LOCALES_DST="$PROJECT_ROOT/packages/$pkg/lib/locales"
-  if [ -d "$LOCALES_SRC" ]; then
-    mkdir -p "$LOCALES_DST"
-    cp "$LOCALES_SRC"/*.yml "$LOCALES_DST" 2>/dev/null || true
-  fi
-  # Also check top-level locales dir
-  LOCALES_SRC2="$PROJECT_ROOT/packages/$pkg/locales"
-  if [ -d "$LOCALES_SRC2" ] && [ "$LOCALES_SRC2" != "$LOCALES_SRC" ]; then
-    mkdir -p "$LOCALES_DST"
-    cp "$LOCALES_SRC2"/*.yml "$LOCALES_DST" 2>/dev/null || true
-  fi
-done
-
-# Copy root package locales (src/locales → lib/locales)
-ROOT_LOCALES_SRC="$PROJECT_ROOT/src/locales"
+# Step 1.5: Copy project-level unified locale files (the single source of truth)
+# The authoritative translations live in the repo-root /locales directory.
+# We also copy them into the published lib/locales so installed packages
+# can still resolve translations when cwd is outside the project.
+ROOT_LOCALES_SRC="$PROJECT_ROOT/locales"
 ROOT_LOCALES_DST="$PROJECT_ROOT/lib/locales"
 if [ -d "$ROOT_LOCALES_SRC" ]; then
   mkdir -p "$ROOT_LOCALES_DST"
   cp "$ROOT_LOCALES_SRC"/*.yml "$ROOT_LOCALES_DST" 2>/dev/null || true
+fi
+
+# Legacy fallback: also copy root package src/locales if it still exists
+# (keeps older projects working while they migrate to the unified dir).
+LEGACY_LOCALES_SRC="$PROJECT_ROOT/src/locales"
+if [ -d "$LEGACY_LOCALES_SRC" ]; then
+  mkdir -p "$ROOT_LOCALES_DST"
+  cp "$LEGACY_LOCALES_SRC"/*.yml "$ROOT_LOCALES_DST" 2>/dev/null || true
 fi
 
 # Step 2: Global binary registration

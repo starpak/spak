@@ -10,6 +10,116 @@ import { CommandDeclaration } from '@spakjs/util'
 const BUILTIN_PACKAGES_DIR = resolve(process.cwd(), 'packages')
 const PLUGINS_DIR = resolve(process.cwd(), 'plugins')
 
+// ============================================================
+// 🛡️ MODULE WHITELIST — Authorized modules ONLY
+// Any package/plugin discovered at runtime MUST be present in
+// this list; otherwise CPC triggers a hard process exit so the
+// main framework refuses to start with untrusted code.
+// ============================================================
+const MODULE_WHITELIST: ReadonlySet<string> = new Set([
+  // --- Core @spakjs packages (monorepo internal) ---
+  '@spakjs/util',
+  '@spakjs/message',
+  '@spakjs/log',
+  '@spakjs/config',
+  '@spakjs/core',
+  '@spakjs/i18n',
+  '@spakjs/loader',
+  'util',
+  'message',
+  'log',
+  'config',
+  'core',
+  'i18n',
+  'loader',
+  // --- Known/approved @spakjs plugins ---
+  '@spakjs/plugin-server',
+  '@spakjs/plugin-http',
+  '@spakjs/plugin-hmr',
+  '@spakjs/plugin-daemon',
+  'plugin-server',
+  'plugin-http',
+  'plugin-hmr',
+  'plugin-daemon',
+])
+
+/**
+ * Run the whitelist validation step.
+ *
+ * Discovers every builtin package under /packages and every plugin
+ * under /plugins, then verifies each name appears in the hard-coded
+ * MODULE_WHITELIST above.
+ *
+ * If ANY unauthorized module is found:
+ *   1. log each offending name via T('spak.cpc.check.whitelist_unknown_module')
+ *   2. log a final violation summary
+ *   3. call process.exit(1) immediately so the framework cannot boot
+ *
+ * Returns silently when everything is authorized.
+ */
+export function runModuleWhitelistCheck(failHard: boolean = true): { unauthorized: string[]; total: number } {
+  console.log(kleur.cyan(`\n  ${T('spak.cpc.check.whitelist_checking')}\n`))
+
+  const discovered: string[] = []
+
+  // Collect builtin packages (scanned by /packages directory).
+  if (existsSync(BUILTIN_PACKAGES_DIR)) {
+    const pkgs = readdirSync(BUILTIN_PACKAGES_DIR).filter(d =>
+      statSync(resolve(BUILTIN_PACKAGES_DIR, d)).isDirectory(),
+    )
+    for (const p of pkgs) {
+      discovered.push(p)
+      // Also add the @spakjs/ scoped form so we accept directory name AND
+      // the full published package name convention in the whitelist.
+      discovered.push(`@spakjs/${p}`)
+    }
+  }
+
+  // Collect plugins (scanned by /plugins directory).
+  if (existsSync(PLUGINS_DIR)) {
+    const plugs = readdirSync(PLUGINS_DIR).filter(d =>
+      statSync(resolve(PLUGINS_DIR, d)).isDirectory(),
+    )
+    for (const p of plugs) {
+      discovered.push(p)
+      discovered.push(`@spakjs/${p}`)
+    }
+  }
+
+  // Also honour any user-added extra modules declared in config via
+  // cpc.whitelist array, so users can self-approve without editing
+  // this source file. Fail silently if config loading errors.
+  let extraWhitelist: string[] = []
+  try {
+    const cfg = loadConfig() as any
+    if (Array.isArray(cfg?.cpc?.whitelist)) extraWhitelist = cfg.cpc.whitelist
+  } catch { /* ignore */ }
+
+  const effectiveWhitelist = new Set<string>([...MODULE_WHITELIST, ...extraWhitelist])
+  const uniqueModules = [...new Set(discovered)]
+  const unauthorized = uniqueModules.filter(name => !effectiveWhitelist.has(name))
+
+  if (unauthorized.length > 0) {
+    for (const name of unauthorized) {
+      console.log(`  ${kleur.red('✗')} ${T('spak.cpc.check.whitelist_unknown_module', { name })}`)
+    }
+    console.log(kleur.red(`\n  ${T('spak.cpc.check.whitelist_violation', { count: String(unauthorized.length) })}\n`))
+    if (failHard) {
+      // Deliberately crash the main framework process. Using exit(1)
+      // guarantees any caller (CLI serve, programmatic createApp, tests)
+      // observes a non-zero status and cannot continue.
+      process.exit(1)
+    }
+  } else {
+    console.log(`  ${kleur.green('✓')} ${T('spak.cpc.check.whitelist_passed', {
+      count: String(uniqueModules.length),
+      total: String(uniqueModules.length),
+    })}\n`)
+  }
+
+  return { unauthorized, total: uniqueModules.length }
+}
+
 interface PluginCheckResult {
   name: string
   valid: boolean
@@ -82,6 +192,11 @@ function checkPlugin(name: string): PluginCheckResult {
 }
 
 function runPluginCheck(): void {
+  // Step 0 — Module whitelist validation. If this fails, process.exit(1)
+  // is triggered inside runModuleWhitelistCheck itself; we never reach the
+  // rest of runPluginCheck.
+  runModuleWhitelistCheck(true)
+
   console.log(kleur.cyan(`\n  ${T('spak.cpc.check.starting')}\n`))
 
   // Check built-in packages

@@ -1,3 +1,0 @@
-spak.util.escape_reg_exp: Escaped regular expression string
-spak.util.interpolated: 'Interpolated string: {result}'
-spak.util.observed: 'Observed object: {label}'

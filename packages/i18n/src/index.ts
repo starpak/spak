@@ -118,9 +118,9 @@ export function loadYmlTranslation(lang: string, rootDir: string = process.cwd()
   const allMessages: Record<string, string> = {}
 
   // Build a list of candidate root directories to search for locale files.
-  // When spak is run from the project directory, process.cwd() suffices.
-  // When installed globally and run from an arbitrary directory, we need
-  // to search relative to the @spakjs/i18n package location (__dirname).
+  // Unified structure: translations live in the project-level /locales dir.
+  // We still scan legacy locations (src/locales, per-package locales) for
+  // backward compatibility, but the authoritative source is /locales/*.yml.
   const i18nDir = typeof __dirname !== 'undefined' ? __dirname : process.cwd()
   const candidateRoots = new Set<string>([
     rootDir,
@@ -154,14 +154,18 @@ export function loadYmlTranslation(lang: string, rootDir: string = process.cwd()
     }
   }
 
-  // Search each candidate root for locale files
+  // Search each candidate root for locale files.
+  // Priority (highest first): /locales (project-level unified) → src/locales → lib/locales → per-package locales.
   for (const cRoot of candidateRoots) {
-    // Project root-level locales dirs (present in both src and lib).
-    for (const rootLocales of ['src/locales', 'lib/locales']) {
-      loadDir(resolve(cRoot, rootLocales))
-    }
+    // 1) Project-level unified locales directory (PRIMARY / AUTHORITATIVE).
+    loadDir(resolve(cRoot, 'locales'))
+    loadDir(resolve(cRoot, 'lib', 'locales')) // published package copies /locales into lib/locales as well
 
-    // Nested package/plugin locales dirs.
+    // 2) Legacy: project root src/locales and lib/locales (for back-compat).
+    loadDir(resolve(cRoot, 'src/locales'))
+    loadDir(resolve(cRoot, 'lib/locales'))
+
+    // 3) Legacy: per-package / per-plugin locales dirs.
     for (const subDir of ['packages', 'plugins']) {
       const dir = resolve(cRoot, subDir)
       if (!existsSync(dir)) continue
@@ -169,6 +173,7 @@ export function loadYmlTranslation(lang: string, rootDir: string = process.cwd()
       try { entries = readdirSync(dir).filter(d => statSync(resolve(dir, d)).isDirectory()) } catch { continue }
       for (const entry of entries) {
         loadDir(resolve(dir, entry, 'locales'))
+        loadDir(resolve(dir, entry, 'src', 'locales'))
       }
     }
   }

@@ -3,6 +3,10 @@ import kleur from 'kleur'
 import { readFile, writeFile, unlink } from 'fs/promises'
 import { T } from '@spakjs/i18n'
 import { CommandDeclaration } from './types'
+// CPC module whitelist check is ALWAYS executed on startup regardless of
+// cpc.enabled. This is intentional — loading untrusted modules must be
+// blocked at the framework level before ANY user plugin code runs.
+import { runModuleWhitelistCheck } from '../commands/cpc'
 
 process.env.SPAK_SHARED = JSON.stringify({
   startTime: Date.now(),
@@ -93,6 +97,13 @@ async function injectLanguageDeps() {
 
 async function startService(file?: string) {
   await savePid(process.pid)
+
+  // ==================================================================
+  // HARD GUARD — CPC module whitelist (always enforced, even without
+  // cpc.enabled=true in config). Unauthorized packages/plugins cause
+  // process.exit(1) from inside runModuleWhitelistCheck.
+  // ==================================================================
+  runModuleWhitelistCheck(true)
 
   // Normalize ESM / CJS / named-export shapes so that `new NodeLoader()`
   // always works regardless of how the loader module is bundled.
