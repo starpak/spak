@@ -2,7 +2,7 @@
 
 > A multi-file service project framework based on Koishi
 
-> **Framework Version**: v0.0.7
+> **Framework Version**: v0.0.8
 > **中文版**: [README.zh.md](README.zh.md)
 
 ---

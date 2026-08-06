@@ -172,23 +172,6 @@ spak:
     app_discovery_failed: "[server] App discovery failed: {error}"
     manifest_name_required: "manifest.name is required"
     not_found: "not found"
-  spm:
-    title: "spm — Spak Package Manager"
-    usage: |
-      Usage:  spm <command> [options]
-      Commands:
-        pack <appDir>       pack an app directory into a .pak file
-        version             show spm version
-      Options:
-        --out <file>        output .pak path (default: ~/.spak/.apps/<name>.pak)
-        -h, --help          display this message
-    version: "spm/0.0.1"
-    pack_requires_dir: "error: spm pack requires an app directory"
-    packed: "✓ packed {appDir} → {target}"
-    pack_error: "error: {error}"
-    unknown_command: 'error: unknown command "{cmd}"'
-    manifest_not_found: "spak.app.json not found in {dir}"
-    manifest_parse_error: "failed to parse {file}: {error}"
   loader:
     config_not_found: |
       config file not found

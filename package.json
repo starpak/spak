@@ -1,6 +1,6 @@
 {
   "name": "spak",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Spak - A multi-file service framework (Koishi-based monorepo facade)",
   "packageManager": "pnpm@10.8.0",
   "workspaces": [
@@ -31,7 +31,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@spakjs/apps": "workspace:^",
     "@spakjs/config": "workspace:^",
     "@spakjs/core": "workspace:^",
     "@spakjs/i18n": "workspace:^",

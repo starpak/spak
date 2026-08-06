@@ -53,23 +53,8 @@ else
 fi
 rm -f "$BUILD_LOG"
 
-# Compile the embedded spm (Spak Package Manager) project together with spak.
-# spm is an embedded project inside the source tree and is always built
-# alongside spak itself.
-if [ -d "$PROJECT_ROOT/spm/src" ]; then
-  if pnpm exec tsc -p "$PROJECT_ROOT/spm/tsconfig.json" > "$BUILD_LOG" 2>&1; then
-    echo -e "  ${GREEN}✓${NC}  Embedded spm compiled into spm/lib/"
-  else
-    echo -e "  ${RED}✗${NC}  Embedded spm compilation failed"
-    cat "$BUILD_LOG"
-    rm -f "$BUILD_LOG"
-    exit 1
-  fi
-  rm -f "$BUILD_LOG"
-fi
-
 # Step 1.5: Copy locale files for packages with locales
-for pkg in core apps; do
+for pkg in core; do
   LOCALES_SRC="$PROJECT_ROOT/packages/$pkg/src/locales"
   LOCALES_DST="$PROJECT_ROOT/packages/$pkg/lib/locales"
   if [ -d "$LOCALES_SRC" ]; then
@@ -155,19 +140,6 @@ try_link() {
 # Always try to drop a copy into the project's own bin/ too.
 mkdir -p "$PROJECT_ROOT/bin" 2>/dev/null || true
 ln -sf "$BIN_SOURCE" "$BIN_PROJECT_DIR" 2>/dev/null || true
-
-# Register the embedded spm (Spak Package Manager) binary alongside spak.
-if [ -f "$PROJECT_ROOT/spm/lib/index.js" ]; then
-  SPM_SOURCE="$PROJECT_ROOT/spm/lib/index.js"
-  chmod +x "$SPM_SOURCE"
-  if try_link "/usr/local/bin/spm" "$SPM_SOURCE" "spm"; then
-    :
-  elif try_link "$HOME/.local/bin/spm" "$SPM_SOURCE" "spm"; then
-    :
-  fi
-  mkdir -p "$PROJECT_ROOT/bin" 2>/dev/null || true
-  ln -sf "$SPM_SOURCE" "$PROJECT_ROOT/bin/spm" 2>/dev/null || true
-fi
 
 # Check if we're in a virtual/container environment (no global writes at all)
 IN_VENV=false

@@ -23,7 +23,5 @@
     { "path": "packages/i18n" },
     // Plugin/config loader — depends on core + i18n + config
     { "path": "packages/loader" },
-    // Apps module — HMR + INO + manifest (depends on core + i18n + log + loader)
-    { "path": "packages/apps" },
   ]
 }

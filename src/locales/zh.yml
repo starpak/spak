@@ -172,23 +172,6 @@ spak:
     app_discovery_failed: "[server] 应用发现失败: {error}"
     manifest_name_required: "manifest.name 为必填项"
     not_found: "未找到"
-  spm:
-    title: "spm — Spak 包管理器"
-    usage: |
-      用法:  spm <命令> [选项]
-      命令:
-        pack <appDir>       打包 app 目录为 .pak 文件
-        version             显示 spm 版本
-      选项:
-        --out <file>        输出 .pak 路径 (默认: ~/.spak/.apps/<name>.pak)
-        -h, --help          显示此帮助信息
-    version: "spm/0.0.1"
-    pack_requires_dir: "错误: spm pack 需要一个 app 目录"
-    packed: "✓ 已打包 {appDir} → {target}"
-    pack_error: "错误: {error}"
-    unknown_command: '错误: 未知命令 "{cmd}"'
-    manifest_not_found: "在 {dir} 中未找到 spak.app.json"
-    manifest_parse_error: "解析 {file} 失败: {error}"
   loader:
     config_not_found: |
       未找到配置文件

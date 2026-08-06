@@ -49,23 +49,6 @@ export * as Config from '@spakjs/config'
 export { default as Loader } from '@spakjs/loader'
 export * from '@spakjs/loader'
 
-// Apps module — plugin management, HMR, INO conflict system, manifest spec
-export {
-  PluginManifest,
-  ManifestHeader,
-  ManifestBody,
-  validateManifest,
-  loadManifest,
-  createSampleManifest,
-  InoService,
-  InoConflict,
-  InoCheckResult,
-  InoConfig,
-  HMR,
-  handleError,
-} from '@spakjs/apps'
-export type { ManifestValidationResult } from '@spakjs/apps'
-
 // Convenience: also re-export CLI command helpers for plugin devs that want
 // to register their own subcommands programmatically.
 export type {
