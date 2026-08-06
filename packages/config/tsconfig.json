@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  },
+  "include": [
+    "src"
+  ],
+  // @spakjs/config is intentionally a zero-dependency package
+  // (only uses node built-ins: fs, path, os). No reference to core/i18n
+  // or any other in-repo package → empty references array.
+  "references": [
+  ]
+}

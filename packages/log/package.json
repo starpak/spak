@@ -1,0 +1,14 @@
+{
+  "name": "@spakjs/log",
+  "description": "Spak Log - Multi-transport logger (console/file/stream) with level config and cordis bridge",
+  "version": "0.0.7",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "author": "Spak Team",
+  "license": "MIT",
+  "dependencies": {}
+}

@@ -1,0 +1,38 @@
+general:
+  $: 通用设置
+  name: 简体中文
+  paren: '（{0}）'
+  quote: '「{0}」'
+  comma: '、'
+  and: 和
+  or: 或
+  day: 天
+  hour: 小时
+  minute: 分钟
+  second: 秒
+internal:
+  $: 内部文本
+  error-encountered: 发生了未知错误。
+  low-authority: 权限不足。
+  prompt-argument: 请发送 {0}。
+  insufficient-arguments: 参数不足，输入 help 查看用法。
+  redunant-arguments: 参数过多，输入 help 查看用法。
+  invalid-argument: 无效参数 {0}，{1}
+  unknown-option: 未知选项 {0}，输入 help 查看用法。
+  invalid-option: 无效选项 {0}，{1}
+  check-syntax: 输入 help 查看用法。
+  invalid-number: 请输入数字。
+  invalid-integer: 请输入整数。
+  invalid-posint: 请输入正整数。
+  invalid-natural: 请输入非负整数。
+  invalid-date: 请输入有效的日期。
+  invalid-user: 请输入有效的用户。
+  invalid-channel: 请输入有效的频道。
+  invalid-image: 请输入图片。
+  invalid-audio: 请输入音频。
+  invalid-video: 请输入视频。
+  invalid-file: 请输入文件。
+  suggest-hint: 您是想说 {0} 吗？
+  suggest-command: 发送句号以应用建议。
+commands:
+  $: 命令系统

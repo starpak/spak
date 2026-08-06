@@ -1,0 +1,68 @@
+// ===== spm/pack.ts — .pak 打包 =====
+//
+// .pak = Spak App Package，类 APK 的单文件应用包。
+// 内部结构 = ZIP 容器：
+//   spak.app.json     应用清单（必需）
+//   <app 资源>        如 index.html / assets/* （由 manifest.staticDir 指向）
+//
+// 用途：一个 .pak = 一个可安装/可运行的应用，server 从 ~/.spak/.apps 加载。
+
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { join, resolve } from 'path'
+import { homedir } from 'os'
+import { buildZip, dirToEntries } from './zip'
+
+export interface PackOptions {
+  /** app 根目录（含 spak.app.json） */
+  appDir: string
+  /** 输出 .pak 文件路径（可选，默认 ~/.spak/.apps/<name>.pak） */
+  out?: string
+}
+
+/**
+ * 打包一个 app 目录成 .pak 单文件。
+ * 返回生成的 .pak 路径。
+ */
+export function packApp(opts: PackOptions): string {
+  const appDir = resolve(opts.appDir)
+  const manifestPath = join(appDir, 'spak.app.json')
+  if (!existsSync(manifestPath)) {
+    throw new Error(`spak.app.json not found in ${appDir}`)
+  }
+
+  let manifest: any
+  try {
+    manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  } catch (err) {
+    throw new Error(`failed to parse ${manifestPath}: ${(err as Error).message}`)
+  }
+
+  const name = manifest.name
+  if (!name) throw new Error('manifest.name is required')
+  const version = manifest.version || '0.0.0'
+
+  // 收集清单 + 资源
+  const entries = []
+  entries.push({ path: 'spak.app.json', data: Buffer.from(JSON.stringify(manifest, null, 2), 'utf8') })
+
+  // staticDir 资源（如 dist）
+  const staticDir = manifest.staticDir ? resolve(appDir, manifest.staticDir) : join(appDir, 'dist')
+  if (existsSync(staticDir)) {
+    // 把资源放到 pak 内的 app/ 前缀下
+    for (const e of dirToEntries(staticDir, staticDir)) {
+      entries.push({ path: join('app', e.path), data: e.data })
+    }
+  }
+
+  const zipBuf = buildZip(entries)
+
+  // 输出路径
+  const out = opts.out
+    ? resolve(opts.out)
+    : join(homedir(), '.spak', '.apps', `${name}.pak`)
+
+  mkdirSync(resolve(out, '..'), { recursive: true })
+  writeFileSync(out, zipBuf)
+
+  return out
+}

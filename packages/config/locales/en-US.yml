@@ -1,0 +1,5 @@
+spak.config.file: 'Config file: {path}'
+spak.config.loaded: Configuration loaded
+spak.config.not_found: 'Configuration file not found, using defaults'
+spak.config.parse_error: 'Failed to parse configuration: {error}'
+spak.config.saved: Configuration saved

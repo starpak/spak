@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "lib",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  },
+  "include": [
+    "src",
+    "package.json"
+  ],
+  "references": [
+    // Zero-side-effect base tier (no Node IO)
+    { "path": "packages/util" },
+    { "path": "packages/message" },
+    // Node-capability tier (independent pure packages)
+    { "path": "packages/log" },
+    { "path": "packages/config" },
+    // Runtime kernel — depends on util + message
+    { "path": "packages/core" },
+    // Translation loader — depends on core + config
+    { "path": "packages/i18n" },
+    // Plugin/config loader — depends on core + i18n + config
+    { "path": "packages/loader" },
+    // Apps module — HMR + INO + manifest (depends on core + i18n + log + loader)
+    { "path": "packages/apps" },
+  ]
+}

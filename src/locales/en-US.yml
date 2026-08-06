@@ -1,0 +1,101 @@
+# EN-US locale for spak CLI
+spak:
+  intro:
+    description: "multi-file service framework"
+  general:
+    error: "An error occurred"
+  cli:
+    serve:
+      not_running: "Spak service is not running"
+      started: "Spak service started (pid={pid})"
+      stopping: "Shutting down spak service... ({signal})"
+      start_failed: "Failed to start spak service: {error}"
+    stop:
+      sent: "Sent {signal} to spak service (pid={pid})"
+      failed: "Failed to stop spak service (pid={pid}): {error}"
+    status:
+      title: "Spak Service Status"
+      service: "Service"
+      pid_value: "  PID: {pid}"
+      port_value: "  Port: {port}"
+      uptime_value: "  Uptime: {uptime}"
+      plugins_value: "  Plugins: {count}"
+      requests_value: "  Requests: {count}"
+      hardware: "Hardware"
+      memory_value: "  Memory: {used} / {total}"
+      free_value: "  Free: {free}"
+      load_value: "  Load: {load}"
+      cpu_value: "  CPU: {usage}"
+      platform_value: "  Platform: {platform}"
+      environment: "Environment"
+      host_value: "  Host: {host}"
+      node_value: "  Node: {version}"
+      log_value: "  Log: spak.log"
+      pid_file_value: "  PID File: .spak.pid"
+      not_running: "Spak service is not running"
+    inject:
+      added: "injected @spakjs/i18n dependency into {pkg}"
+      created: "created locales dir for {pkg}"
+  cpc:
+    title: "Check Plug-in Collection (CPC)"
+    help: |
+      CPC Commands:
+        spak cpc check          Check all plugins and packages
+        spak cpc sandbox <name> Isolate a plugin in sandbox
+        spak cpc sandbox stop <name> Stop sandboxed plugin
+        spak cpc ssetps         Start SSetPS monitoring
+        spak cpc circuit <name> Trigger circuit breaker
+        spak cpc circuit restore <name> Restore circuit breaker
+        spak cpc status         Show CPC status
+    check:
+      starting: "Checking plugins and packages..."
+      complete: "{valid}/{total} checks passed"
+    sandbox:
+      isolating: "Isolating plugin: {name}..."
+      isolated: "Plugin {name} isolated (pid={pid})"
+      terminated: "Sandbox terminated (pid={pid})"
+      usage_start: "Usage: spak cpc sandbox <name>"
+      usage_stop: "Usage: spak cpc sandbox stop <name>"
+      enabled: "Sandbox enabled"
+      disabled_warning: "SANDBOX DISABLED — plugins run without isolation (unsafe!)"
+    ssetps:
+      monitoring: "SSetPS monitoring started"
+      memory_warning: "Memory usage at {usage}%"
+      memory_cleaned: "GC freed {freed}MB"
+      circuit_break: "Circuit breaker triggered for {name}"
+      circuit_open: "Circuit breaker OPEN for {name}"
+      circuit_restored: "Circuit breaker restored for {name}"
+      firewall_rule: "Firewall rule: {rule}"
+    test:
+      serve: "Starting test server..."
+      serve_running: "Test server running at {url}"
+      starting: "Running CPC tests..."
+      complete: "{pass}/{total} tests passed"
+    config:
+      not_available: "CPC is not enabled. Set 'cpc.enabled: true' in config."
+    process_isolation:
+      enabled: "Process isolation enabled"
+    status:
+      sandbox: "Sandboxes:"
+      circuit_breakers: "Circuit breakers:"
+      ssetps: "SSetPS:"
+      active: "active"
+      inactive: "inactive"
+      memory: "Memory:"
+      unknown: "Unknown command: {sub}"
+    circuit:
+      usage_restore: "Usage: spak cpc circuit restore <name>"
+      usage_trigger: "Usage: spak cpc circuit <name>"
+  ccmd:
+    config:
+      help: |
+        Config Commands:
+          spak config list          List all configuration
+          spak config get <key>     Get a configuration value
+          spak config set <key> <value>  Set a configuration value
+      get_usage: "Usage: spak config get <key>"
+      key_not_found: "Key not found: {key}"
+      set_usage: "Usage: spak config set <key> <value>"
+      language_invalid: "Invalid language: {lang}. You can choose: {options}"
+      language_set: "Language set to: {lang}"
+      set_success: "Set {key} = {value}"

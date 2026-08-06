@@ -1,0 +1,26 @@
+{
+  "_comment": "PHASED PHASE PLAN (STRICT MODE ROLLOUT SCHEDULE:\n  * Phase 1 (THIS RELEASE: keep as-is —  -> Build green, land functional fixes first.\n  * Phase 2 (next PR/iteration: strictNullChecks: true  -> fix ~80 undefined/null issues in command/*, util/*, context, i18n.\n  * Phase 3 (follow-up): noImplicitAny: true + noImplicitReturns: true.\n  * Phase 4 (final): full strict: true + strictFunctionTypes + noImplicitOverride.\nTODO: before each phase, run `pnpm tsc --build`, fix errors, merge green.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "noImplicitReturns": false,
+    "noImplicitOverride": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "ignoreDeprecations": "5.0"
+  }
+}

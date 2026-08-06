@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬  Discussions 讨论区
+    url: https://github.com/YOUR-ORG/spak/discussions
+    about: 想聊天或者问问题就来这里说喵～
+  - name: 📖  Spak 文档
+    url: https://github.com/YOUR-ORG/spak#readme
+    about: 先看看 README 有没有你想找的答案的说～

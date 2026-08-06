@@ -1,0 +1,351 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CopyButton from '../components/islands/CopyButton.vue';
+import TabSwitcher from '../components/islands/TabSwitcher.vue';
+import FAQAccordion from '../components/islands/FAQAccordion.vue';
+import { SITE, PACKAGES, PLUGINS, COMPARISON, MILESTONES, STACK_BADGES, QUOTES, FAQ } from '../data/site';
+
+const features = [
+  { emoji: '🧩', title: '插件化架构', desc: '基于 Koishi，模块化组织多文件服务，core 内核 + 可插拔插件，依赖方向严格单向。', color: 'var(--brand-500)' },
+  { emoji: '🌐', title: '原生 i18n', desc: 'locale 树 + 回退算法 + yml 加载器，T() 助手一行调用，中英文开箱即用。', color: 'var(--accent-cyan)' },
+  { emoji: '📝', title: '独立日志系统', desc: '多传输（Console/File/Stream）、分级、结构化，Cordis Logger 桥接，零第三方依赖。', color: 'var(--accent-emerald)' },
+  { emoji: '⚙️', title: '中央配置', desc: 'YAML/JSON 加载，持久化到 ~/.spak/，env 文件、变量插值与 $if 条件加载。', color: 'var(--accent-amber)' },
+  { emoji: '🎮', title: '彩色 CLI', desc: 'spak serve / config / cpc / status，全彩人友输出，二级子命令路由。', color: 'var(--accent-rose)' },
+  { emoji: '🧠', title: '浏览器可跑内核', desc: 'core 不依赖 fs/process，可在浏览器端运行，方便做命令预览与工具链。', color: 'var(--accent-indigo)' },
+];
+
+const installTabs = [
+  { id: 'pnpm', label: 'pnpm', code: 'pnpm add spak' },
+  { id: 'npm', label: 'npm', code: 'npm install spak' },
+  { id: 'yarn', label: 'yarn', code: 'yarn add spak' },
+];
+
+const quickStartCode = `# 1. 安装
+pnpm add spak
+
+# 2. 创建配置 spak.config.yml
+cat > spak.config.yml <<'EOF'
+name: my-spak-app
+plugins:
+  '@spakjs/plugin-server':
+    host: 0.0.0.0
+    port: 4321
+  '@spakjs/plugin-daemon':
+    enabled: true
+EOF
+
+# 3. 启动
+spak serve`;
+---
+<BaseLayout>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg grid-bg"></div>
+    <div class="glow-orb animate-glow" style="width:480px;height:480px;background:var(--brand-500);top:-160px;left:-120px;"></div>
+    <div class="glow-orb animate-glow" style="width:360px;height:360px;background:var(--accent-cyan);top:80px;right:-80px;animation-delay:2s;"></div>
+    <div class="glow-orb animate-glow" style="width:280px;height:280px;background:var(--accent-indigo);bottom:-120px;left:40%;animation-delay:4s;"></div>
+    <div class="container hero-inner">
+      <span class="eyebrow fade-up">⚡ v{SITE.version} · MIT License · 岛屿架构</span>
+      <h1 class="hero-title fade-up" style="animation-delay:.08s">
+        构建<span class="grad-text">多文件服务</span>的<br />
+        现代框架
+      </h1>
+      <p class="lead fade-up" style="margin:.5rem auto 0;animation-delay:.16s">{SITE.description}</p>
+      <div class="hero-actions fade-up" style="animation-delay:.24s">
+        <a class="btn btn-primary" href="/guide">快速开始
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+        </a>
+        <a class="btn btn-ghost" href={SITE.repo} target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.4.5 0 5.9 0 12.5c0 5.3 3.4 9.8 8.2 11.4.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2 0-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17 4.6 18 4.9 18 4.9c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6 4.8-1.6 8.2-6.1 8.2-11.4C24 5.9 18.6.5 12 .5z"/></svg>
+          GitHub
+        </a>
+      </div>
+      <div class="stack-badges fade-up" style="animation-delay:.32s">
+        {STACK_BADGES.map((b) => <span class="stack-badge"><span aria-hidden="true">{b.emoji}</span>{b.label}</span>)}
+      </div>
+      <div class="hero-stats fade-up" style="animation-delay:.4s">
+        <div class="stat-card">
+          <strong>{PACKAGES.length}</strong>
+          <span>核心包</span>
+        </div>
+        <div class="stat-card">
+          <strong>{PLUGINS.length}</strong>
+          <span>官方插件</span>
+        </div>
+        <div class="stat-card">
+          <strong>2</strong>
+          <span>语言</span>
+        </div>
+        <div class="stat-card">
+          <strong>100%</strong>
+          <span>TypeScript</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 特性 -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">核心特性</span>
+        <h2>为什么选择 <span class="grad-text">Spak</span>？</h2>
+        <p class="lead" style="margin-inline:auto">从内核到 CLI，从日志到 i18n，开箱即用的全栈体验。</p>
+      </div>
+      <div class="grid grid-3">
+        {features.map((f) => (
+          <article class="card feature-card reveal">
+            <div class="feature-icon" style={`background:${f.color}1a;color:${f.color};box-shadow:0 8px 24px ${f.color}25`} aria-hidden="true">{f.emoji}</div>
+            <h3>{f.title}</h3>
+            <p class="text-soft">{f.desc}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 架构图 -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">架构</span>
+        <h2>分层设计</h2>
+        <p class="lead" style="margin-inline:auto">core 是引擎，spak 是整车。依赖方向：右下 → 左上，禁止反向。</p>
+      </div>
+      <div class="arch-diagram reveal">
+        <div class="arch-layer arch-top">
+          <div class="arch-box arch-facade">
+            <span class="arch-emoji">🚗</span>
+            <div><strong>spak</strong><small>Facade / 整车入口</small></div>
+            <code>export * + createApp()</code>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ re-exports</div>
+        <div class="arch-layer">
+          <div class="arch-box"><span class="arch-emoji">🎮</span><div><strong>cli</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">📂</span><div><strong>loader</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">⚙️</span><div><strong>config</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">🌐</span><div><strong>i18n</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">📝</span><div><strong>log</strong></div></div>
+        </div>
+        <div class="arch-arrow">↓ depends on</div>
+        <div class="arch-layer">
+          <div class="arch-box arch-core">
+            <span class="arch-emoji">🧠</span>
+            <div><strong>@spakjs/core</strong><small>Context / Commander / Schema / Filter / Session</small></div>
+          </div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer">
+          <div class="arch-box"><span class="arch-emoji">🧰</span><div><strong>util</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">💬</span><div><strong>message</strong></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 对比表 -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">对比</span>
+        <h2>Spak vs 其他方案</h2>
+        <p class="lead" style="margin-inline:auto">独立日志、中央配置、彩色 CLI、HMR、守护进程——开箱即用。</p>
+      </div>
+      <div class="table-wrap reveal">
+        <table>
+          <thead>
+            <tr><th>特性</th><th class="text-center">Spak</th><th class="text-center">原生 Koishi</th><th class="text-center">无框架</th></tr>
+          </thead>
+          <tbody>
+            {COMPARISON.map((row) => (
+              <tr>
+                <td>{row.feature}</td>
+                <td class="text-center" set:html={row.spak ? '<span class="yes">✓</span>' : '<span class="no">✗</span>'} />
+                <td class="text-center" set:html={row.koishi ? '<span class="yes">✓</span>' : '<span class="no">✗</span>'} />
+                <td class="text-center" set:html={row.none ? '<span class="yes">✓</span>' : '<span class="no">✗</span>'} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 快速开始 -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">三步上手</span>
+        <h2>快速开始</h2>
+        <p class="lead" style="margin-inline:auto">三行命令跑起你的第一个 Spak 应用。</p>
+      </div>
+      <div class="qs-grid reveal">
+        <div class="qs-code">
+          <div class="qs-code-head">
+            <div class="term-label">
+              <span class="term-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+              <span class="badge">bash</span>
+            </div>
+            <CopyButton client:visible text={quickStartCode} />
+          </div>
+          <pre><code>{quickStartCode}</code></pre>
+        </div>
+        <div class="qs-side">
+          <h3>包管理器任选</h3>
+          <p class="text-soft">下方标签切换为 <code>client:idle</code> 岛屿，浏览器空闲时水合。</p>
+          <TabSwitcher client:idle tabs={installTabs} />
+          <h3 class="mt-2">下一步</h3>
+          <ul class="qs-list">
+            <li><span aria-hidden="true">📖</span> 阅读 <a href="/guide">使用指南</a></li>
+            <li><span aria-hidden="true">📦</span> 浏览 <a href="/packages">包总览</a></li>
+            <li><span aria-hidden="true">🔌</span> 查看 <a href="/plugins">官方插件</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 用户引用墙 -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">来自使用者</span>
+        <h2>开发者怎么说</h2>
+      </div>
+      <div class="grid grid-3 quotes-grid">
+        {QUOTES.map((q) => (
+          <figure class="card quote-card reveal">
+            <div class="quote-mark" aria-hidden="true">"</div>
+            <blockquote class="quote-text">{q.text}</blockquote>
+            <figcaption class="quote-author">
+              <span class="quote-emoji" aria-hidden="true">{q.emoji}</span>
+              <div>
+                <strong>{q.author}</strong>
+                <span class="text-muted">{q.role}</span>
+              </div>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">常见问题</span>
+        <h2>FAQ</h2>
+        <p class="lead" style="margin-inline:auto">下方手风琴为 <code>client:idle</code> 岛屿。</p>
+      </div>
+      <div class="reveal">
+        <FAQAccordion client:idle items={FAQ} />
+      </div>
+    </div>
+  </section>
+
+  <!-- 时间线 -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">路线图</span>
+        <h2>里程碑</h2>
+      </div>
+      <div class="timeline reveal" style="max-width:640px;margin:0 auto">
+        {MILESTONES.map((m) => (
+          <div class="timeline-item">
+            <div class="timeline-head">
+              <span class="badge">{m.version}</span>
+              <span class="text-muted" style="font-size:.8rem">{m.date}</span>
+            </div>
+            <h3 style="margin:.4em 0 .2em">{m.title}</h3>
+            <p class="text-soft" style="margin:0">{m.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="container">
+      <div class="cta grad-card reveal">
+        <div class="cta-content">
+          <h2>准备好开始了吗？</h2>
+          <p class="lead" style="margin:0">用 Spak 几分钟搭起你的多文件服务应用。</p>
+        </div>
+        <div class="cta-actions">
+          <a class="btn btn-primary" href="/guide">阅读指南</a>
+          <a class="btn btn-ghost" href={SITE.repo} target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .hero { position: relative; padding: 6.5rem 0 5rem; text-align: center; overflow: hidden; }
+  .hero-bg { position: absolute; inset: 0; opacity: .55; }
+  .hero-inner { position: relative; z-index: 1; max-width: 820px; }
+  .hero-title { margin: .5rem 0 1rem; font-weight: 800; letter-spacing: -.035em; }
+  .hero-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; margin: 1.75rem 0 1.5rem; }
+  .stack-badges { display: flex; gap: .55rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2.5rem; }
+  .stack-badge { display: inline-flex; align-items: center; gap: .35em; font-size: .78rem; font-weight: 500; color: var(--text-soft); background: var(--bg-elevated); border: 1px solid var(--border); padding: .35em .8em; border-radius: 999px; box-shadow: var(--shadow-sm); }
+  .stack-badge span { font-size: .9em; }
+  .hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; max-width: 640px; margin: 0 auto; }
+  .stat-card { display: flex; flex-direction: column; gap: .15rem; padding: 1rem .5rem; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); transition: transform .2s ease, border-color .2s ease; }
+  .stat-card:hover { transform: translateY(-3px); border-color: var(--brand-300); }
+  .stat-card strong { font-size: 1.6rem; font-family: var(--font-mono); color: var(--brand-600); line-height: 1; }
+  [data-theme='dark'] .stat-card strong { color: var(--brand-300); }
+  .stat-card span { font-size: .75rem; color: var(--text-muted); }
+  .section-head { margin-bottom: 2.5rem; }
+  .section-head .lead { margin-top: .5rem; }
+  /* 特性卡片 */
+  .feature-card { text-align: left; }
+  .feature-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 1rem; transition: transform .25s ease; }
+  .feature-card:hover .feature-icon { transform: scale(1.08) rotate(-4deg); }
+  .feature-card p { margin-bottom: 0; font-size: .92rem; }
+  /* 架构图 */
+  .arch-diagram { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: .65rem; }
+  .arch-layer { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; }
+  .arch-box { display: flex; align-items: center; gap: .55rem; padding: .85rem 1.2rem; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); min-width: 120px; box-shadow: var(--shadow-sm); transition: transform .2s ease, border-color .2s ease; }
+  .arch-box:hover { transform: translateY(-2px); border-color: var(--brand-300); }
+  .arch-box small { display: block; font-size: .72rem; color: var(--text-muted); }
+  .arch-box code { font-size: .72rem; }
+  .arch-emoji { font-size: 1.25rem; }
+  .arch-facade { background: linear-gradient(135deg, var(--brand-50), var(--brand-100)); border-color: var(--brand-300); }
+  [data-theme='dark'] .arch-facade { background: rgba(139,92,246,.1); border-color: var(--brand-500); }
+  .arch-core { background: var(--brand-50); border-color: var(--brand-400); min-width: 320px; }
+  [data-theme='dark'] .arch-core { background: rgba(139,92,246,.1); }
+  .arch-arrow { color: var(--text-muted); font-size: .8rem; font-family: var(--font-mono); }
+  /* 对比表 */
+  .yes { color: var(--accent-emerald); font-weight: 700; font-size: 1.15rem; }
+  .no { color: var(--text-muted); font-size: 1.15rem; }
+  /* 快速开始 */
+  .qs-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 2rem; align-items: start; }
+  .qs-code-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+  .term-label { display: inline-flex; align-items: center; }
+  .qs-code pre { margin: 0; }
+  .qs-list { list-style: none; display: flex; flex-direction: column; gap: .65rem; padding-left: 0; }
+  .qs-list li { display: flex; align-items: center; gap: .5rem; color: var(--text-soft); font-size: .92rem; }
+  /* 引用墙 */
+  .quote-card { display: flex; flex-direction: column; gap: 1rem; }
+  .quote-mark { font-family: Georgia, serif; font-size: 3.5rem; line-height: .5; color: var(--brand-300); height: 1rem; }
+  [data-theme='dark'] .quote-mark { color: var(--brand-500); }
+  .quote-text { margin: 0; font-size: .92rem; line-height: 1.7; color: var(--text-soft); flex: 1; }
+  .quote-author { display: flex; align-items: center; gap: .6rem; padding-top: .75rem; border-top: 1px dashed var(--border); }
+  .quote-emoji { font-size: 1.5rem; }
+  .quote-author strong { display: block; font-size: .9rem; }
+  .quote-author .text-muted { font-size: .78rem; }
+  /* 时间线 */
+  .timeline-head { display: flex; align-items: center; gap: .5rem; }
+  /* CTA */
+  .cta { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; padding: 2.5rem; }
+  .cta-content h2 { margin: 0 0 .3em; }
+  .cta-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+  @media (max-width: 768px) {
+    .qs-grid { grid-template-columns: 1fr; }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    .cta { flex-direction: column; text-align: center; padding: 1.75rem; }
+  }
+</style>

@@ -1,0 +1,15 @@
+{
+  "name": "spm",
+  "version": "0.0.7",
+  "description": "Spak Package Manager — spak 专属包管理工具（内嵌项目，随 spak 一同编译）",
+  "private": true,
+  "type": "commonjs",
+  "main": "lib/index.js",
+  "bin": {
+    "spm": "lib/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "license": "MIT"
+}

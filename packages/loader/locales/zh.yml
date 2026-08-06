@@ -1,0 +1,12 @@
+spak.loader.applied: '插件 {name} 已加载'
+spak.loader.applying: '正在加载插件 {name}'
+spak.loader.config_error: '读取配置出错：{error}'
+spak.loader.config_not_found: 未找到配置文件
+spak.loader.config_read: '正在从 {path} 读取配置'
+spak.loader.failed: '加载插件 {name} 失败：{error}'
+spak.loader.reloaded: '插件 {name} 已重新加载'
+spak.loader.reloading: '正在重新加载插件 {name}'
+spak.loader.searching: '正在搜索配置文件：{path}'
+spak.loader.starting: 正在加载插件...
+spak.loader.unloaded: '插件 {name} 已卸载'
+spak.loader.unloading: '正在卸载插件 {name}'

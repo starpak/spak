@@ -1,0 +1,34 @@
+{
+  "name": "@spakjs/apps",
+  "description": "Spak Apps - Plugin management, HMR, INO conflict system, and manifest specification",
+  "version": "0.0.7",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "require": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": ["lib", "src", "locales"],
+  "author": "Spak Team",
+  "license": "MIT",
+  "keywords": ["spak", "apps", "plugin", "hmr", "ino", "manifest"],
+  "dependencies": {
+    "@spakjs/core": "workspace:^",
+    "@spakjs/i18n": "workspace:^",
+    "@spakjs/log": "workspace:^",
+    "@spakjs/loader": "workspace:^",
+    "cosmokit": "^1.8.1",
+    "chokidar": "^3.6.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/babel__code-frame": "^7.0.6",
+    "esbuild": "^0.27.2"
+  }
+}

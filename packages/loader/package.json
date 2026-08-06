@@ -1,0 +1,47 @@
+{
+  "name": "@spakjs/loader",
+  "description": "Config Loader for Spak",
+  "version": "0.0.7",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.js",
+      "node": {
+        "require": "./lib/index.js",
+        "import": "./lib/index.js"
+      },
+      "browser": "./lib/shared.js"
+    },
+    "./shared": {
+      "types": "./lib/shared.js",
+      "require": "./lib/shared.js",
+      "import": "./lib/shared.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src"
+  ],
+  "author": "Spak Team",
+  "license": "MIT",
+  "keywords": [
+    "spak",
+    "loader",
+    "config"
+  ],
+  "peerDependencies": {
+    "@spakjs/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9"
+  },
+  "dependencies": {
+    "@spakjs/core": "workspace:^",
+    "dotenv": "^16.4.5",
+    "js-yaml": "^4.1.0",
+    "ns-require": "^1.1.4",
+    "@spakjs/i18n": "workspace:^"
+  }
+}

@@ -1,0 +1,48 @@
+---
+import { SITE, NAV_ITEMS, PACKAGES, PLUGINS } from '../data/site';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-col footer-brand">
+      <a href="/" class="footer-logo"><span aria-hidden="true">⚡</span> {SITE.name}</a>
+      <p class="footer-tagline">{SITE.tagline}</p>
+      <p class="footer-copy">© {year} {SITE.name} · {SITE.license} License</p>
+    </div>
+    <div class="footer-col">
+      <h4>导航</h4>
+      <ul>{NAV_ITEMS.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+    </div>
+    <div class="footer-col">
+      <h4>核心包</h4>
+      <ul>{PACKAGES.slice(0, 5).map((pkg) => <li><a href={`/packages#${pkg.name}`}>{pkg.emoji} {pkg.npm}</a></li>)}</ul>
+    </div>
+    <div class="footer-col">
+      <h4>资源</h4>
+      <ul>
+        <li><a href={SITE.repo} target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href={SITE.npm} target="_blank" rel="noopener">npm</a></li>
+        <li><a href={SITE.docs} target="_blank" rel="noopener">文档</a></li>
+        <li><a href={`${SITE.repo}/issues`} target="_blank" rel="noopener">问题反馈</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom container">
+    <p class="footer-meta">Built with <a href="https://astro.build" target="_blank" rel="noopener">Astro</a> · 岛屿架构 · {PLUGINS.length + PACKAGES.length} 个模块</p>
+  </div>
+</footer>
+<style>
+  .site-footer { margin-top: 4rem; background: var(--bg-soft); border-top: 1px solid var(--border); padding: 3rem 0 1.5rem; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+  .footer-logo { display: inline-flex; align-items: center; gap: .4rem; font-size: 1.2rem; font-weight: 700; color: var(--text) !important; margin-bottom: .5rem; }
+  .footer-tagline { color: var(--text-soft); font-size: .9rem; max-width: 32ch; margin-bottom: .75rem; }
+  .footer-copy { font-size: .8rem; color: var(--text-muted); }
+  .footer-col h4 { font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-soft); margin-bottom: .85rem; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .footer-col a { color: var(--text-soft) !important; font-size: .9rem; }
+  .footer-col a:hover { color: var(--brand-600) !important; }
+  .footer-bottom { padding-top: 1.25rem; text-align: center; }
+  .footer-meta { font-size: .8rem; color: var(--text-muted); margin: 0; }
+  @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; } .footer-brand { grid-column: 1 / -1; } }
+  @media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } }
+</style>

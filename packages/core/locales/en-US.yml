@@ -1,0 +1,10 @@
+spak.core.command_registered: 'Command registered: {name}'
+spak.core.initialized: Core initialized
+spak.core.middleware_applied: Middleware applied
+spak.core.plugin_error: 'Plugin error: {name} - {error}'
+spak.core.plugin_loaded: 'Plugin loaded: {name}'
+spak.core.plugin_unloaded: 'Plugin unloaded: {name}'
+spak.core.schema_invalid: 'Schema validation failed: {error}'
+spak.core.schema_valid: Schema validation passed
+spak.core.session_ended: Session ended
+spak.core.session_started: Session started

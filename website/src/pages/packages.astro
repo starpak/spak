@@ -1,0 +1,153 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PackageSearch from '../components/islands/PackageSearch.vue';
+import { PACKAGES } from '../data/site';
+
+const stats = {
+  total: PACKAGES.length,
+  stable: PACKAGES.filter((p) => p.status === 'stable').length,
+  beta: PACKAGES.filter((p) => p.status === 'beta').length,
+  alpha: PACKAGES.filter((p) => p.status === 'alpha').length,
+};
+---
+<BaseLayout title="包" description="Spak 的 8 个核心包总览与架构关系。">
+  <section class="section pkg-hero">
+    <div class="container">
+      <span class="eyebrow">Monorepo</span>
+      <h1>核心包总览</h1>
+      <p class="lead">Spak 采用 pnpm workspace monorepo，{PACKAGES.length} 个职责清晰的包。下方搜索框为 <code>client:load</code> 岛屿。</p>
+      <div class="pkg-stats">
+        <div class="pstat"><strong>{stats.total}</strong><span>总数</span></div>
+        <div class="pstat"><span class="status status-stable">{stats.stable} stable</span></div>
+        <div class="pstat"><span class="status status-beta">{stats.beta} beta</span></div>
+        <div class="pstat"><span class="status status-alpha">{stats.alpha} alpha</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt" style="padding-top:2rem">
+    <div class="container"><PackageSearch client:load packages={PACKAGES} /></div>
+  </section>
+
+  <!-- 详细 API 表 -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">API</span>
+        <h2>导出与依赖</h2>
+        <p class="lead" style="margin-inline:auto">每个包的主要导出与内部依赖关系。</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>包名</th><th>版本</th><th>状态</th><th>主要导出</th><th>依赖</th></tr>
+          </thead>
+          <tbody>
+            {PACKAGES.map((pkg) => (
+              <tr>
+                <td><span aria-hidden="true">{pkg.emoji}</span> <code>{pkg.name}</code></td>
+                <td><span class="badge">{pkg.version}</span></td>
+                <td><span class:list={['status', `status-${pkg.status}`]}>{pkg.status}</span></td>
+                <td class="exports-cell">{pkg.exports.map((e) => <code class="export-tag">{e}</code>)}</td>
+                <td class="deps-cell">{pkg.deps.length ? pkg.deps.map((d) => <code class="dep-tag">{d}</code>) : <span class="text-muted">无</span>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 架构图 -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">依赖方向</span>
+        <h2>分层架构</h2>
+        <p class="lead" style="margin-inline:auto">右下 → 左上，禁止反向依赖。core 是引擎，spak 是整车。</p>
+      </div>
+      <div class="arch-diagram">
+        <div class="arch-layer arch-top">
+          <div class="arch-box arch-facade"><span class="arch-emoji">🚗</span><div><strong>spak</strong><small>Facade / 整车入口</small></div></div>
+        </div>
+        <div class="arch-arrow">↓ re-exports</div>
+        <div class="arch-layer">
+          <div class="arch-box"><span class="arch-emoji">🎮</span><div><strong>cli</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">📂</span><div><strong>loader</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">⚙️</span><div><strong>config</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">🌐</span><div><strong>i18n</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">📝</span><div><strong>log</strong></div></div>
+        </div>
+        <div class="arch-arrow">↓ depends on</div>
+        <div class="arch-layer">
+          <div class="arch-box arch-core"><span class="arch-emoji">🧠</span><div><strong>@spakjs/core</strong><small>Context / Commander / Schema</small></div></div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer">
+          <div class="arch-box"><span class="arch-emoji">🧰</span><div><strong>util</strong></div></div>
+          <div class="arch-box"><span class="arch-emoji">💬</span><div><strong>message</strong></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 分包边界 -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head text-center reveal">
+        <span class="eyebrow">设计原则</span>
+        <h2>分包边界</h2>
+      </div>
+      <div class="grid grid-2 principles">
+        <div class="card principle-card">
+          <div class="principle-icon yes-icon">✓</div>
+          <h3>该做</h3>
+          <ul>
+            <li><code>util</code> 零副作用，不依赖其他 @spakjs/* 包</li>
+            <li><code>message</code> 纯虚拟 DOM，零副作用</li>
+            <li><code>core</code> 不依赖 fs / process，可跑浏览器</li>
+            <li><code>spak</code> 门面包只 re-export + createApp() glue</li>
+          </ul>
+        </div>
+        <div class="card principle-card">
+          <div class="principle-icon no-icon">✗</div>
+          <h3>不该做</h3>
+          <ul>
+            <li><code>util</code> 读写文件、起进程、访问 env</li>
+            <li>底层包反向依赖上层（如 core 依赖 cli）</li>
+            <li><code>core</code> 实现与 Spak 运行时强相关逻辑</li>
+            <li>门面包 <code>spak</code> 自己实现业务逻辑</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .pkg-hero { padding: 3rem 0 1rem; }
+  .pkg-stats { display: flex; gap: 2rem; margin-top: 1.5rem; flex-wrap: wrap; align-items: center; }
+  .pstat { display: flex; flex-direction: column; gap: .2rem; }
+  .pstat strong { font-size: 1.5rem; font-family: var(--font-mono); color: var(--brand-600); }
+  [data-theme='dark'] .pstat strong { color: var(--brand-300); }
+  .pstat span { font-size: .8rem; color: var(--text-muted); }
+  .export-tag, .dep-tag { font-size: .72rem; margin: .15rem; display: inline-block; }
+  .dep-tag { background: rgba(245,158,11,.1); color: #f59e0b; border-color: transparent; }
+  .exports-cell, .deps-cell { max-width: 280px; }
+  .arch-diagram { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: .5rem; }
+  .arch-layer { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; }
+  .arch-box { display: flex; align-items: center; gap: .5rem; padding: .8rem 1.2rem; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); min-width: 120px; }
+  .arch-box small { display: block; font-size: .7rem; color: var(--text-muted); }
+  .arch-emoji { font-size: 1.2rem; }
+  .arch-facade { background: linear-gradient(135deg, var(--brand-50), var(--brand-100)); border-color: var(--brand-300); }
+  [data-theme='dark'] .arch-facade { background: rgba(139,92,246,.1); border-color: var(--brand-500); }
+  .arch-core { background: var(--brand-50); border-color: var(--brand-400); min-width: 280px; }
+  [data-theme='dark'] .arch-core { background: rgba(139,92,246,.1); }
+  .arch-arrow { color: var(--text-muted); font-size: .8rem; font-family: var(--font-mono); }
+  .principle-card { position: relative; }
+  .principle-icon { position: absolute; top: 1.5rem; right: 1.5rem; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; }
+  .yes-icon { background: rgba(16,185,129,.15); color: #10b981; }
+  .no-icon { background: rgba(244,63,94,.15); color: #f43f5e; }
+  .principles ul { list-style: none; padding: 0; margin: .5rem 0 0; }
+  .principles li { padding: .5rem 0; color: var(--text-soft); border-bottom: 1px dashed var(--border); font-size: .9rem; }
+  .principles li:last-child { border-bottom: none; }
+</style>

@@ -1,0 +1,198 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CopyButton from '../components/islands/CopyButton.vue';
+import { PLUGINS } from '../data/site';
+
+const pluginConfigCode = `# spak.config.yml
+plugins:
+  '@spakjs/plugin-server':
+    host: 0.0.0.0
+    port: 4321
+  '@spakjs/plugin-http': null        # 使用默认配置
+  '@spakjs/plugin-daemon':
+    enabled: true
+    logFile: spak.log
+  '@spakjs/plugin-hmr':              # 仅开发环境
+    enabled: true`;
+
+const categories = [
+  { id: 'server', label: '服务端', emoji: '🖥️', color: 'var(--brand-500)' },
+  { id: 'client', label: '客户端', emoji: '🌐', color: 'var(--accent-cyan)' },
+  { id: 'dev', label: '开发工具', emoji: '🔥', color: 'var(--accent-amber)' },
+  { id: 'ops', label: '运维', emoji: '👻', color: 'var(--accent-emerald)' },
+];
+
+const lifecycleExplain = `每个插件实现生命周期钩子，由 @spakjs/loader 在合适时机调用：
+
+  fork      进程派生（仅 daemon）
+    ↓
+  register  注册到 Context
+    ↓
+  start     启动资源（端口/连接）
+    ↓
+  ready     就绪，开始接收请求
+    ↓
+  reload    热重载（HMR 触发）
+    ↓
+  stop      优雅停止，释放资源`;
+---
+<BaseLayout title="插件" description="Spak 官方插件总览。">
+  <section class="section plugin-hero">
+    <div class="container">
+      <span class="eyebrow">可插拔</span>
+      <h1>官方插件</h1>
+      <p class="lead">{PLUGINS.length} 个开箱即用的官方插件，覆盖服务、网络、热更新与守护进程。按类别组织，配置项透明。</p>
+    </div>
+  </section>
+
+  <!-- 类别总览 -->
+  <section class="section section-alt" style="padding:2rem 0">
+    <div class="container">
+      <div class="grid grid-4">
+        {categories.map((c) => (
+          <div class="card cat-card" style={`border-left:3px solid ${c.color}`}>
+            <span class="cat-emoji" aria-hidden="true">{c.emoji}</span>
+            <strong>{c.label}</strong>
+            <span class="text-muted" style="font-size:.8rem">{PLUGINS.filter((p) => p.category === c.id).length} 个插件</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 插件详情 -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head text-center reveal"><span class="eyebrow">详情</span><h2>插件清单</h2></div>
+      <div class="plugin-list">
+        {PLUGINS.map((p) => (
+          <article class="card plugin-card" id={p.name}>
+            <div class="plugin-header">
+              <div class="plugin-title">
+                <span class="plugin-emoji" aria-hidden="true">{p.emoji}</span>
+                <div>
+                  <h3>{p.name}</h3>
+                  <p class="plugin-desc">{p.desc}</p>
+                </div>
+              </div>
+              <div class="plugin-meta">
+                <span class="badge">{p.version}</span>
+                <span class:list={['status', `status-${p.status}`]}>{p.status}</span>
+              </div>
+            </div>
+
+            <div class="plugin-body">
+              <div class="plugin-section">
+                <h4>特性</h4>
+                <ul class="plugin-features">{p.features.map((f) => <li>✓ {f}</li>)}</ul>
+              </div>
+
+              <div class="plugin-section">
+                <h4>配置项</h4>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>键</th><th>类型</th><th>默认</th><th>说明</th></tr></thead>
+                    <tbody>
+                      {p.configKeys.map((k) => (
+                        <tr><td><code>{k.key}</code></td><td><span class="badge">{k.type}</span></td><td><code class="default-val">{k.default}</code></td><td class="text-soft">{k.desc}</td></tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="plugin-section">
+                <h4>生命周期钩子</h4>
+                <div class="lifecycle-flow">
+                  {p.lifecycle.map((hook, i) => (
+                    <Fragment>
+                      <span class="lifecycle-hook" set:html={hook} />
+                      {i < p.lifecycle.length - 1 && <span class="lifecycle-arrow">→</span>}
+                    </Fragment>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 生命周期说明 -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head text-center reveal"><span class="eyebrow">生命周期</span><h2>插件生命周期</h2><p class="lead" style="margin-inline:auto">由 <code>@spakjs/loader</code> 调度，每个插件实现对应钩子。</p></div>
+      <div class="lifecycle-explain-grid">
+        <div class="lifecycle-code">
+          <div class="guide-code-head"><span class="badge">说明</span><CopyButton client:visible text={lifecycleExplain} /></div>
+          <pre><code>{lifecycleExplain}</code></pre>
+        </div>
+        <div class="lifecycle-text">
+          <h3>钩子调用顺序</h3>
+          <p>每个插件实现生命周期钩子，<code>@spakjs/loader</code> 在合适时机调用：</p>
+          <ul>
+            <li><code>fork</code> — 进程派生（仅 daemon）</li>
+            <li><code>register</code> — 注册到 Context</li>
+            <li><code>start</code> — 启动资源（端口/连接）</li>
+            <li><code>ready</code> — 就绪，开始接收请求</li>
+            <li><code>reload</code> — 热重载（HMR 触发）</li>
+            <li><code>stop</code> — 优雅停止，释放资源</li>
+          </ul>
+          <p class="text-muted">不同插件实现不同的钩子组合，见上方各插件详情。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 启用方式 -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head text-center reveal"><span class="eyebrow">启用</span><h2>在配置中声明</h2></div>
+      <div class="enable-grid">
+        <div class="enable-text"><p>插件以映射形式声明，键为包名，值为配置对象或 <code>null</code>（默认配置）。</p><p class="text-muted">由 <code>@spakjs/loader</code> 解析插件、调用生命周期钩子。</p></div>
+        <div class="enable-code"><div class="guide-code-head"><span class="badge">spak.config.yml</span><CopyButton client:visible text={pluginConfigCode} /></div><pre><code>{pluginConfigCode}</code></pre></div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .plugin-hero { padding: 3rem 0 1rem; }
+  .cat-card { display: flex; flex-direction: column; gap: .2rem; }
+  .cat-emoji { font-size: 1.5rem; }
+  .cat-card strong { font-size: 1rem; }
+  .plugin-list { display: flex; flex-direction: column; gap: 2rem; }
+  .plugin-card { padding: 1.75rem; }
+  .plugin-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .plugin-title { display: flex; gap: .85rem; align-items: flex-start; }
+  .plugin-emoji { font-size: 2rem; line-height: 1; }
+  .plugin-title h3 { font-family: var(--font-mono); font-size: 1.05rem; margin: 0 0 .2em; }
+  .plugin-desc { color: var(--text-soft); font-size: .9rem; margin: 0; }
+  .plugin-meta { display: flex; gap: .5rem; align-items: center; flex-shrink: 0; }
+  .plugin-body { display: flex; flex-direction: column; gap: 1.5rem; }
+  .plugin-section h4 { font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: .6rem; }
+  .plugin-features { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; }
+  .plugin-features li { font-size: .85rem; color: var(--text-soft); }
+  .plugin-section .table-wrap { margin: 0; }
+  .plugin-section table { font-size: .82rem; }
+  .plugin-section th, .plugin-section td { padding: .5rem .75rem; }
+  .default-val { font-size: .75rem; background: var(--bg-soft); color: var(--text-soft); }
+  .lifecycle-flow { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+  .lifecycle-hook { font-family: var(--font-mono); font-size: .8rem; padding: .35em .8em; background: var(--brand-50); color: var(--brand-700); border-radius: var(--radius-xs); }
+  [data-theme='dark'] .lifecycle-hook { background: rgba(139,92,246,.15); color: var(--brand-300); }
+  .lifecycle-arrow { color: var(--text-muted); }
+  .lifecycle-explain-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+  .lifecycle-code .guide-code-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+  .lifecycle-code pre { margin: 0; font-size: .78rem; }
+  .lifecycle-text h3 { margin-top: 0; }
+  .lifecycle-text ul { margin: .5rem 0 1rem; padding-left: 1.2rem; }
+  .lifecycle-text li { margin-bottom: .3rem; color: var(--text-soft); }
+  .enable-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 2.5rem; align-items: start; max-width: 900px; margin: 0 auto; }
+  .enable-code .guide-code-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+  .enable-code pre { margin: 0; }
+  @media (max-width: 768px) {
+    .lifecycle-explain-grid, .enable-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+    .plugin-features { grid-template-columns: 1fr; }
+    .plugin-header { flex-direction: column; }
+  }
+</style>

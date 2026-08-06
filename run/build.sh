@@ -1,0 +1,224 @@
+#!/usr/bin/env bash
+#
+# Spak Build Script
+# 构建所有 TypeScript 包，并尝试注册全局命令
+#
+
+set -e
+
+# Colors
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+BOLD='\033[1m'
+DIM='\033[2m'
+
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BUILD_LOG="$PROJECT_ROOT/.build.log"
+SPAK_VERSION=$(node -e "console.log(require('$PROJECT_ROOT/package.json').version)")
+
+echo ""
+echo -e "  ${CYAN}◇${NC}  ${BOLD}Spak Build${NC} ${DIM}v${SPAK_VERSION}${NC}"
+echo ""
+
+# Step 1: TypeScript Compilation
+# NOTE: The CLI entry (bin.js) requires lib/cli/index.js with the src/ prefix
+# stripped, so we compile the root project with `tsconfig.root.json`
+# (rootDir = src → outDir = lib). The default `tsconfig.json` uses rootDir = "."
+# and emits into lib/src/, which breaks `require('./lib/cli/index.js')`.
+echo -e "  ${CYAN}◇${NC}  Compiling TypeScript..."
+
+if pnpm tsc --build --force > "$BUILD_LOG" 2>&1; then
+  echo -e "  ${GREEN}✓${NC}  TypeScript compilation successful"
+else
+  echo -e "  ${RED}✗${NC}  TypeScript compilation failed"
+  cat "$BUILD_LOG"
+  rm -f "$BUILD_LOG"
+  exit 1
+fi
+
+rm -f "$BUILD_LOG"
+
+# Re-compile the root CLI with the correct rootDir so that bin.js can resolve
+# ./lib/cli/index.js. (build.sh used to mis-target lib/src/ via tsconfig.json.)
+if pnpm exec tsc --build "$PROJECT_ROOT/tsconfig.root.json" > "$BUILD_LOG" 2>&1; then
+  echo -e "  ${GREEN}✓${NC}  Root CLI compiled into lib/cli/"
+else
+  echo -e "  ${RED}✗${NC}  Root CLI compilation failed"
+  cat "$BUILD_LOG"
+  rm -f "$BUILD_LOG"
+  exit 1
+fi
+rm -f "$BUILD_LOG"
+
+# Compile the embedded spm (Spak Package Manager) project together with spak.
+# spm is an embedded project inside the source tree and is always built
+# alongside spak itself.
+if [ -d "$PROJECT_ROOT/spm/src" ]; then
+  if pnpm exec tsc -p "$PROJECT_ROOT/spm/tsconfig.json" > "$BUILD_LOG" 2>&1; then
+    echo -e "  ${GREEN}✓${NC}  Embedded spm compiled into spm/lib/"
+  else
+    echo -e "  ${RED}✗${NC}  Embedded spm compilation failed"
+    cat "$BUILD_LOG"
+    rm -f "$BUILD_LOG"
+    exit 1
+  fi
+  rm -f "$BUILD_LOG"
+fi
+
+# Step 1.5: Copy locale files for packages with locales
+for pkg in core apps; do
+  LOCALES_SRC="$PROJECT_ROOT/packages/$pkg/src/locales"
+  LOCALES_DST="$PROJECT_ROOT/packages/$pkg/lib/locales"
+  if [ -d "$LOCALES_SRC" ]; then
+    mkdir -p "$LOCALES_DST"
+    cp "$LOCALES_SRC"/*.yml "$LOCALES_DST" 2>/dev/null || true
+  fi
+  # Also check top-level locales dir
+  LOCALES_SRC2="$PROJECT_ROOT/packages/$pkg/locales"
+  if [ -d "$LOCALES_SRC2" ] && [ "$LOCALES_SRC2" != "$LOCALES_SRC" ]; then
+    mkdir -p "$LOCALES_DST"
+    cp "$LOCALES_SRC2"/*.yml "$LOCALES_DST" 2>/dev/null || true
+  fi
+done
+
+# Copy root package locales (src/locales → lib/locales)
+ROOT_LOCALES_SRC="$PROJECT_ROOT/src/locales"
+ROOT_LOCALES_DST="$PROJECT_ROOT/lib/locales"
+if [ -d "$ROOT_LOCALES_SRC" ]; then
+  mkdir -p "$ROOT_LOCALES_DST"
+  cp "$ROOT_LOCALES_SRC"/*.yml "$ROOT_LOCALES_DST" 2>/dev/null || true
+fi
+
+# Step 2: Global binary registration
+echo ""
+echo -e "  ${CYAN}◇${NC}  Registering spak command..."
+
+BIN_SOURCE="$PROJECT_ROOT/bin.js"
+BIN_TARGET_SYS="/usr/local/bin/spak"
+BIN_TARGET_USER="$HOME/.local/bin/spak"
+BIN_PROJECT_DIR="$PROJECT_ROOT/bin/spak"
+
+# Make the source executable so a symlink (or copy) works on every platform.
+chmod +x "$BIN_SOURCE"
+
+REGISTERED=""
+
+# Clean up stale/conflicting `spak` links from previous builds or package
+# managers (pnpm global, node_modules/.bin, dist). Otherwise an older broken
+# link earlier in $PATH shadows the freshly-built binary.
+cleanup_stale_spak() {
+  local stale
+  # 1) pnpm config global bin dir (e.g. ~/.local/share/pnpm/spak)
+  local pnpm_bin
+  pnpm_bin="$(pnpm bin -g 2>/dev/null || true)"
+  if [ -n "$pnpm_bin" ]; then
+    stale="$pnpm_bin/spak"
+    if [ -L "$stale" ] || [ -f "$stale" ]; then
+      rm -f "$stale" 2>/dev/null || true
+      echo -e "  ${DIM}  Removed stale global link: ${stale}${NC}"
+    fi
+  fi
+  # 2) local node_modules/.bin/spak
+  stale="$PROJECT_ROOT/node_modules/.bin/spak"
+  if [ -L "$stale" ] || [ -f "$stale" ]; then
+    rm -f "$stale" 2>/dev/null || true
+    echo -e "  ${DIM}  Removed stale link: ${stale}${NC}"
+  fi
+  # 3) previous dist fallback
+  stale="$PROJECT_ROOT/dist/spak"
+  if [ -f "$stale" ]; then
+    rm -f "$stale" 2>/dev/null || true
+    echo -e "  ${DIM}  Removed stale dist binary: ${stale}${NC}"
+  fi
+}
+
+# Helper: try to link a binary into a directory, returns 0 on success.
+# Usage: try_link <target> [source] [name]
+try_link() {
+  local target="$1"
+  local source="${2:-$BIN_SOURCE}"
+  local name="${3:-spak}"
+  if [ -w "$(dirname "$target")" ]; then
+    if [ -L "$target" ] || [ ! -e "$target" ]; then
+      ln -sf "$source" "$target" 2>/dev/null || return 1
+      echo -e "  ${GREEN}✓${NC}  Global command registered: ${DIM}${name}${NC} (${DIM}$target${NC})"
+      REGISTERED="$target"
+      return 0
+    fi
+  fi
+  return 1
+}
+
+# Always try to drop a copy into the project's own bin/ too.
+mkdir -p "$PROJECT_ROOT/bin" 2>/dev/null || true
+ln -sf "$BIN_SOURCE" "$BIN_PROJECT_DIR" 2>/dev/null || true
+
+# Register the embedded spm (Spak Package Manager) binary alongside spak.
+if [ -f "$PROJECT_ROOT/spm/lib/index.js" ]; then
+  SPM_SOURCE="$PROJECT_ROOT/spm/lib/index.js"
+  chmod +x "$SPM_SOURCE"
+  if try_link "/usr/local/bin/spm" "$SPM_SOURCE" "spm"; then
+    :
+  elif try_link "$HOME/.local/bin/spm" "$SPM_SOURCE" "spm"; then
+    :
+  fi
+  mkdir -p "$PROJECT_ROOT/bin" 2>/dev/null || true
+  ln -sf "$SPM_SOURCE" "$PROJECT_ROOT/bin/spm" 2>/dev/null || true
+fi
+
+# Check if we're in a virtual/container environment (no global writes at all)
+IN_VENV=false
+if [ -n "$CI" ] || [ -n "$CONTAINER" ] || [ -f "/.dockerenv" ]; then
+  IN_VENV=true
+fi
+
+if [ "$IN_VENV" = true ]; then
+  BUILD_OUTPUT="$PROJECT_ROOT/bin/spak"
+  mkdir -p "$PROJECT_ROOT/bin" 2>/dev/null || true
+  cp -f "$BIN_SOURCE" "$BUILD_OUTPUT" 2>/dev/null || true
+  chmod +x "$BUILD_OUTPUT" 2>/dev/null || true
+  cleanup_stale_spak
+  echo -e "  ${YELLOW}⚠${NC}  Virtual environment detected"
+  echo -e "  ${GREEN}✓${NC}  Binary installed to ${DIM}$BUILD_OUTPUT${NC}"
+  echo ""
+  echo -e "  ${DIM}  To use spak command, add to PATH or run:${NC}"
+  echo -e "  ${DIM}  export PATH=\"\$PATH:$PROJECT_ROOT/bin\"${NC}"
+else
+  cleanup_stale_spak
+  # Try the system bin first (most reliable global location on this host),
+  # fall back to user-local bin, then finally the project bin copy.
+  if try_link "$BIN_TARGET_SYS"; then
+    :
+  elif try_link "$BIN_TARGET_USER"; then
+    :
+  else
+    BUILD_OUTPUT="$PROJECT_ROOT/bin/spak"
+    mkdir -p "$PROJECT_ROOT/bin" 2>/dev/null || true
+    cp -f "$BIN_SOURCE" "$BUILD_OUTPUT" 2>/dev/null || true
+    chmod +x "$BUILD_OUTPUT" 2>/dev/null || true
+    echo -e "  ${YELLOW}⚠${NC}  Neither ${DIM}$BIN_TARGET_SYS${NC} nor ${DIM}$BIN_TARGET_USER${NC} are writable"
+    echo -e "  ${GREEN}✓${NC}  Binary copied to ${DIM}$BUILD_OUTPUT${NC}"
+    echo ""
+    echo -e "  ${DIM}  Use it directly or add to PATH:${NC}"
+    echo -e "  ${DIM}  export PATH=\"\$PATH:$PROJECT_ROOT/bin\"${NC}"
+  fi
+  # If we installed into ~/.local/bin, remind the user if it's not in PATH.
+  if [ -n "$REGISTERED" ] && [ "$REGISTERED" = "$BIN_TARGET_USER" ]; then
+    case ":$PATH:" in
+      *":$HOME/.local/bin:"*) ;;
+      *)
+        echo -e "  ${YELLOW}⚠${NC}  ${DIM}\$HOME/.local/bin${NC} is not currently in your \$PATH"
+        echo -e "  ${DIM}  Add this to your shell rc to use the 'spak' command globally:${NC}"
+        echo -e "  ${DIM}  export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
+        ;;
+    esac
+  fi
+fi
+
+# Done
+echo ""
+echo -e "  ${GREEN}◇${NC}  ${BOLD}Build complete${NC}"
+echo ""

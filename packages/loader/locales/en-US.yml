@@ -1,0 +1,12 @@
+spak.loader.applied: 'Plugin {name} loaded'
+spak.loader.applying: 'Applying plugin {name}'
+spak.loader.config_error: 'Error reading configuration: {error}'
+spak.loader.config_not_found: Config file not found
+spak.loader.config_read: 'Reading configuration from {path}'
+spak.loader.failed: 'Failed to load plugin {name}: {error}'
+spak.loader.reloaded: 'Plugin {name} reloaded'
+spak.loader.reloading: 'Reloading plugin {name}'
+spak.loader.searching: 'Searching for config: {path}'
+spak.loader.starting: Loading plugins...
+spak.loader.unloaded: 'Plugin {name} unloaded'
+spak.loader.unloading: 'Unloading plugin {name}'

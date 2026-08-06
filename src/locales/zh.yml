@@ -1,0 +1,101 @@
+# zh locale for spak CLI
+spak:
+  intro:
+    description: "多文件服务框架"
+  general:
+    error: "发生错误"
+  cli:
+    serve:
+      not_running: "Spak 服务未运行"
+      started: "Spak 服务已启动 (pid={pid})"
+      stopping: "正在关闭 Spak 服务... ({signal})"
+      start_failed: "启动 Spak 服务失败: {error}"
+    stop:
+      sent: "已发送 {signal} 信号到 Spak 服务 (pid={pid})"
+      failed: "停止 Spak 服务失败 (pid={pid}): {error}"
+    status:
+      title: "Spak 服务状态"
+      service: "服务"
+      pid_value: "  PID: {pid}"
+      port_value: "  端口: {port}"
+      uptime_value: "  运行时间: {uptime}"
+      plugins_value: "  插件数: {count}"
+      requests_value: "  请求数: {count}"
+      hardware: "硬件"
+      memory_value: "  内存: {used} / {total}"
+      free_value: "  可用: {free}"
+      load_value: "  负载: {load}"
+      cpu_value: "  CPU: {usage}"
+      platform_value: "  平台: {platform}"
+      environment: "环境"
+      host_value: "  主机: {host}"
+      node_value: "  Node: {version}"
+      log_value: "  日志: spak.log"
+      pid_file_value: "  PID文件: .spak.pid"
+      not_running: "Spak 服务未运行"
+    inject:
+      added: "已注入 @spakjs/i18n 依赖到 {pkg}"
+      created: "已为 {pkg} 创建 locales 目录"
+  cpc:
+    title: "插件安全检查 (CPC)"
+    help: |
+      CPC 命令:
+        spak cpc check          检查所有插件和包
+        spak cpc sandbox <名称> 在沙箱中隔离插件
+        spak cpc sandbox stop <名称> 停止沙箱中的插件
+        spak cpc ssetps         启动 SSetPS 监控
+        spak cpc circuit <名称> 触发熔断器
+        spak cpc circuit restore <名称> 恢复熔断器
+        spak cpc status         显示 CPC 状态
+    check:
+      starting: "正在检查插件和包..."
+      complete: "{valid}/{total} 项检查通过"
+    sandbox:
+      isolating: "正在隔离插件: {name}..."
+      isolated: "插件 {name} 已隔离 (pid={pid})"
+      terminated: "沙箱已终止 (pid={pid})"
+      usage_start: "用法: spak cpc sandbox <名称>"
+      usage_stop: "用法: spak cpc sandbox stop <名称>"
+      enabled: "沙箱已启用"
+      disabled_warning: "沙箱已禁用 — 插件将在无隔离环境下运行 (不安全!)"
+    ssetps:
+      monitoring: "SSetPS 监控已启动"
+      memory_warning: "内存使用率 {usage}%"
+      memory_cleaned: "GC 释放了 {freed}MB"
+      circuit_break: "已为 {name} 触发熔断器"
+      circuit_open: "{name} 熔断器已断开"
+      circuit_restored: "{name} 熔断器已恢复"
+      firewall_rule: "防火墙规则: {rule}"
+    test:
+      serve: "正在启动测试服务器..."
+      serve_running: "测试服务器运行在 {url}"
+      starting: "正在运行 CPC 测试..."
+      complete: "{pass}/{total} 项测试通过"
+    config:
+      not_available: "CPC 未启用。请在配置中设置 'cpc.enabled: true'"
+    process_isolation:
+      enabled: "进程隔离已启用"
+    status:
+      sandbox: "沙箱:"
+      circuit_breakers: "熔断器:"
+      ssetps: "SSetPS:"
+      active: "活跃"
+      inactive: "未活跃"
+      memory: "内存:"
+      unknown: "未知命令: {sub}"
+    circuit:
+      usage_restore: "用法: spak cpc circuit restore <名称>"
+      usage_trigger: "用法: spak cpc circuit <名称>"
+  ccmd:
+    config:
+      help: |
+        配置命令:
+          spak config list          列出所有配置
+          spak config get <键>     获取配置值
+          spak config set <键> <值>  设置配置值
+      get_usage: "用法: spak config get <键>"
+      key_not_found: "未找到键: {key}"
+      set_usage: "用法: spak config set <键> <值>"
+      language_invalid: "无效的语言: {lang}。你可以选择：{options}"
+      language_set: "语言已设置为: {lang}"
+      set_success: "已设置 {key} = {value}"

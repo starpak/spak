@@ -1,0 +1,215 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CopyButton from '../components/islands/CopyButton.vue';
+import TabSwitcher from '../components/islands/TabSwitcher.vue';
+
+const configYml = `name: my-spak-app
+
+plugins:
+  '@spakjs/plugin-server':
+    host: 0.0.0.0
+    port: 4321
+  '@spakjs/plugin-http': null
+  '@spakjs/plugin-daemon':
+    enabled: true
+    logFile: spak.log
+  '@spakjs/plugin-hmr': null  # 仅开发环境`;
+
+const serveCode = `# 默认启动（读取 ./spak.config.yml）
+spak serve
+
+# 指定配置文件
+spak serve ./config/prod.yml
+
+# 查看运行时状态
+spak status
+
+# 后台守护运行（依赖 plugin-daemon）
+spak serve --daemon`;
+
+const langCode = `# 切换为中文
+spak config set language zh
+
+# 切回英文
+spak config set language en
+
+# 查看当前配置
+spak config get`;
+
+const programmaticCode = `import { createApp } from 'spak';
+
+const app = createApp({
+  name: 'my-bot',
+  plugins: {
+    '@spakjs/plugin-server': { port: 4321 },
+  },
+});
+
+// 注册命令
+app.command('greet <name>', '打招呼')
+  .action(({ session }, name) => session.send(\`你好 \${name}！\`));
+
+// 中间件
+app.middleware((session, next) => {
+  console.log(session.text);
+  return next();
+});
+
+app.start();`;
+
+const envCode = `# .env
+SPAK_ENV=production
+SPAK_LOG_LEVEL=info
+SPAK_SERVER_PORT=8080
+
+# spak.config.yml 可引用
+plugins:
+  '@spakjs/plugin-server':
+    port: \${SPAK_SERVER_PORT}`;
+
+const bestPractices = [
+  { title: '生产用守护进程', desc: '生产环境务必启用 plugin-daemon，让进程脱离终端、日志落盘。', code: "spak serve --daemon" },
+  { title: 'i18n 从项目立项就用', desc: '后期接入 i18n 改造成本高，建议一开始就用 T() 包裹字符串。', code: "session.send(t('welcome'))" },
+  { title: '配置分层', desc: '用 .env 管理环境变量，spak.config.yml 管理插件结构，避免硬编码。', code: "port: ${SPAK_SERVER_PORT}" },
+  { title: '日志分级', desc: '开发用 debug，生产用 info，错误务必 file 落盘。', code: "logFile: spak.log" },
+];
+
+const installTabs = [
+  { id: 'pnpm', label: 'pnpm', code: '# 全局安装 CLI（推荐）\npnpm add -g spak\n\n# 或项目内安装\npnpm add spak' },
+  { id: 'npm', label: 'npm', code: '# 全局安装\nnpm install -g spak\n\n# 项目内安装\nnpm install spak' },
+  { id: 'yarn', label: 'yarn', code: '# 全局安装\nyarn global add spak\n\n# 项目内安装\nyarn add spak' },
+];
+
+const steps = [
+  { n: '01', title: '环境准备', desc: 'Node.js ≥ 18，pnpm ≥ 10。' },
+  { n: '02', title: '安装 Spak', desc: '通过任意包管理器安装。' },
+  { n: '03', title: '编写配置', desc: '创建 spak.config.yml。' },
+  { n: '04', title: '启动服务', desc: '执行 spak serve。' },
+];
+
+const toc = [
+  { id: 'install', label: '安装' },
+  { id: 'config', label: '配置' },
+  { id: 'run', label: '运行' },
+  { id: 'programmatic', label: '编程式启动' },
+  { id: 'env', label: '环境变量' },
+  { id: 'i18n', label: '国际化' },
+  { id: 'practices', label: '最佳实践' },
+];
+---
+<BaseLayout title="指南" description="Spak 安装、配置与运行指南。">
+  <section class="section guide-hero">
+    <div class="container">
+      <span class="eyebrow">使用指南</span>
+      <h1>从零开始</h1>
+      <p class="lead">四步把 Spak 跑起来，附编程式启动、环境变量与最佳实践。</p>
+    </div>
+  </section>
+
+  <!-- 步骤总览 -->
+  <section class="section section-alt" style="padding:3rem 0">
+    <div class="container">
+      <div class="grid grid-4 steps-grid reveal">
+        {steps.map((s) => (
+          <div class="card step-card"><span class="step-num">{s.n}</span><h3>{s.title}</h3><p class="text-soft" style="margin:0">{s.desc}</p></div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:2rem">
+    <div class="container guide-layout">
+      <!-- 目录侧边栏 -->
+      <aside class="toc">
+        <h4>本页目录</h4>
+        <ul>{toc.map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}</ul>
+      </aside>
+
+      <!-- 内容主体 -->
+      <div class="guide-content">
+        <!-- 安装 -->
+        <div id="install" class="guide-block reveal">
+          <div class="guide-text"><span class="badge">Step 01</span><h2>安装 Spak</h2><p>选择你喜欢的包管理器。下方是 <code>client:idle</code> 岛屿，空闲水合。</p><p class="text-muted">推荐全局安装 CLI，方便随时 <code>spak serve</code>。需要 Node.js ≥ 18、pnpm ≥ 10。</p></div>
+          <div class="guide-code"><TabSwitcher client:idle tabs={installTabs} /></div>
+        </div>
+
+        <!-- 配置 -->
+        <div id="config" class="guide-block reveal">
+          <div class="guide-text"><span class="badge">Step 02</span><h2>编写配置</h2><p>在项目根目录创建 <code>spak.config.yml</code>：</p><ul><li><code>name</code> — 应用名</li><li><code>plugins</code> — 插件映射，值为配置对象或 <code>null</code>（默认配置）</li></ul><p class="text-muted">配置由 <code>@spakjs/loader</code> 加载，支持 YAML / JSON，自动读取 .env。</p></div>
+          <div class="guide-code"><div class="guide-code-head"><span class="badge">spak.config.yml</span><CopyButton client:visible text={configYml} /></div><pre><code>{configYml}</code></pre></div>
+        </div>
+
+        <!-- 运行 -->
+        <div id="run" class="guide-block reveal">
+          <div class="guide-text"><span class="badge">Step 03</span><h2>启动服务</h2><p>执行 <code>spak serve</code>，彩色日志即时输出加载状态。</p><ul><li><code>spak serve</code> — 启动应用</li><li><code>spak status</code> — 查看运行时状态</li><li><code>spak config get/set</code> — 读写配置</li><li><code>spak cpc</code> — 命令面板</li></ul></div>
+          <div class="guide-code"><div class="guide-code-head"><span class="badge">bash</span><CopyButton client:visible text={serveCode} /></div><pre><code>{serveCode}</code></pre></div>
+        </div>
+
+        <!-- 编程式 -->
+        <div id="programmatic" class="guide-block reveal">
+          <div class="guide-text"><span class="badge">Advanced</span><h2>编程式启动</h2><p>不想用 CLI？也可以在代码里启动 Spak：</p><p class="text-muted">适合需要嵌入到其他 Node 进程、或做集成的场景。</p></div>
+          <div class="guide-code"><div class="guide-code-head"><span class="badge">TypeScript</span><CopyButton client:visible text={programmaticCode} /></div><pre><code>{programmaticCode}</code></pre></div>
+        </div>
+
+        <!-- 环境变量 -->
+        <div id="env" class="guide-block reveal">
+          <div class="guide-text"><span class="badge">Env</span><h2>环境变量</h2><p>Spak 自动读取项目根的 <code>.env</code> 文件，配置文件中可用 <code>{'${VAR}'}</code> 引用。</p><p class="text-muted">由 <code>@spakjs/loader</code> 处理，遵循 dotenv 规范。</p></div>
+          <div class="guide-code"><div class="guide-code-head"><span class="badge">.env</span><CopyButton client:visible text={envCode} /></div><pre><code>{envCode}</code></pre></div>
+        </div>
+
+        <!-- i18n -->
+        <div id="i18n" class="guide-block reveal">
+          <div class="guide-text"><span class="badge">i18n</span><h2>切换语言</h2><p>Spak 内置中英文 i18n，一行切换：</p><p class="text-muted">由 <code>@spakjs/i18n</code> 提供 locale 树 + 回退算法 + yml 加载器。</p></div>
+          <div class="guide-code"><div class="guide-code-head"><span class="badge">bash</span><CopyButton client:visible text={langCode} /></div><pre><code>{langCode}</code></pre></div>
+        </div>
+
+        <!-- 最佳实践 -->
+        <div id="practices" class="guide-block practices-block">
+          <div class="guide-text"><span class="badge">Pro</span><h2>最佳实践</h2><p>来自实际项目踩坑总结，少走弯路。</p></div>
+          <div class="practices-grid">
+            {bestPractices.map((p) => (
+              <div class="card practice-card">
+                <h3>{p.title}</h3>
+                <p class="text-soft">{p.desc}</p>
+                <pre><code>{p.code}</code></pre>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .guide-hero { padding: 3rem 0 1rem; }
+  .steps-grid { margin-top: 0; }
+  .step-card { text-align: left; }
+  .step-num { display: inline-block; font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; color: var(--brand-600); margin-bottom: .5rem; }
+  [data-theme='dark'] .step-num { color: var(--brand-300); }
+  .guide-layout { display: grid; grid-template-columns: 200px 1fr; gap: 3rem; align-items: start; }
+  .toc { position: sticky; top: calc(var(--header-h) + 24px); }
+  .toc h4 { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: .75rem; }
+  .toc ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: .35rem; }
+  .toc a { color: var(--text-soft) !important; font-size: .9rem; padding: .3em .6em; border-radius: var(--radius-xs); display: block; transition: all .15s ease; }
+  .toc a:hover { color: var(--brand-600) !important; background: var(--brand-50); }
+  [data-theme='dark'] .toc a:hover { background: rgba(139,92,246,.1); }
+  .guide-block { display: grid; grid-template-columns: 1fr 1.3fr; gap: 2.5rem; align-items: start; margin-bottom: 4rem; padding-bottom: 4rem; border-bottom: 1px solid var(--border); }
+  .guide-block:last-child { border-bottom: none; }
+  .guide-text h2 { margin-top: .5rem; }
+  .guide-text ul { margin: .5rem 0 1rem; padding-left: 1.2rem; }
+  .guide-text li { margin-bottom: .3rem; color: var(--text-soft); }
+  .guide-code-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .5rem; }
+  .guide-code pre { margin: 0; }
+  .practices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .practice-card h3 { font-size: 1rem; }
+  .practice-card pre { font-size: .75rem; margin: .75rem 0 0; padding: .8rem 1rem; }
+  @media (max-width: 900px) {
+    .guide-layout { grid-template-columns: 1fr; }
+    .toc { position: static; margin-bottom: 1rem; }
+    .toc ul { flex-direction: row; flex-wrap: wrap; }
+  }
+  @media (max-width: 768px) {
+    .guide-block { grid-template-columns: 1fr; gap: 1.5rem; }
+    .practices-grid { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,55 @@
+# === 依赖相关 ===
+node_modules/
+.pnpm-store/
+
+# === 构建输出 ===
+lib/
+dist/
+*.tsbuildinfo
+*.tsbuildinfo.*
+build/
+
+# === 系统文件 ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# === 编辑器 ===
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# === 环境变量 ===
+.env
+.env.local
+.env.*.local
+
+# === 测试覆盖率 ===
+coverage/
+.nyc_output/
+
+# === 日志 ===
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === 临时文件 ===
+.tmp/
+.temp/
+tmp/
+temp/
+
+# === 运行时生成 ===
+.spak/
+.spak.pid
+
+# === 废弃包 ===
+packages/utils/
+packages/web/
+
+# === 其他 ===
+CODE_REVIEW.md

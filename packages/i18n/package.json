@@ -1,0 +1,26 @@
+{
+  "name": "@spakjs/i18n",
+  "description": "Spak I18n - Locale tree + fallback utilities + yml-based translation loader",
+  "version": "0.0.7",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "author": "Spak Team",
+  "license": "MIT",
+  "keywords": [
+    "spak",
+    "i18n",
+    "internationalization",
+    "locale",
+    "translation"
+  ],
+  "dependencies": {
+    "cosmokit": "^1.8.1",
+    "js-yaml": "^4.1.0",
+    "@spakjs/core": "workspace:^",
+    "@spakjs/config": "workspace:^"
+  }
+}
