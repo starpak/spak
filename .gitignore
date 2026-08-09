@@ -1,55 +1,452 @@
-# === 依赖相关 ===
+```
+# Dependencies
 node_modules/
-.pnpm-store/
 
-# === 构建输出 ===
-lib/
+# Build outputs
 dist/
-*.tsbuildinfo
-*.tsbuildinfo.*
 build/
+target/
 
-# === 系统文件 ===
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-*~
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.ENV.local
 
-# === 编辑器 ===
-.idea/
-.vscode/
-*.sublime-workspace
-*.sublime-project
+# Logs
+*.log
 
-# === 环境变量 ===
+# Environment variables
 .env
 .env.local
-.env.*.local
+.env.*
 
-# === 测试覆盖率 ===
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Coverage
 coverage/
-.nyc_output/
+htmlcov/
+.coverage
 
-# === 日志 ===
-*.log
+# OS
+.DS_Store
+Thumbs.db
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+
+# Testing
+.mypy_cache/
+.pytest_cache/
+.nyc_output/
+coverage/
+
+# Node.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# === 临时文件 ===
-.tmp/
-.temp/
-tmp/
-temp/
+# TypeScript
+*.tsbuildinfo
+.next/
+.nuxt/
 
-# === 运行时生成 ===
-.spak/
-.spak.pid
+# Java
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+build/
 
-# === 废弃包 ===
-packages/utils/
-packages/web/
+# C/C++
+*.o
+*.a
+*.so
+*.dll
+*.exe
+*.out
 
-# === 其他 ===
-CODE_REVIEW.md
+# Go
+*.o
+*.a
+*.so
+*.exe
+*.out
+coverage.out
+
+# Rust
+*.o
+*.a
+*.so
+*.dll
+*.exe
+*.out
+target/
+
+# Ruby
+*.gem
+*.rbc
+.bundle/
+vendor/bundle/
+
+# PHP
+*.phar
+vendor/
+
+# Julia
+julia-*/
+
+# Zig
+zig-out/
+
+# MyPy
+.mypy_cache/
+
+# PyTest
+.pytest_cache/
+
+# Coverage
+coverage.xml
+coverage/
+
+# Docker
+.dockerenv
+Dockerfile*
+
+# Bazel
+bazel-*
+
+# CMake
+CMakeFiles/
+cmake_install.manifest
+CMakeCache.txt
+
+# Meson
+meson-private/
+meson.build
+
+# SCons
+.sconsign.dblite
+.sconf_temp/
+config.log
+
+# Vagrant
+.vagrant/
+
+# Ansible
+.retry/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Kubernetes
+.kube/
+
+# AWS
+.aws/
+
+# Azure
+.azure/
+
+# Google Cloud
+.gcloud/
+
+# Heroku
+.heroku/
+
+# Netlify
+.netlify/
+
+# Vercel
+.vercel/
+
+# Railway
+.railway/
+
+# Railway
+.rw-cache/
+
+# Expo
+.expo/
+
+# React Native
+.rncache/
+
+# Ionic
+.ionic/
+
+# Cordova
+.cordova/
+
+# Capacitor
+.capacitor/
+
+# Electron
+electron-build/
+
+# NW.js
+nwjs-build/
+
+# Tauri
+tauri/
+
+# Flutter
+.dart_tool/
+.flutter-plugins/
+.flutter-plugin-dependencies
+.packages
+build/
+ios/.symlinks/
+flutter/
+
+# Dart
+.dart_tool/
+.pub/
+build/
+
+# Elixir
+.erlang.cookie
+.elixir_history
+deps/
+_*
+ebin/
+lib/
+priv/repo/migrations/
+
+# Erlang
+.erlang.cookie
+.eunit/
+*.beam
+*.app.src.swp
+
+# Haskell
+.cabal-sandbox/
+*dist/
+*dist-*
+cabal-dev/
+*.o
+*.hi
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_hi
+
+# Elm
+elm-stuff/
+*.elmi
+*.elmo
+
+# PureScript
+.output/
+.psc-package/
+spago.dhall
+spago-packages.dhall
+
+# Scala
+.classpath
+.project
+.scala_dependencies
+.scala_history
+.DS_Store
+*.lock
+.libs/
+.libs.bak/
+target/
+
+# Clojure
+pom.xml.asc*
+pom.xml.tag
+.classpath
+.project
+.clj-kondo/
+
+# Lisp
+*.fasl
+*.lbin
+*.dfsl
+*.pfsl
+*.ddep
+*.ddir
+*.dir
+*.dvi
+*.toc
+
+# OCaml
+*.byte
+*.native
+*.cmx
+*.cmxa
+*.cmi
+*.cmo
+*.cma
+*.cmx
+*.cmxa
+*.cmt
+*.cmti
+*.annot
+*.spot
+*.spit
+*.p.c
+*.pp.c
+*.p.o
+*.p.obj
+*.p.exe
+*.p.dll
+*.p.so
+*.p.a
+*.p.dylib
+*.p.lib
+*.p.res
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p.iobj
+*.p.ipdb
+*.p.tlog
+*.p.log
+*.p.pdb
+*.p.ilk
+*.p.exp
+*.p.ilk
+*.p......
+```

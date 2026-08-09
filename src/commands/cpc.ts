@@ -351,7 +351,8 @@ function startSSetPS(overrideLimitMB?: number): void {
   if (ssetpsInterval) return
   currentMemoryLimitMB = resolveMemoryLimitMB(overrideLimitMB)
   console.log(kleur.cyan(`  ${T('spak.cpc.ssetps.monitoring')} ${kleur.dim(`(limit=${currentMemoryLimitMB}MB)`)}`))
-  if (!global.gc && !gcHintShown) {
+  // Check if global.gc is available (--expose-gc flag required)
+  if (typeof global.gc !== 'function' && !gcHintShown) {
     gcHintShown = true
     console.log(kleur.yellow(T('spak.cpc.ssetps.tip')))
   }
@@ -365,7 +366,8 @@ function startSSetPS(overrideLimitMB?: number): void {
     if (usagePercent > 80) {
       console.log(kleur.yellow(`  ${T('spak.cpc.ssetps.memory_warning', { usage: usagePercent.toFixed(1) })} ${kleur.dim(`[rss=${rssMB.toFixed(0)}/${limitMB}MB]`)}`))
 
-      if (global.gc) {
+      // Check if global.gc is available (--expose-gc flag required)
+      if (typeof global.gc === 'function') {
         const before = process.memoryUsage().rss
         global.gc()
         const after = process.memoryUsage().rss
@@ -404,8 +406,28 @@ function restoreCircuitBreaker(pluginName: string): void {
   console.log(kleur.green(`  ${T('spak.cpc.ssetps.circuit_restored', { name: pluginName })}`))
 }
 
+/**
+ * Apply a firewall rule to control network access.
+ * Rules are in the format: 'action: target' where action is 'allow' or 'deny'
+ * and target can be 'localhost', 'external', or a specific IP/port.
+ * 
+ * Note: This is a stub implementation. For production use, integrate with
+ * Node.js net module or a firewall library.
+ */
 function applyFirewallRule(rule: string): void {
+  // Parse rule format: "action: target" (e.g., "allow localhost", "deny external")
+  const match = rule.match(/^(allow|deny):\s*(.+)$/i)
+  if (!match) {
+    console.log(kleur.yellow(`  ⚠ ${T('spak.cpc.ssetps.firewall_rule_invalid', { rule })}`))
+    return
+  }
+  
+  const [, action, target] = match
   console.log(kleur.cyan(`  ${T('spak.cpc.ssetps.firewall_rule', { rule })}`))
+  
+  // TODO: Implement actual firewall logic using Node.js net module
+  // For now, just log the rule as a placeholder
+  // Example implementation would intercept net.connect() calls
 }
 
 // ====== Test Suite ======
@@ -614,5 +636,8 @@ const cpcDeclarations: CommandDeclaration[] = [
     action: () => { ensureAvailable(); cpcAction({ command: 'status', name: '', action: '' }, {}); },
   },
 ]
+
+// Export circuit breaker state and control functions for use by loader
+export { circuitBreakers, triggerCircuitBreaker, restoreCircuitBreaker }
 
 export default cpcDeclarations

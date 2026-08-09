@@ -95,7 +95,10 @@ export class Permissions {
       try {
         return await check(data, session)
       } catch (error) {
-        logger.warn(error)
+        // Log full error details for debugging while denying access
+        logger.warn('Permission check failed for', name, ':', error)
+        // Security: on error, deny access rather than allowing it
+        // This prevents attackers from triggering errors to bypass checks
         return false
       }
     }))
