@@ -22,7 +22,7 @@ We only provide security support for the latest release. Please make sure you ar
 
 Please report security vulnerabilities privately through one of these channels:
 
-1. **Send an email to:** [INSERT EMAIL ADDRESS]
+1. **Send an email to:** security@spakjs.org (or use GitHub Security Advisory below)
 2. **Or via GitHub Security Advisory:** Click `Security` → `Report a vulnerability` on the repository page
 
 ### Information We'd Like

@@ -57,6 +57,7 @@ export type {
   CommandOption,
 } from '@spakjs/util'
 
+import { Context } from '@spakjs/core'
 import { init as initI18n, setLanguage } from '@spakjs/i18n'
 import { logStartup } from '@spakjs/log'
 import { version } from '../package.json'
@@ -88,7 +89,7 @@ export interface CreateAppOptions {
  * await app.start()
  * ```
  */
-export async function createApp(options: CreateAppOptions = {}): Promise<any> {
+export async function createApp(options: CreateAppOptions = {}): Promise<Context> {
   const { config, language, host, port, env } = options
   if (env) Object.assign(process.env, env)
   if (host) process.env.SPAK_HOST = host
@@ -101,9 +102,9 @@ export async function createApp(options: CreateAppOptions = {}): Promise<any> {
   // =============================================================
   runModuleWhitelistCheck(true)
 
-  const loaderModule: any = await import('@spakjs/loader')
+  const loaderModule = await import('@spakjs/loader')
   const NodeLoader = loaderModule.default ?? loaderModule
-  const loader: any = new NodeLoader()
+  const loader = new NodeLoader() as typeof loaderModule.default
   await loader.init(config)
   await loader.readConfig(true)
 
