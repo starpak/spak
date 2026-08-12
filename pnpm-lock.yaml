@@ -49,17 +49,32 @@ importers:
         specifier: ^5.6.2
         version: 5.9.3
 
-  packages/config:
+  packages/agent:
     dependencies:
-      '@spakjs/i18n':
+      '@spakjs/core':
         specifier: workspace:^
-        version: link:../i18n
+        version: link:../core
+      '@spakjs/log':
+        specifier: workspace:^
+        version: link:../log
+      '@spakjs/message':
+        specifier: workspace:^
+        version: link:../message
+      '@spakjs/util':
+        specifier: workspace:^
+        version: link:../util
+    devDependencies:
+      '@types/node':
+        specifier: ^26.1.1
+        version: 26.1.2
+      typescript:
+        specifier: ^5.6.2
+        version: 5.9.3
+
+  packages/config: {}
 
   packages/core:
     dependencies:
-      '@spakjs/i18n':
-        specifier: workspace:^
-        version: link:../i18n
       '@spakjs/message':
         specifier: workspace:^
         version: link:../message
@@ -91,9 +106,6 @@ importers:
       '@spakjs/core':
         specifier: workspace:^
         version: link:../core
-      '@spakjs/i18n':
-        specifier: workspace:^
-        version: 'link:'
       cosmokit:
         specifier: ^1.8.1
         version: 1.8.1
@@ -140,9 +152,6 @@ importers:
 
   packages/util:
     dependencies:
-      '@spakjs/i18n':
-        specifier: workspace:^
-        version: link:../i18n
       cosmokit:
         specifier: ^1.8.1
         version: 1.8.1

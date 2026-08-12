@@ -1,4 +1,3 @@
-```
 # Dependencies
 node_modules/
 
@@ -6,6 +5,7 @@ node_modules/
 dist/
 build/
 target/
+lib/
 
 # TypeScript
 *.tsbuildinfo
@@ -14,6 +14,7 @@ out/
 # Logs and temp files
 *.log
 *.tmp
+*.pid
 
 # Environment variables
 .env
@@ -31,5 +32,3 @@ __pycache__/
 *.pyd
 .venv/
 venv/
-.env
-```

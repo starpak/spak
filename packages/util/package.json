@@ -13,7 +13,6 @@
   "license": "MIT",
   "dependencies": {
     "cosmokit": "^1.8.1",
-    "inaba": "^1.1.1",
-    "@spakjs/i18n": "workspace:^"
+    "inaba": "^1.1.1"
   }
 }

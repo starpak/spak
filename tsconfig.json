@@ -23,5 +23,7 @@
     { "path": "packages/i18n" },
     // Plugin/config loader — depends on core + i18n + config
     { "path": "packages/loader" },
+    // LLM agent module — depends on core + util + message + log
+    { "path": "packages/agent" },
   ]
 }

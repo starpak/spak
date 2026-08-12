@@ -6,7 +6,7 @@
   "types": "lib/index.d.ts",
   "exports": {
     ".": {
-      "types": "./lib/index.js",
+      "types": "./lib/index.d.ts",
       "node": {
         "require": "./lib/index.js",
         "import": "./lib/index.js"
@@ -14,7 +14,7 @@
       "browser": "./lib/shared.js"
     },
     "./shared": {
-      "types": "./lib/shared.js",
+      "types": "./lib/shared.d.ts",
       "require": "./lib/shared.js",
       "import": "./lib/shared.js"
     },

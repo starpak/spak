@@ -102,9 +102,11 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Context
   // =============================================================
   runModuleWhitelistCheck(true)
 
-  const loaderModule = await import('@spakjs/loader')
-  const NodeLoader = loaderModule.default ?? loaderModule
-  const loader = new NodeLoader() as typeof loaderModule.default
+  // Normalize ESM / CJS / named-export shapes so that `new NodeLoader()` always
+  // works regardless of how the loader module is bundled (mirrors start.ts).
+  const mod: any = await import('@spakjs/loader')
+  const NodeLoader = (mod as any).default?.default ?? (mod as any).default ?? (mod as any).NodeLoader ?? mod
+  const loader = new (NodeLoader as any)()
   await loader.init(config)
   await loader.readConfig(true)
 

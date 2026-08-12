@@ -21,7 +21,6 @@
     "cosmokit": "^1.8.1",
     "js-yaml": "^4.1.0",
     "@spakjs/core": "workspace:^",
-    "@spakjs/config": "workspace:^",
-    "@spakjs/i18n": "workspace:^"
+    "@spakjs/config": "workspace:^"
   }
 }
