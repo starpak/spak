@@ -11,8 +11,6 @@
 - 友好双语 `spak` 介绍横幅
 - `spak -v` 彩色版本号输出
 - 内嵌 `spm`（Spak 专属包管理器）项目随 spak 一同编译
-- `.pak` 单文件应用包格式（类 APK）+ `spm pack` 命令
-- server 从 `~/.spak/.apps` 加载 `.pak` 应用
 
 ### 🔧 修复
 - `bin.js` 权限 / 陈旧链接解析问题

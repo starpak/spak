@@ -62,12 +62,9 @@
 - [ ] 修复 `spak serve` 启动/停止输出不受 locales 影响：`spak.cli.serve.started` / `spak.cli.serve.stopping` 显示未翻译 key，需确保 serve 的 T() 走 i18n 中文翻译
 - [ ] 修复 `[E] app cannot resolve plugin "server"`：`spak serve` 时 loader 仍尝试加载 `server` 插件，需清除配置残留（spak.config.yml / ~/.spak/config.json / 默认 config）
 - [ ] 清点并翻译所有未翻译的 i18n key（逐个核对 zh.yml 覆盖）
-- [ ] server（`.apps/server`）加载 `.pak` 后，`GET /assets/*` 等资源路径从内存文件服务正常返回（当前资源 404 问题待排查）
 
 ## 后续任务列表（待开始）
 
-- [ ] 实现 apps 模块 = 进程/生命周期管理：管理所有 app 生命周期，server 作为底层扩展注册其中
-- [ ] `.pak` 部署到 `~/.spak/.apps` 后，server 端到端验证完整跑通（desktop 桌面页面 + 资源）
 - [ ] 所有可自定义内容迁移到 `~/.spak`（不在项目源码硬编码）；源码 `src/` 目录内需含 `locales/` 目录
 - [ ] 用户可见输出禁止硬编码，全部走 locales 国际化
 

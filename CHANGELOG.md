@@ -13,8 +13,6 @@
 - Friendly bilingual `spak` intro banner
 - Colorized `spak -v` version output
 - Embedded `spm` (Spak Package Manager) project built alongside spak
-- `.pak` single-file app package format (APK-like) + `spm pack` command
-- Server loads `.pak` apps from `~/.spak/.apps`
 
 ### 🔧 Fixes
 - `bin.js` permission / stale-link resolution issues on build
