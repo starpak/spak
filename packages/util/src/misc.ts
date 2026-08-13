@@ -50,6 +50,31 @@ export function renameProperty<O extends object, K extends keyof O, T extends st
   Reflect.deleteProperty(config, oldKey)
 }
 
+export function makeArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value]
+}
+
+export const Random = {
+  int: (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min,
+  float: (min: number, max: number) => Math.random() * (max - min) + min,
+}
+
+export type Dict = Record<string, any>
+
+export function isNullable(value: any): boolean {
+  return value == null
+}
+
+export function valueMap<K extends string, V>(obj: Record<string, V>, fn: (value: V, key: K) => V): Record<string, V> {
+  const result: any = {}
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      result[key] = fn(obj[key], key as unknown as K)
+    }
+  }
+  return result
+}
+
 type Methods<T> = {
   [K in keyof T]?: T[K] extends (...args: infer A) => infer R ? (this: T, ...args: A) => R : T[K]
 }

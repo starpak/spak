@@ -1,10 +1,9 @@
-import Random from 'inaba'
+/**
+ * Spak Util - Utility functions
+ */
 
-export { is as isType } from 'cosmokit'
-export { Random }
-
-export * from 'cosmokit'
-export * from './misc'
 export * from './observe'
+export * from './interpolation'
 export * from './string'
+export * from './misc'
 export * from './command'

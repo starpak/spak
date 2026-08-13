@@ -141,7 +141,7 @@ export abstract class Loader {
   public filename: string
   public envFiles: string[]
   public names = new Set<string>()
-  public cache: Dict<string> = Object.create(null)
+  public cache: Dict = Object.create(null)
   public prolog: Logger.Record[] = []
 
   private store = new WeakMap<any, string>()

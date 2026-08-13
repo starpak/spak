@@ -38,6 +38,22 @@ export interface LogRecord {
   time: Date
 }
 
+// ===== Debug Mode =====
+/** Global debug mode flag. When true, logs include full timestamp, scope, and detailed info. */
+let _debugMode = false
+let _initialized = false
+
+export function isDebugMode(): boolean {
+  return _debugMode
+}
+
+export function setDebugMode(enabled: boolean): void {
+  _debugMode = enabled
+  if (!_initialized) {
+    initFormatter()
+  }
+}
+
 // ===== Formatter =====
 export type Formatter = (record: LogRecord) => string
 
@@ -58,6 +74,13 @@ export function defaultFormatter(record: LogRecord): string {
   const scope = record.scope ? `[${record.scope}]` : ''
   const args = record.args.length ? ' ' + record.args.map(formatArg).join(' ') : ''
   return `${time} ${level} ${scope} ${record.message}${args}`
+}
+
+/** Simple formatter (CLI mode): `[I] message` or `[W] message` */
+export function simpleFormatter(record: LogRecord): string {
+  const level = (LEVEL_NAMES[record.level] || 'LOG').padStart(2, ' ')
+  const prefix = `[${level}]`
+  return `${prefix} ${record.message}`
 }
 
 // ANSI escapes (no kleur dependency — keeps the package self-contained).
@@ -109,6 +132,28 @@ export class ConsoleTransport extends Transport {
     } else {
       process.stdout.write(text)
     }
+  }
+}
+
+// Global formatter selection
+let _globalFormatter = simpleFormatter
+
+export function getGlobalFormatter(): Formatter {
+  return _globalFormatter
+}
+
+export function setGlobalFormatter(formatter: Formatter): void {
+  _globalFormatter = formatter
+}
+
+// Initialize global formatter (will be set by CLI on startup)
+export function initFormatter(): void {
+  // Default to simple formatter (normal mode)
+  // Debug mode is set via setDebugMode() which will be called by CLI
+  if (isDebugMode()) {
+    _globalFormatter = defaultFormatter
+  } else {
+    _globalFormatter = simpleFormatter
   }
 }
 

@@ -12,6 +12,11 @@ import configDeclarations from '../commands/config'
 import cpcDeclarations from '../commands/cpc'
 import { version } from '../../package.json'
 import { T } from '@spakjs/i18n'
+import { setGlobalFormatter, simpleFormatter, setDebugMode } from '@spakjs/log'
+
+// Initialize CLI logger with simple formatter (normal mode)
+setGlobalFormatter(simpleFormatter)
+
 const cli = cac('spak').help().version(version)
 
 // Collect all package command declarations

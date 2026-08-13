@@ -210,6 +210,7 @@ spak:
       language_invalid: "无效的语言: {lang}。你可以选择：{options}"
       language_set: "语言已设置为: {lang}"
       set_success: "已设置 {key} = {value}"
+      memory_limit_invalid: "内存限制必须是有效的数字"
 
   # --- Server 模块 (src/locales) ---
   server:

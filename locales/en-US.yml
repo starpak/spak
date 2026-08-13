@@ -210,6 +210,7 @@ spak:
       language_invalid: "Invalid language: {lang}. You can choose: {options}"
       language_set: "Language set to: {lang}"
       set_success: "Set {key} = {value}"
+      memory_limit_invalid: "Memory limit must be a valid number"
 
   # --- Server module (src/locales) ---
   server:

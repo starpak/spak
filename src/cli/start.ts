@@ -7,6 +7,7 @@ import { CommandDeclaration } from './types'
 // cpc.enabled. This is intentional — loading untrusted modules must be
 // blocked at the framework level before ANY user plugin code runs.
 import { runModuleWhitelistCheck } from '../commands/cpc'
+import { setDebugMode, getGlobalFormatter, simpleFormatter, defaultFormatter } from '@spakjs/log'
 
 process.env.SPAK_SHARED = JSON.stringify({
   startTime: Date.now(),
@@ -96,6 +97,14 @@ async function injectLanguageDeps() {
 }
 
 async function startService(file?: string) {
+  // ==================================================================
+  // DEBUG MODE — Enable detailed logging if requested
+  // ==================================================================
+  const isDebug = process.env.SPAK_DEBUG === 'true' || process.env.SPAK_LOG_TIME
+  if (isDebug) {
+    setDebugMode(true)
+  }
+
   await savePid(process.pid)
 
   // ==================================================================
@@ -110,8 +119,14 @@ async function startService(file?: string) {
   const mod: any = await import('@spakjs/loader')
   const NodeLoader = (mod as any).default?.default ?? (mod as any).default ?? (mod as any).NodeLoader ?? mod
   const loader = new (NodeLoader as any)()
-  await loader.init(file)
-  await loader.readConfig(true)
+
+  try {
+    await loader.init(file)
+    await loader.readConfig(true)
+  } catch (err: any) {
+    console.error(`[CLI] readConfig failed: ${err.stack || err.message}`)
+    throw err
+  }
 
   // Host/port env overrides are applied directly via process.env
   // (SPAK_HOST / SPAK_PORT), consumed by server plugins.
@@ -242,15 +257,22 @@ const serveDeclarations: CommandDeclaration[] = [
       const file = args.file
       const { logLevel, debug, logTime, host, port, stop, restart, kill, noSandbox } = options
 
-      if (kill) { await killService(); return }
-      if (stop) { await stopService(); return }
-      if (restart) {
-        await stopService('SIGTERM')
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        try { await unlink(PID_FILE) } catch {}
-      }
+       if (kill) { await killService(); return }
+       if (stop) { await stopService(); return }
+       if (restart) {
+         await stopService('SIGTERM')
+         await new Promise(resolve => setTimeout(resolve, 1000))
+         try { await unlink(PID_FILE) } catch {}
+       }
 
-      if (noSandbox) process.env.SPAK_NO_SANDBOX = '1'
+       if (noSandbox) process.env.SPAK_NO_SANDBOX = '1'
+
+       // Enable debug mode if log.debug is set
+       if (options.debug === 'true') {
+         setDebugMode(true)
+       }
+
+       process.env.SPAK_LOG_TIME = logTime || ''
 
       process.env.SPAK_LOG_TIME = logTime || ''
       process.env.SPAK_LOG_LEVEL = logLevel || ''

@@ -59,6 +59,16 @@ const configCommands: CommandDeclaration[] = [
         console.log(kleur.green(T('spak.ccmd.config.language_set', { lang: args.value })))
         return
       }
+      // Type validation for specific config keys
+      if (args.key === 'cpc.ssetps.memoryLimitMB') {
+        if (!args.value || isNaN(Number(args.value))) {
+          console.log(kleur.red(T('spak.ccmd.config.memory_limit_invalid')))
+          return
+        }
+        setConfig(args.key, Number(args.value))
+        console.log(kleur.green(T('spak.ccmd.config.set_success', { key: args.key, value: String(Number(args.value)) })))
+        return
+      }
       let parsedValue: any = args.value
       try { parsedValue = JSON.parse(args.value) } catch {}
       setConfig(args.key, parsedValue)

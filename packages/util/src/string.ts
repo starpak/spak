@@ -38,3 +38,7 @@ export function escapeRegExp(source: string) {
     .replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
     .replace(/-/g, '\\x2d')
 }
+
+export function hyphenate(text: string) {
+  return text.replace(/[A-Z]/g, '-$&').toLowerCase().replace(/^-/, '')
+}
