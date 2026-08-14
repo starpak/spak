@@ -1,7 +1,7 @@
 {
   "name": "@spakjs/message",
   "description": "Spak Message - VDOM helpers (h, Fragment, parse, escape) for Spak",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

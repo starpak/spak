@@ -2,14 +2,24 @@
 
 > A multi-file service project framework based on Koishi
 
-> **Framework Version**: v0.0.8
+> **Framework Version**: v0.1.0
 > **中文版**: [README.zh.md](README.zh.md)
 
 ---
 
 ## What is Spak?
 
-**Spak** is a **multi-file service project framework** built on top of [Koishi](https://koishi.chat/). It provides a structured way to organize plugin-based applications with built-in support for configuration management, internationalization, CLI tooling, service orchestration, and an independent logging system.
+**Spak** is a **enterprise-grade AI Agent platform** (v0.1.0) built on top of [Koishi](https://koishi.chat/). It provides a complete framework for developing, deploying, and managing AI Agents with built-in support for:
+
+- ✨ **Agent SDK** - Enterprise-grade AI Agent development framework
+- 🧰 **Tool System** - Rich tool ecosystem with permission control
+- 🌐 **Provider System** - Support for OpenAI, Anthropic, Google, and more
+- 📋 **Template System** - Pre-built Agent templates for quick start
+- 📊 **Metrics & Monitoring** - Comprehensive metrics collection and monitoring
+- 🎛️ **Configuration Management** - Centralized configuration management
+- 🌍 **i18n** - Multi-language support (zh/en)
+- 🖥️ **CLI Tooling** - User-friendly CLI commands
+- 📝 **Independent Logging** - Multi-transport logging system
 
 Spak uses **TypeScript** with a **pnpm monorepo** architecture.
 
@@ -19,7 +29,7 @@ Spak uses **TypeScript** with a **pnpm monorepo** architecture.
 
 | Package | Description |
 |---------|-------------|
-| `@spakjs/core` 🧠 | Core framework: commands, middleware, i18n, permissions, schemas, session management |
+| `@spakjs/core` 🧠 | **Agent SDK**: Complete AI Agent development framework with management, tools, providers, templates, and metrics. |
 | `@spakjs/cli` 🎮 | CLI entry point: `spak serve`, `spak config`, `spak cpc`, `spak status`. All outputs are colorized and human-friendly. |
 | `@spakjs/loader` 📂 | Config loader, supports YAML/JSON. Handles env files, plugin resolution and lifecycle. |
 | `@spakjs/config` ⚙️ | Central configuration manager, persists to `~/.spak/config.json`. |

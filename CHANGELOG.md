@@ -6,6 +6,48 @@
 
 ---
 
+## [0.1.0] — 2026-08-13 🚀
+
+### ✨ Features
+- **完整的 Agent SDK** - 企业级 AI Agent 开发框架
+  - Agent 管理（创建、查询、更新、删除、启用/禁用）
+  - 状态监控（IDLE, BUSY, ERROR, STOPPED, CRASHED）
+  - 指标收集（请求数、响应时间、Token 使用量、成本等）
+- **工具系统**
+  - 注册、查询、执行工具
+  - 工具权限控制
+  - 工具分类管理
+- **Provider 系统**
+  - 支持 OpenAI、Anthropic、Google 等 LLM Provider
+  - Provider 配置管理
+  - 统一请求接口
+- **模板系统**
+  - 4 个预定义 Agent 模板（Chat、Code、Data、Writing）
+  - 模板分类管理
+  - 快速创建 Agent
+- **4 个预定义模板**
+  - 💬 Chat Assistant（聊天助手）
+  - 💻 Code Assistant（代码助手）
+  - 📊 Data Analyst（数据分析助手）
+  - ✍️ Content Writer（内容写作助手）
+
+### 📚 Documentation
+- 完整的 API 文档
+- 使用示例
+- 自定义 Agent 开发指南
+
+### 🔧 Technical Details
+- 新增 `packages/core/src/agent/` 目录
+- 核心类：AgentBase、AgentManagerImpl、ToolSystemImpl、ProviderSystemImpl、AgentTemplateManagerImpl
+- 完整的类型定义系统
+
+### 🧪 Testing
+- 所有示例通过测试
+- 类型检查通过
+- 核心功能验证
+
+---
+
 ## [0.0.7] — 2026-08-04 🐱
 
 ### ✨ Features

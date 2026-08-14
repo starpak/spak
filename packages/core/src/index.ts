@@ -10,4 +10,12 @@ export * from './permission'
 export * from './command'
 export * from './middleware'
 
+// Agent SDK exports
+export * from './agent/types'
+export * from './agent/agent'
+export * from './agent/manager'
+export * from './agent/tool-system'
+export * from './agent/provider-system'
+export * from './agent/template-manager'
+
 export { version }
