@@ -83,7 +83,9 @@ export class SharedCache<T> {
 
   delete(ref: number) {
     for (const key of [...this.#keyMap.keys()]) {
-      const { refs } = this.#keyMap.get(key)
+      const entry = this.#keyMap.get(key)
+      if (!entry) continue
+      const { refs } = entry
       refs.delete(ref)
       if (!refs.size) {
         this.#keyMap.delete(key)

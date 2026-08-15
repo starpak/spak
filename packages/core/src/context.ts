@@ -190,14 +190,16 @@ defineProperty(Context.Config, 'Advanced', Schema.object({
   maxListeners: Schema.natural().default(64).description('Maximum number of listeners per type. Exceeding this is considered a memory leak.'),
 }).description('Advanced settings'))
 
-Context.Config.list.push(Context.Config.Basic)
-Context.Config.list.push(Schema.object({
-  i18n: I18n.Config,
-}))
-Context.Config.list.push(Schema.object({
-  log: Context.Config.Log,
-}))
-Context.Config.list.push(Context.Config.Advanced)
+if (Context.Config.list) {
+  Context.Config.list.push(Context.Config.Basic)
+  Context.Config.list.push(Schema.object({
+    i18n: I18n.Config,
+  }))
+  Context.Config.list.push(Schema.object({
+    log: Context.Config.Log,
+  }))
+  Context.Config.list.push(Context.Config.Advanced)
+}
 
 export abstract class Service<T = any, C extends Context = Context> extends cordis.Service<T, C> {
   [cordis.Service.setup]() {

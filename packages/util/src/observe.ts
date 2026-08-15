@@ -167,7 +167,10 @@ export function observe<T extends object, R>(target: T, ...args: [(string | numb
       if (key in this.$diff) {
         throw new Error(`unresolved diff key "${key}"`)
       }
-      target[key] = value[key]
+      const v = value[key]
+      if (v !== undefined) {
+        target[key] = v
+      }
     }
     return this
   })

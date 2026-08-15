@@ -22,7 +22,7 @@ function resolvePath(context: object, path: string): any {
 }
 
 export function interpolate(template: string, context: object, pattern = /\{\{([\s\S]+?)\}\}/g) {
-  let capture: RegExpExecArray
+  let capture: RegExpExecArray | null = null
   let result = '', lastIndex = 0
   while ((capture = pattern.exec(template))) {
     result += template.slice(lastIndex, capture.index)

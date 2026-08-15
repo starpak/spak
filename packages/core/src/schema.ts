@@ -91,16 +91,17 @@ export class SchemaService {
     // before big-order ones. The old comparison `a[kSchemaOrder] < order`
     // compared `undefined < 0 → false` and made all unordered entries
     // behave as if they were order=0, which broke insertion semantics.
-    const index = target.list.findIndex(a => (a[kSchemaOrder] ?? Number.POSITIVE_INFINITY) > order)
+    const list = target.list || []
+    const index = list.findIndex(a => (a[kSchemaOrder] ?? Number.POSITIVE_INFINITY) > order)
     schema[kSchemaOrder] = order
     if (index >= 0) {
-      target.list.splice(index, 0, schema)
+      list.splice(index, 0, schema)
     } else {
-      target.list.push(schema)
+      list.push(schema)
     }
     this.ctx.emit('internal/schema', name)
     caller?.on('dispose', () => {
-      remove(target.list, schema)
+      remove(list, schema)
       this.ctx.emit('internal/schema', name)
     })
   }

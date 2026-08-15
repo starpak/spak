@@ -77,10 +77,10 @@ export class AgentTemplateManagerImpl {
 
     return {
       id: customConfig?.id || `agent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: customConfig?.name || template.name,
-      description: customConfig?.description || template.description,
-      modelId: customConfig?.modelId || baseConfig.modelId,
-      provider: customConfig?.provider || baseConfig.provider,
+      name: customConfig?.name || template.name || '',
+      description: customConfig?.description || template.description || '',
+      modelId: customConfig?.modelId || baseConfig.modelId || '',
+      provider: customConfig?.provider || baseConfig.provider || '',
       tools: customConfig?.tools || baseConfig.tools,
       maxRetries: customConfig?.maxRetries ?? baseConfig.maxRetries,
       temperature: customConfig?.temperature ?? baseConfig.temperature,

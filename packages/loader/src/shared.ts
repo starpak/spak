@@ -397,8 +397,9 @@ export abstract class Loader {
     if (scope === scope.parent.scope) return []
 
     // runtime scope
-    if (scope.runtime === scope) {
-      return [].concat(...scope.runtime.children.map(child => this.paths(child)))
+    if (scope.runtime === scope && scope.runtime?.children) {
+      const childPaths = scope.runtime.children.map(child => this.paths(child))
+      return childPaths.flat() as string[]
     }
 
     const scopeAny = scope as any
