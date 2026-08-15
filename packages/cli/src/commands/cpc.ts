@@ -26,6 +26,8 @@ const MODULE_WHITELIST: ReadonlySet<string> = new Set([
   '@spakjs/i18n',
   '@spakjs/loader',
   '@spakjs/agent',
+  '@spakjs/cli',
+  '@spakjs/node-b',
   'util',
   'message',
   'log',
@@ -34,6 +36,8 @@ const MODULE_WHITELIST: ReadonlySet<string> = new Set([
   'i18n',
   'loader',
   'agent',
+  'cli',
+  'node-b',
   // --- Known/approved @spakjs plugins ---
   '@spakjs/plugin-server',
   '@spakjs/plugin-http',

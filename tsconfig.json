@@ -25,5 +25,9 @@
     { "path": "packages/loader" },
     // LLM agent module — depends on core + util + message + log
     { "path": "packages/agent" },
+    // Build cache tool — depends on util
+    { "path": "packages/node-b" },
+    // CLI — depends on core + loader + i18n + log + config
+    { "path": "packages/cli" },
   ]
 }

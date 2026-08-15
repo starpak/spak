@@ -1,8 +1,8 @@
 # Spak 企业级 AI Agent 平台 - 实施规划
 
-> **版本**: v0.1.0 → v1.0.0
+> **版本**: v0.1.0 → v0.2.0 → v0.3.0 → v0.4.0 → ... → v1.0.0
 > **目标**: 打造企业级 AI Agent 平台
-> **最后更新**: 2026-08-13 (阶段1完成)
+> **最后更新**: 2026-08-15（阶段2.5: Core 独立化 + 构建工具链）
 
 ---
 
@@ -451,7 +451,7 @@ class FailoverProtocol {
 
 ### 3.1 阶段划分
 
-#### 阶段 1: Agent SDK 完善（v0.1.0 - v0.3.0）✅ **已完成**
+#### 阶段 1: Agent SDK 完善（v0.1.0）✅ **已完成**
 **时间**: 1-2 个月
 **状态**: ✅ 2026-08-13 完成
 
@@ -468,39 +468,170 @@ class FailoverProtocol {
 
 ---
 
-#### 阶段 2: Agent 集群开发（v0.2.0 - v0.3.0）
+#### 阶段 2: Agent 集群开发（v0.2.0）✅ **已完成**
 **时间**: 2-3 个月
-**状态**: 🔄 待开始
+**状态**: ✅ 已完成
 
 **目标**: 实现 Agent 集群能力
 
-- [ ] Agent 集群架构
-- [ ] 任务调度系统
-- [ ] 负载均衡算法
-- [ ] Agent 通信协议
-- [ ] 集群状态管理
-- [ ] 集群监控
+- [x] Agent 集群架构 ✅
+- [x] 任务调度系统 ✅
+- [x] 负载均衡算法 ✅
+- [x] Agent 通信协议 ✅
+- [x] 集群状态管理 ✅
+- [x] 集群监控 ✅
 
-**里程碑**: v0.6.0 发布
+**里程碑**: v0.2.0 发布 ✅
 
 ---
 
-#### 阶段 3: 多 Agent 协作（v0.7.0 - v0.8.0）
+#### 阶段 2.5: Core 独立化 + 构建工具链（v0.2.5）🔄 **进行中**
+**时间**: 迭代计划
+**状态**: 🔄 进行中
+
+> **背景**: Agent 集群是交互式开发工具，TUI 实现成本过高，计划用 Web GUI。已浅克隆
+> [DeepSeek-Harness](https://github.com/deepseek-ai/DeepSeek-Harness)（MIT，React+Vite SPA）
+> 到 `/tmp/dsh` 研究。但**核心目标先做架构独立化**：让 `@spakjs/core` 成为唯一真正的核心
+> （纯内核、无 i18n/输出/配置依赖），CLI 和 bootstrap 独立成 `@spakjs/cli`，`spak` 退化为纯入口。
+> Web GUI（DSH 前端爆改）为后续工作，暂缓。
+
+**目标**: core 独立成真核 + 独立 CLI 包 + 前端构建缓存工具链
+
+- [x] 删除废弃官网 `website/`（Astro 静态站，当前用不到）
+- [x] 新增 `packages/cli`（@spakjs/cli）：承载 serve / config / cpc 命令与 `createApp` bootstrap
+- [x] `@spakjs/core` 回归纯内核：零 i18n/输出依赖，扫清 `core↔i18n` 循环依赖
+- [x] `spak` 主包退化为纯 re-export 入口，`bin.js` 委托 `@spakjs/cli`
+- [x] 新增 `packages/node-b`（@spakjs/node-b）：纯前端构建缓存工具（白名单防二次构建）
+- [ ] （后续）把 DSH 前端源码搬到本项目并爆改（deep adaptation）做 Web GUI
+- [ ] （后续）node-b 接入 Web GUI 的插件包构建缓存机制
+
+##### 2.5.1 本阶段已落地
+
+- **CLI 独立**：`@spakjs/cli` 提供 `serve` / `config` / `cpc` 命令与 `createApp()`，`bin/spak` 可独立运行。
+- **core 独立**：`@spakjs/core` 只依赖 `util` / `message` / `cordis` / `cosmokit` / `levenshtein` / `js-yaml`，
+  不依赖 i18n/log/config，真正成为「可移植纯内核」。
+- **spak 纯入口**：`import { Context, createApp, Loader } from 'spak'` 全部可用，但逻辑都不在它里面。
+
+##### 2.5.2 包结构
+
+```
+packages/core/     # @spakjs/core — 纯内核（零 i18n/输出依赖）
+packages/cli/      # @spakjs/cli  — CLI + createApp bootstrap（绑定 core 到 Node 运行时）
+packages/node-b/   # @spakjs/node-b — 前端构建缓存工具（产物 + 白名单）
+spak (根)          # 纯 re-export 入口壳，bin 委托 @spakjs/cli
+```
+
+##### 2.5.3 后续排期
+
+| 项 | 任务 |
+|----|------|
+| (后续) | 把 DSH 前端源码搬到本项目并爆改，做 Agent 集群 Web GUI |
+| (后续) | node-b 接入 GUI 的插件包构建缓存（白名单防二次构建） |
+
+##### 2.5.4 本阶段验收（已达成）
+
+- [x] `@spakjs/cli` 独立包可运行 `spak serve/config/cpc`，版本/help/banner 正常（中文 i18n 正确）
+- [x] `@spakjs/core` 无 i18n/输出依赖，`core↔i18n` 循环依赖消除
+- [x] `spak` 主包退化为纯 re-export 入口，`createApp` / `Context` 经它可用
+- [x] `node-b` 构建缓存：首次构建产物流入 dist，重复构建命中白名单跳过（实测通过）
+- [x] 全量 `pnpm build` 通过，`bin/spak` 注册成功
+
+**里程碑**: v0.2.5（core 独立 + 独立 CLI + 构建工具链）
+
+---
+
+#### 阶段 3: 多 Agent 协作（v0.3.0）
 **时间**: 1-2 个月
+**状态**: 🔄 进行中
 
 **目标**: 实现多 Agent 协作能力
 
-- [ ] 协作协议系统
-- [ ] 工作流编排
-- [ ] 协作模式实现
-- [ ] 协商机制
+> **注意**: 本阶段建立在阶段1（Agent SDK）和阶段2（Agent 集群）之上。阶段1 提供了 `createAgent` 等服务端 Agent 能力，阶段2 提供了集群/任务调度基础设施，阶段3 在其之上实现 Agent 之间的编排与协作。
 
-**里程碑**: v0.8.0 发布
+##### 3.3.1 协作协议系统
+
+Agent 之间通信的消息协议规范。
+
+- [ ] `Message` 消息模型（sender/receiver/type/payload/sessionId/traceId）
+- [ ] `CollaborationProtocol` 抽象基类：统一 `send` / `receive` / `manageSession` 接口
+- [ ] 消息队列适配器（基于内存队列实现，接口预留可替换为消息总线）
+- [ ] 消息序列化与反序列化（JSON）
+- [ ] 消息可靠性：失败重试、超时、死信处理
+- [ ] 会话（Session）管理：创建、绑定参与者、归档
+
+##### 3.3.2 工作流编排
+
+定义并执行多 Agent 工作流的引擎。
+
+- [ ] `WorkflowDefinition` 工作流定义模型（节点、边、条件、依赖）
+- [ ] `WorkflowOrchestrator` 编排器：`defineWorkflow` / `executeWorkflow` / `pauseWorkflow` / `resumeWorkflow` / `cancelWorkflow`
+- [ ] 工作流执行状态机（pending/running/paused/completed/failed/cancelled）
+- [ ] 节点调度器：按依赖顺序分发任务给对应 Agent
+- [ ] `WorkflowGraph` 可视化数据结构（供后续管理平台使用）
+- [ ] 工作流版本管理 `version(workflowId)`
+
+##### 3.3.3 协作模式实现
+
+- [ ] `pattern: pipeline` 管道协作：节点串行，前一个输出作为后一个输入
+- [ ] `pattern: parallel` 并行协作：多个 Agent 同时处理，聚合结果
+- [ ] `pattern: hierarchy` 层级协作：主 Agent 拆分任务，子 Agent 汇报回主 Agent
+- [ ] `pattern: negotiation` 协商协作：Agent 间通过多轮消息达成一致
+- [ ] `pattern: hybrid` 混合模式：以上模式自由组合
+
+##### 3.3.4 协商机制
+
+- [ ] `NegotiationProtocol`: 提议、反驳、接受/拒绝的消息流程
+- [ ] 协商状态机（proposed/rejected/accepted/timedout）
+- [ ] 协商超时与回退策略
+- [ ] 协商结果持久化与回放
+
+##### 3.3.5 核心 API 设计（参考）
+
+```typescript
+// 协作模式
+enum CollaborationPattern { PIPELINE, PARALLEL, HIERARCHY, NEGOTIATION, HYBRID }
+
+// 工作流编排
+class WorkflowOrchestrator {
+  defineWorkflow(workflow: WorkflowDefinition): void
+  async execute(workflowId: string, input: any): Promise<any>
+  pauseWorkflow(workflowId: string): void
+  resumeWorkflow(workflowId: string): void
+  cancelWorkflow(workflowId: string): void
+  visualize(workflowId: string): WorkflowGraph
+  version(workflowId: string): void
+}
+
+// 协作协议
+class CollaborationProtocol {
+  send(agentId: string, message: Message): void
+  receive(agentId: string): Message
+  manageSession(sessionId: string): Session
+}
+```
+
+##### 3.3.6 预计新增/修改的包结构
+
+- `packages/core` 内新增协作模块（`src/agent/` 下扩展）
+  - `src/agent/collaboration.ts`: CollaborationProtocol 与 Message
+  - `src/agent/workflow.ts`: WorkflowOrchestrator 与 WorkflowDefinition
+  - `src/agent/pattern.ts`: 各协作模式实现
+  - `src/agent/negotiation.ts`: 协商机制
+- 对齐阶段1 已有的 `src/agent/` 结构（含 `README.md`），新增模块遵循现有导出约定
+
+**里程碑**: v0.3.0 发布
+
+**验收标准**:
+- [ ] 两类 Agent 可通过 `CollaborationProtocol` 互发/接收消息
+- [ ] 可通过 `WorkflowOrchestrator` 定义并执行一个 pipeline 工作流
+- [ ] 至少实现 pipeline 与 parallel 两种协作模式并通过单元测试
+- [ ] 工作流支持暂停/恢复/取消
+- [ ] 全部新 API 有 TypeScript 类型定义与文档
 
 ---
 
-#### 阶段 4: 管理平台开发（v0.9.0 - v1.0.0）
-**时间**: 3-4 个月
+#### 阶段 4: 管理平台开发（v0.4.0）
+**时间**: 2-3 个月
 
 **目标**: 完成管理平台开发
 
@@ -511,11 +642,11 @@ class FailoverProtocol {
 - [ ] 访问控制
 - [ ] 性能优化
 
-**里程碑**: v1.0.0 发布
+**里程碑**: v0.4.0 发布
 
 ---
 
-#### 阶段 5: 运维系统开发（v1.1.0 - v1.5.0）
+#### 阶段 5: 运维系统开发（v0.5.0）
 **时间**: 3-4 个月
 
 **目标**: 完成运维系统
@@ -527,11 +658,11 @@ class FailoverProtocol {
 - [ ] 故障诊断
 - [ ] 灾难恢复
 
-**里程碑**: v1.5.0 发布
+**里程碑**: v0.5.0 发布
 
 ---
 
-#### 阶段 6: 工具系统扩展（v1.6.0 - v2.0.0）
+#### 阶段 6: 工具系统扩展（v0.6.0）
 **时间**: 2-3 个月
 
 **目标**: 扩展工具系统
@@ -541,11 +672,11 @@ class FailoverProtocol {
 - [ ] 工具商店
 - [ ] 工具认证
 
-**里程碑**: v2.0.0 发布
+**里程碑**: v0.6.0 发布
 
 ---
 
-#### 阶段 7: 分布式集群（v2.1.0 - v3.0.0）
+#### 阶段 7: 分布式集群（v0.7.0）
 **时间**: 3-4 个月
 
 **目标**: 实现分布式集群
@@ -557,14 +688,15 @@ class FailoverProtocol {
 - [ ] 数据一致性
 - [ ] 备份恢复
 
-**里程碑**: v3.0.0 发布
+**里程碑**: v0.7.0 发布
 
 ---
 
-#### 阶段 8: 完整发布（v3.1.0+）
+#### 阶段 8: 完整发布（v0.8.0 - v1.0.0）
 **时间**: 1-2 个月
 
 **目标**: 全面发布和推广
+**状态**: ⏳ 待开始
 
 - [ ] 文档完善
 - [ ] 示例库
@@ -572,7 +704,7 @@ class FailoverProtocol {
 - [ ] 社区建设
 - [ ] 客户支持
 
-**里程碑**: 正式商业发布
+**里程碑**: v1.0.0 正式商业发布
 
 ---
 
@@ -1072,16 +1204,16 @@ enum SessionStatus {
 | 阶段 | 版本 | 时间 | 里程碑 | 状态 |
 |------|------|------|--------|------|
 | 阶段1 | v0.1.0 | 1-2个月 | Agent SDK 完成 | ✅ 已完成 |
-| 阶段2 | v0.2.0 - v0.3.0 | 2-3个月 | Agent 集群完成 | 🔄 待开始 |
-| 阶段3 | v0.4.0 - v0.5.0 | 1-2个月 | 多 Agent 协作完成 | ⏳ 待开始 |
-| 阶段4 | v0.6.0 - v0.7.0 | 3-4个月 | 管理平台完成 | ⏳ 待开始 |
-| 阶段5 | v0.8.0 - v0.9.0 | 3-4个月 | 运维系统完成 | ⏳ 待开始 |
-| 阶段6 | v1.0.0 - v1.1.0 | 2-3个月 | 工具系统扩展 | ⏳ 待开始 |
-| 阶段7 | v1.2.0 - v1.3.0 | 3-4个月 | 分布式集群完成 | ⏳ 待开始 |
-| 阶段8 | v1.4.0+ | 1-2个月 | 全面发布 | ⏳ 待开始 |
+| 阶段2 | v0.2.0 | 2-3个月 | Agent 集群完成 | ✅ 已完成 |
+| 阶段3 | v0.3.0 | 1-2个月 | 多 Agent 协作完成 | 🔄 进行中 |
+| 阶段4 | v0.4.0 | 2-3个月 | 管理平台完成 | ⏳ 待开始 |
+| 阶段5 | v0.5.0 | 3-4个月 | 运维系统完成 | ⏳ 待开始 |
+| 阶段6 | v0.6.0 | 2-3个月 | 工具系统扩展 | ⏳ 待开始 |
+| 阶段7 | v0.7.0 | 3-4个月 | 分布式集群完成 | ⏳ 待开始 |
+| 阶段8 | v0.8.0 - v1.0.0 | 1-2个月 | 全面发布 | ⏳ 待开始 |
 
 **总时间**: 16-24 个月
-**当前进度**: 阶段1完成 (12.5%)
+**当前进度**: 阶段2完成 (25%)
 
 ---
 
@@ -1152,5 +1284,5 @@ enum SessionStatus {
 
 ---
 
-**最后更新**: 2026-08-13
+**最后更新**: 2026-08-15（阶段2.5：Core 独立化完成，Web GUI 后续）
 **维护者**: Spak Team

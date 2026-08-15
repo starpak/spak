@@ -75,8 +75,7 @@ if (!cli.matchedCommand && !argv.options.help) {
       console.error(kleur.dim(`  ${T('spak.cli.try_help')}`))
       process.exit(1)
     }
-    const pkgJson = require('../../package.json')
-    const banner = `  ${kleur.bold().cyan('spak')} v${kleur.green(pkgJson.version)} · ${T('spak.intro.description')}`
+    const banner = `  ${kleur.bold().cyan('spak')} v${kleur.green(version)} · ${T('spak.intro.description')}`
     console.log(banner)
     process.exit(0)
   }

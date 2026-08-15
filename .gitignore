@@ -1,6 +1,11 @@
 # Dependencies
 node_modules/
 
+# Spak dev-only workspace: DSH front-end + handoff files.
+# Force-tracked ONLY on the `dev` branch (`git add -f`); ignored everywhere
+# else so it can never be committed to master or any other branch.
+.dev/
+
 # Build outputs
 dist/
 build/

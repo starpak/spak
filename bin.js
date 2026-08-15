@@ -1,2 +1,3 @@
 #!/usr/bin/env node
-require('./lib/src/cli/index.js')
+// spak binary — delegates to @spakjs/cli (the single source of the CLI).
+require('@spakjs/cli/cli')

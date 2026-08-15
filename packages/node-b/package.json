@@ -1,0 +1,37 @@
+{
+  "name": "@spakjs/node-b",
+  "version": "0.1.0",
+  "description": "Spak front-end build cache tool — builds plugin bundles once, records a whitelist so already-built packages are skipped on subsequent builds.",
+  "type": "module",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "node": {
+        "import": "./lib/index.js",
+        "require": "./lib/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "spak-node-b": "bin/spak-node-b.js"
+  },
+  "files": [
+    "lib",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@spakjs/util": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^5.6.2"
+  }
+}
