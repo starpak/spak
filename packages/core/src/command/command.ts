@@ -32,7 +32,7 @@ export class Command<
 > extends Argv.CommandBase<Command.Config> {
   children: Command[] = []
 
-  _parent: Command = null
+  _parent: Command | null = null
   _aliases: Dict<Command.Alias> = Object.create(null)
   _examples: string[] = []
   _usage?: Command.Usage
@@ -68,7 +68,7 @@ export class Command<
     return this._parent
   }
 
-  set parent(parent: Command) {
+  set parent(parent: Command | null) {
     if (this._parent === parent) return
     if (this._parent) {
       remove(this._parent.children, this)
@@ -85,7 +85,7 @@ export class Command<
 
   private _registerAlias(name: string, prepend = false, options: Command.Alias = {}) {
     name = Command.normalize(name)
-    if (name.startsWith('.')) name = this.parent.name + name
+    if (name.startsWith('.')) name = this.parent!.name + name
 
     // check global
     const previous = this.ctx.$commander.get(name)
@@ -198,11 +198,11 @@ export class Command<
 
     const { args, options, error } = argv
     if (error) return error as any
-    if (logger.level >= 3) logger.debug(argv.source ||= this.stringify(args, options))
+    if (logger.level >= 3) logger.debug(argv.source ||= this.stringify(args!, options))
 
     // before hooks
     for (const validator of this._checkers) {
-      const result = await validator.call(this, argv, ...args)
+      const result = await validator.call(this, argv, ...args!)
       if (!isNullable(result)) return result
     }
 
@@ -212,7 +212,7 @@ export class Command<
     let callDepth = 0
     const maxCallDepth = Next.MAX_DEPTH
     const queue: any[] = this._actions.map(action => async () => {
-      return await action.call(this, argv, ...args)
+      return await action.call(this, argv, ...args!)
     })
 
     queue.push(fallback as any)
@@ -236,16 +236,16 @@ export class Command<
     } catch (error) {
       if (index === length) throw error
       if (error instanceof SessionError) {
-        return argv.session.text(error.path, error.param) as any
+        return argv.session!.text(error.path, error.param) as any
       }
       const stack = coerce(error)
-      logger.warn(`${argv.source ||= this.stringify(args, options)}\n${stack}`)
+      logger.warn(`${argv.source ||= this.stringify(args!, options)}\n${stack}`)
       this.ctx.emit(argv.session, 'command-error', argv, error)
       if (typeof this.config.handleError === 'function') {
         const result = await this.config.handleError(error, argv)
         if (!isNullable(result)) return result
       } else if (this.config.handleError) {
-        return argv.session.text('internal.error-encountered') as any
+        return argv.session!.text('internal.error-encountered') as any
       }
     }
 

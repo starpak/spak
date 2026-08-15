@@ -106,7 +106,7 @@ export class Permissions {
   }
 
   subgraph(type: 'inherits' | 'depends', parents: Iterable<string>, result = new Set<string>()): Set<string> {
-    let name: string
+    let name: string | undefined
     const queue = [...parents]
     while ((name = queue.shift())) {
       if (result.has(name)) continue

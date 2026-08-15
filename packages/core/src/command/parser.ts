@@ -88,7 +88,7 @@ export namespace Argv {
     }
 
     parseToken(source: string, stopReg = '$'): Token {
-      const parent = { inters: [] } as Token
+      const parent = { inters: [] } as unknown as Token
       const index = leftQuotes.indexOf(source[0])
       const quote = rightQuotes[index]
       let content = ''
@@ -99,13 +99,13 @@ export namespace Argv {
       stopReg += `|${Object.keys({ ...this.bracs, ...bracs }).map(escapeRegExp).join('|')}`
       const regExp = new RegExp(stopReg)
       while (true) {
-        const capture = regExp.exec(source)
+        const capture = regExp.exec(source)!
         content += whitespace.unescape(source.slice(0, capture.index))
         if (capture[0] in this.bracs) {
           source = source.slice(capture.index + capture[0].length).trimStart()
           const { parse, terminator } = this.bracs[capture[0]]
           const argv = parse?.(source) || this.parse(source, terminator)
-          source = argv.rest
+          source = argv.rest!
           parent.inters.push({ ...argv, pos: content.length, initiator: capture[0] })
         } else {
           const quoted = capture[0] === quote
@@ -117,7 +117,7 @@ export namespace Argv {
             parent.terminator += rest.slice(0, -parent.rest.length)
           } else if (quote) {
             content = leftQuotes[index] + content
-            parent.inters.forEach(inter => inter.pos += 1)
+            parent.inters.forEach(inter => inter.pos! += 1)
           }
           parent.content = content
           if (quote === "'") Argv.revert(parent)
@@ -137,7 +137,7 @@ export namespace Argv {
       while (rest && !(terminator && rest.startsWith(terminator))) {
         const token = this.parseToken(rest, stopReg)
         tokens.push(token)
-        rest = token.rest
+        rest = token.rest!
         term = token.terminator
         delete token.rest
       }
@@ -149,7 +149,7 @@ export namespace Argv {
     }
 
     stringify(argv: Argv) {
-      const output = argv.tokens.reduce((prev, token) => {
+      const output = (argv.tokens ?? []).reduce((prev, token) => {
         if (token.quoted) prev += leftQuotes[rightQuotes.indexOf(token.terminator[0])] || ''
         return prev + token.content + token.terminator
       }, '')
@@ -172,9 +172,9 @@ export namespace Argv {
 
   export function revert(token: Token) {
     while (token.inters.length) {
-      const { pos, source, initiator } = token.inters.pop()
+      const { pos, source, initiator } = token.inters.pop()!
       token.content = token.content.slice(0, pos)
-        + initiator + source + bracs[initiator].terminator
+        + initiator + source + bracs[initiator!].terminator
         + token.content.slice(pos)
     }
   }
@@ -292,12 +292,12 @@ export namespace Argv {
       const declList = this._arguments = ctx.$commander.parseDecl(declaration)
       this.declaration = declList.stripped
       for (const decl of declList) {
-        this._disposables.push(this.ctx.i18n.define('', `commands.${this.name}.arguments.${decl.name}`, decl.name))
+        this._disposables.push(this.ctx.i18n.define('', `commands.${this.name}.arguments.${decl.name}`, decl.name!))
       }
     }
 
     _createOption(name: string, def: string, config: OptionConfig) {
-      const cap = OPTION_REGEXP.exec(def)
+      const cap = OPTION_REGEXP.exec(def)!
       const param = paramCase(name)
       let syntax = cap[1] || '--' + param
       const bracket = cap[2] || ''
@@ -389,7 +389,7 @@ export namespace Argv {
         argv.source = this.name + ' ' + Argv.stringify(argv)
       }
 
-      let lastArgDecl: Declaration
+      let lastArgDecl: Declaration | undefined
 
       while (!argv.error && argv.tokens?.length) {
         const token = argv.tokens[0]
@@ -402,7 +402,7 @@ export namespace Argv {
         }
 
         // greedy argument
-        if (content[0] !== '-' && this.ctx.$commander.resolveDomain(argDecl.type).greedy) {
+        if (content[0] !== '-' && this.ctx.$commander.resolveDomain(argDecl.type!).greedy) {
           args.push(this.ctx.$commander.parseValue(Argv.stringify(argv), 'argument', argv, argDecl))
           break
         }
@@ -411,13 +411,13 @@ export namespace Argv {
         argv.tokens.shift()
         let option: OptionDeclaration
         let names: string | string[]
-        let param: string
+        let param: string | undefined
         // symbolic option
         if (!quoted && (option = this._symbolicOptions[content])) {
-          names = [paramCase(option.name)]
+          names = [paramCase(option.name!)]
         } else {
           // normal argument
-          if (content[0] !== '-' || quoted || (+content) * 0 === 0 && this.ctx.$commander.resolveDomain(argDecl.type).numeric) {
+          if (content[0] !== '-' || quoted || (+content) * 0 === 0 && this.ctx.$commander.resolveDomain(argDecl.type!).numeric) {
             args.push(this.ctx.$commander.parseValue(content, 'argument', argv, argDecl))
             continue
           }
@@ -436,7 +436,7 @@ export namespace Argv {
           const name = content.slice(i, j)
           names = i > 1 ? [name] : name
           if (this.config.strictOptions && !this._namedOptions[names[0]]) {
-            if (this.ctx.$commander.resolveDomain(argDecl.type).greedy) {
+            if (this.ctx.$commander.resolveDomain(argDecl.type!).greedy) {
               argv.tokens.unshift(token)
               args.push(this.ctx.$commander.parseValue(Argv.stringify(argv), 'argument', argv, argDecl))
               break
@@ -456,7 +456,7 @@ export namespace Argv {
         quoted = false
         if (!param) {
           const { type, values } = option || {}
-          if (this.ctx.$commander.resolveDomain(type).greedy) {
+          if (this.ctx.$commander.resolveDomain(type!).greedy) {
             param = Argv.stringify(argv)
             quoted = true
             argv.tokens = []
@@ -464,7 +464,7 @@ export namespace Argv {
             // Option has bounded value or option is boolean.
             const isValued = names[names.length - 1] in (values || {}) || type === 'boolean'
             if (!isValued && argv.tokens.length && (type || argv.tokens[0]?.content !== '-')) {
-              const token = argv.tokens.shift()
+              const token = argv.tokens.shift()!
               param = token.content
               quoted = token.quoted
             }
@@ -475,11 +475,11 @@ export namespace Argv {
         for (let j = 0; j < names.length; j++) {
           const name = names[j]
           const optDecl = this._namedOptions[name]
-          const key = optDecl ? optDecl.name : camelCase(name)
+          const key = optDecl ? optDecl.name! : camelCase(name)
           if (optDecl && name in optDecl.values) {
             options[key] = optDecl.values[name]
           } else {
-            const source = j + 1 < names.length ? '' : param
+            const source = j + 1 < names.length ? '' : param!
             options[key] = this.ctx.$commander.parseValue(source, 'option', argv, optDecl)
           }
           if (argv.error) break
@@ -488,8 +488,8 @@ export namespace Argv {
 
       // assign default values
       for (const { name, fallback } of Object.values(this._options)) {
-        if (fallback !== undefined && !(name in options)) {
-          options[name] = fallback
+        if (fallback !== undefined && !(name! in options)) {
+          options[name!] = fallback
         }
       }
 

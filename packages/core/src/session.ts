@@ -41,7 +41,7 @@ export default class SpakSession<C extends Context> {
       }
       if (!this.ctx.$commander.resolveCommand(argv)) return []
     } else {
-      argv.command ||= this.ctx.$commander.get(argv.name)
+      argv.command ||= this.ctx.$commander.get(argv.name!)
       if (!argv.command) {
         logger.warn(new Error(`cannot find command ${argv.name}`))
         return []
@@ -49,15 +49,15 @@ export default class SpakSession<C extends Context> {
     }
 
     const { command } = argv
-    if (!command.ctx.filter(this as any)) return []
+    if (!command!.ctx.filter(this as any)) return []
 
     let shouldEmit = true
     if (next === true) {
       shouldEmit = false
-      next = undefined as Next
+      next = undefined as unknown as Next
     }
 
-    const result = await command.execute(argv as Argv, next as Next)
+    const result = await command!.execute(argv as Argv, next as Next)
     if (!shouldEmit) return h.normalize(result)
     return result
   }

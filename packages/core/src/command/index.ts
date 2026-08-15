@@ -53,6 +53,7 @@ export class Commander {
 
     ctx.middleware((session, next) => {
       // execute command
+      if (!session.argv) return next()
       if (!this.resolveCommand(session.argv)) return next()
       return session.execute(session.argv, next)
     })
@@ -129,7 +130,7 @@ export class Commander {
   _resolve(key: string, session?: Session) {
     if (!key) return {}
     const segments = Command.normalize(key).split('.')
-    let i = 1, name = segments[0], command: Command
+    let i = 1, name = segments[0], command: Command | undefined
     while ((command = this.get(name, session)) && i < segments.length) {
       name = command.name + '.' + segments[i++]
     }
@@ -142,7 +143,7 @@ export class Commander {
     if (argv.name) return argv.command = this.resolve(argv.name, argv.session)
 
     const segments: string[] = []
-    while (argv.tokens.length) {
+    while (argv.tokens?.length) {
       const { content } = argv.tokens[0]
       segments.push(content)
       const { name, command } = this._resolve(segments.join('.'), argv.session)
@@ -159,7 +160,7 @@ export class Commander {
   resolveCommand(argv: Argv) {
     if (!this.inferCommand(argv)) return
     if (argv.tokens?.every(token => !token.inters.length)) {
-      const { options, args, error } = argv.command.parse(argv)
+      const { options, args, error } = argv.command!.parse(argv)
       argv.options = options
       argv.args = args
       argv.error = error
@@ -175,9 +176,9 @@ export class Commander {
     const segments = path.split(/(?=[./])/g)
 
     /** parent command in the chain */
-    let parent: Command
+    let parent!: Command
     /** the first created command */
-    let root: Command
+    let root!: Command
     const created: Command[] = []
     segments.forEach((segment, index) => {
       const code = segment.charCodeAt(0)
@@ -266,8 +267,8 @@ export class Commander {
   }
 
   parseDecl(source: string) {
-    let cap: RegExpExecArray
-    const result = [] as DeclarationList
+    let cap: RegExpExecArray | null
+    const result = [] as unknown as DeclarationList
     // eslint-disable-next-line no-cond-assign
     while (cap = BRACKET_REGEXP.exec(source)) {
       let rawName = cap[0].slice(1, -1)

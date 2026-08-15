@@ -187,7 +187,7 @@ export class I18n {
   locales: LocaleTree
 
   constructor(public ctx: Context, config: I18n.Config) {
-    this.locales = LocaleTree.from(config.locales)
+    this.locales = LocaleTree.from(config.locales ?? [])
 
     this.define('', { '': '' })
     for (const [locale, data] of Object.entries(getEmbeddedLocales())) {
@@ -241,7 +241,7 @@ export class I18n {
   define(locale: string, ...args: [I18n.Store] | [string, I18n.Node]) {
     const dict = this._data[locale] ||= {}
     const paths = [...typeof args[0] === 'string'
-      ? this.set(locale, args[0] + '.', args[1])
+      ? this.set(locale, args[0] + '.', args[1]!)
       : this.set(locale, '', args[0])]
     this.ctx.emit('internal/i18n')
     return this.ctx.collect('i18n', () => {
@@ -274,7 +274,7 @@ export class I18n {
     if (value === undefined) return
 
     if (typeof value !== 'string') {
-      const preset = value[kTemplate]
+      const preset = value[kTemplate]!
       const render = this._presets[preset]
       if (!render) throw new Error(`Preset "${preset}" not found`)
       return [h.text(render(value, params, locale))]

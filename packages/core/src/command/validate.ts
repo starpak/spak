@@ -37,25 +37,25 @@ export default function validate(ctx: Context) {
   ctx.before('command/execute', async (argv: Argv) => {
     const { args, options, command } = argv
     function sendHint(message: string, ...param: any[]): any {
-      return command.config.showWarning ? message : ''
+      return command!.config.showWarning ? message : ''
     }
 
     // check argument count
-    if (command.config.checkArgCount) {
-      let index = args.length
-      while (command._arguments[index]?.required) {
-        const decl = command._arguments[index]
+    if (command!.config.checkArgCount) {
+      let index = args!.length
+      while (command!._arguments[index]?.required) {
+        const decl = command!._arguments[index]
         index++
       }
-      const finalArg = command._arguments[command._arguments.length - 1] || {}
-      if (args.length > command._arguments.length && !finalArg.variadic) {
+      const finalArg = command!._arguments[command!._arguments.length - 1] || {}
+      if (args!.length > command!._arguments.length && !finalArg.variadic) {
         return sendHint('internal.redunant-arguments')
       }
     }
 
     // check unknown options
-    if (command.config.checkUnknown) {
-      const unknown = Object.keys(options).filter(key => !command._options[key])
+    if (command!.config.checkUnknown) {
+      const unknown = Object.keys(options!).filter(key => !command!._options[key])
       if (unknown.length) {
         return sendHint('internal.unknown-option', unknown.join(', '))
       }

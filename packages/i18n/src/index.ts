@@ -199,7 +199,8 @@ function resolveParams(message: string, params?: Record<string, string | number>
 /**
  * Translate a key using the core i18n system.
  * Falls back to direct yml file loading when core is not available.
- * Falls back to the key itself if not found.
+ * Falls back to `<key> (missing)` if the key is not found, so callers can
+ * tell a missing translation apart from a successful lookup.
  */
 export function t(key: string, params?: Record<string, string | number>): string {
   const lang = getConfig('language') || 'en'
@@ -220,7 +221,7 @@ export function t(key: string, params?: Record<string, string | number>): string
     message = enMessages[key]
   }
 
-  if (!message) return key
+  if (!message) return `${key} (missing)`
   return resolveParams(message, params)
 }
 
