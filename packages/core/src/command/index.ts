@@ -197,7 +197,8 @@ export class Commander {
             command.parent = parent
           }
         }
-        return parent = command
+        parent = command
+        return
       }
       const isLast = index === segments.length - 1
       command = new Command(name, isLast ? decl : '', this.ctx, isLast ? config : {})

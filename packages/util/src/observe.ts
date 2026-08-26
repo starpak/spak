@@ -23,12 +23,12 @@ function untracked(key: string | symbol) {
 
 function observeObject<T extends object>(target: T, notify?: (key: string | symbol) => void): T {
   const update = notify
+  const diff: Partial<T> = Object.create(null)
   if (!notify) {
-    const diff = Object.create(null)
     defineProperty(target, '$diff', diff)
     notify = (key) => {
       if (untracked(key)) return
-      diff[key] = target[key]
+      ;(diff as Record<string | symbol, any>)[key] = target[key as keyof T]
     }
   }
 
@@ -36,20 +36,20 @@ function observeObject<T extends object>(target: T, notify?: (key: string | symb
     get(target, key) {
       const value = Reflect.get(target, key)
       if (!value || immutable.includes(typeof value) || untracked(key)) return value
-      return observeProperty(value, update || (() => notify(key)))
+      return observeProperty(value, update || (() => notify!(key)))
     },
     set(target, key, value) {
-      const unchanged = target[key] === value
+      const unchanged = (target as any)[key] === value
       const result = Reflect.set(target, key, value)
       if (unchanged || !result) return result
-      notify(key)
+      notify!(key)
       return true
     },
     deleteProperty(target, key) {
       const unchanged = !(key in target)
       const result = Reflect.deleteProperty(target, key)
       if (unchanged || !result) return result
-      notify(key)
+      notify!(key)
       return true
     },
   })
@@ -75,13 +75,13 @@ function observeArray<T>(target: T[], update: () => void) {
 
   return new Proxy(target, {
     get(target, key) {
-      if (key in proxy) return proxy[key]
-      const value = target[key]
+      if (key in proxy) return proxy[key as unknown as number]
+      const value = (target as any)[key]
       if (!value || immutable.includes(typeof value) || typeof key === 'symbol' || isNaN(key as any)) return value
       return observeProperty(value, update)
     },
     set(target, key, value) {
-      if (typeof key !== 'symbol' && !isNaN(key as any) && target[key] !== value) update()
+      if (typeof key !== 'symbol' && !isNaN(key as any) && (target as any)[key] !== value) update()
       return Reflect.set(target, key, value)
     },
   })
@@ -117,7 +117,7 @@ function observeDate(target: Date, update: () => void) {
     if (method === 'valueOf') continue
     defineProperty(target, method, function (...args: any[]) {
       const oldValue = target.valueOf()
-      const result = Date.prototype[method].apply(this, args)
+      const result = (Date.prototype as any)[method].apply(this, args)
       if (target.valueOf() !== oldValue) update()
       return result
     })
@@ -160,6 +160,7 @@ export function observe<T extends object, R>(target: T, ...args: [(string | numb
       }
       return update(diff)
     }
+    return undefined
   })
 
   defineProperty(observer, '$merge', function $merge(this: Observed<T>, value: Partial<T>) {

@@ -19,14 +19,14 @@ export function merge<T extends object>(head: T, base: T): T {
   Object.entries(base).forEach(([key, value]) => {
     // prevent prototype pollution attack — check BEFORE any write
     if (key === '__proto__' || key === 'constructor' || key === 'prototype') return
-    if (!Object.hasOwn(head, key)) {
-      head[key] = value
+    if (!Object.hasOwn(head, key as keyof T)) {
+      ;(head as Record<string, any>)[key] = value
       return
     }
-    if (typeof value === 'object' && typeof head[key] === 'object') {
-      head[key] = merge(head[key], value)
+    if (typeof value === 'object' && typeof head[key as keyof T] === 'object') {
+      ;(head as Record<string, any>)[key] = merge((head as Record<string, any>)[key], value)
     } else {
-      head[key] = value
+      ;(head as Record<string, any>)[key] = value
     }
   })
   return head
