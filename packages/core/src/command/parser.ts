@@ -445,7 +445,7 @@ export namespace Argv {
             continue
           }
           if (i > 1 && name.startsWith('no-') && !this._namedOptions[name]) {
-            options[camelCase(name.slice(3))] = false
+            ;(options as Record<string, any>)[camelCase(name.slice(3))] = false
             continue
           }
           param = content.slice(++j)
@@ -477,10 +477,10 @@ export namespace Argv {
           const optDecl = this._namedOptions[name]
           const key = optDecl ? optDecl.name! : camelCase(name)
           if (optDecl && name in optDecl.values) {
-            options[key] = optDecl.values[name]
+            ;(options as Record<string, any>)[key] = optDecl.values[name]
           } else {
             const source = j + 1 < names.length ? '' : param!
-            options[key] = this.ctx.$commander.parseValue(source, 'option', argv, optDecl)
+            ;(options as Record<string, any>)[key] = this.ctx.$commander.parseValue(source, 'option', argv, optDecl)
           }
           if (argv.error) break
         }
@@ -489,7 +489,7 @@ export namespace Argv {
       // assign default values
       for (const { name, fallback } of Object.values(this._options)) {
         if (fallback !== undefined && !(name! in options)) {
-          options[name!] = fallback
+          ;(options as Record<string, any>)[name!] = fallback
         }
       }
 

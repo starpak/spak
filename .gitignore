@@ -1,39 +1,207 @@
+```gitignore
 # Dependencies
 node_modules/
-
-# Spak dev-only workspace: DSH front-end + handoff files.
-# Force-tracked ONLY on the `dev` branch (`git add -f`); ignored everywhere
-# else so it can never be committed to master or any other branch.
-.dev/
 
 # Build outputs
 dist/
 build/
 target/
-lib/
 
-# TypeScript
+# TypeScript/JavaScript
+*.js.map
 *.tsbuildinfo
-out/
+.cache/
 
-# Logs and temp files
+# Logs
 *.log
-*.tmp
-*.pid
 
 # Environment variables
 .env
 .env.local
 *.env.*
 
-# Editors
+# IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Python (if applicable)
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Python (if present)
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.venv/
+.Python
+env/
 venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage.*
+.nox/
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+
+# Java (if present)
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+.recommenders
+.gradle/
+build/
+
+# Node.js (if present)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules/
+jspm_packages/
+*.lock
+.yarn-integrity
+.yarn-cache.tgz
+.npm
+.npmrc
+package-lock.json
+yarn.lock
+.nyc_output
+.nyc_coverage
+coverage/
+
+# Ruby (if present)
+*.gem
+*.rbc
+.bundle/
+.config/coveralls.yml
+coverage/
+InstalledFiles
+lib/bundler/man/
+pkg/
+rdoc/
+spec/reports/
+test/tmp/
+test/version_tmp/
+tmp/
+
+# Go (if present)
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.prof
+.DS_Store
+!Makefile
+!README*
+!readme*
+!LICENSE
+!COPYING
+!.gitignore
+vendor/
+
+# C/C++ (if present)
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+*.exe
+*.out
+*.obj
+*.ilk
+*.pdb
+*.gch
+*.gtest
+*.idb
+*.iobj
+*.ipdb
+*.resources
+*.metagen
+*.tlog
+*.lastbuildstate
+*.res
+*.pch
+*.ncb
+*.sdf
+*.opensdf
+*.suo
+*.VC.db
+*.VC.VC.opendb
+*.stackdump
+[ipIP]ntel/
+*.bspec
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Rust (if present)
+target/
+Cargo.lock
+*.so
+*.dylib
+*.dSYM
+
+# Julia (if present)
+.julia/
+*.ji
+*.jl.cov
+*.jl.internal
+*.mem
+*.internal
+.juliabox/
+Julia-*
+julia-*/
+
+# Zig (if present)
+zig-*/
+zig-cache/
+zig-out/
+
+# Compression
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+
+# Images (not ignored as per instructions)
+# *.png
+# *.jpg
+# *.jpeg
+# *.bmp
+# *.gif
+# *.webm
+```

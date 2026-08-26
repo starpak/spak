@@ -88,16 +88,16 @@ export class FilterService {
 
   union(arg: Filter | Context) {
     const filter = typeof arg === 'function' ? arg : arg.filter
-    return this.ctx.extend({ filter: s => this.ctx.filter(s) || filter(s) })
+    return this.ctx.extend({ filter: (s: Session) => this.ctx.filter(s) || filter(s) })
   }
 
   intersect(arg: Filter | Context) {
     const filter = typeof arg === 'function' ? arg : arg.filter
-    return this.ctx.extend({ filter: s => this.ctx.filter(s) && filter(s) })
+    return this.ctx.extend({ filter: (s: Session) => this.ctx.filter(s) && filter(s) })
   }
 
   exclude(arg: Filter | Context) {
     const filter = typeof arg === 'function' ? arg : arg.filter
-    return this.ctx.extend({ filter: s => this.ctx.filter(s) && !filter(s) })
+    return this.ctx.extend({ filter: (s: Session) => this.ctx.filter(s) && !filter(s) })
   }
 }

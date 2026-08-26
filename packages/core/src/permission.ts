@@ -123,14 +123,14 @@ export class Permissions {
   }
 
   async test(names: Iterable<string>, session: Partial<Session> = {}, cache: Map<string, Promise<boolean>> = new Map()) {
-    session = session[Context.shadow] || session
+    session = (session as any)[Context.shadow] || session
     if (typeof names === 'string') names = [names]
     for (const name of this.subgraph('depends', names)) {
       const parents = [...this.subgraph('inherits', [name])]
       const results = await Promise.all(parents.map(parent => {
         let result = cache.get(parent)
         if (!result) {
-          result = this.check(parent, session)
+          result = this.check(parent, session as Session)
           cache.set(parent, result)
         }
         return result
