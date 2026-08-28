@@ -26,8 +26,8 @@ function untracked(key) {
 }
 function observeObject(target, notify) {
     const update = notify;
+    const diff = Object.create(null);
     if (!notify) {
-        const diff = Object.create(null);
         (0, cosmokit_1.defineProperty)(target, '$diff', diff);
         notify = (key) => {
             if (untracked(key))
@@ -150,6 +150,7 @@ function observe(target, ...args) {
             }
             return update(diff);
         }
+        return undefined;
     });
     (0, cosmokit_1.defineProperty)(observer, '$merge', function $merge(value) {
         for (const key in value) {

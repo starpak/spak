@@ -54,7 +54,7 @@ export default class NodeLoader extends Loader {
     this.localKeys = []
     for (const key in parsed) {
       if (initialKeys.includes(key)) continue
-      process.env[key] = parsed[key]
+      process.env[key] = (parsed as Record<string, string>)[key]
       this.localKeys.push(key)
     }
 

@@ -64,15 +64,15 @@ class FilterService {
     }
     union(arg) {
         const filter = typeof arg === 'function' ? arg : arg.filter;
-        return this.ctx.extend({ filter: s => this.ctx.filter(s) || filter(s) });
+        return this.ctx.extend({ filter: (s) => this.ctx.filter(s) || filter(s) });
     }
     intersect(arg) {
         const filter = typeof arg === 'function' ? arg : arg.filter;
-        return this.ctx.extend({ filter: s => this.ctx.filter(s) && filter(s) });
+        return this.ctx.extend({ filter: (s) => this.ctx.filter(s) && filter(s) });
     }
     exclude(arg) {
         const filter = typeof arg === 'function' ? arg : arg.filter;
-        return this.ctx.extend({ filter: s => this.ctx.filter(s) && !filter(s) });
+        return this.ctx.extend({ filter: (s) => this.ctx.filter(s) && !filter(s) });
     }
 }
 exports.FilterService = FilterService;

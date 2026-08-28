@@ -45,6 +45,9 @@ importers:
         specifier: ^4.18.11
         version: 4.18.11(@cordisjs/plugin-http@0.6.3(cordis@3.18.1))(cordis@3.18.1)
     devDependencies:
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@types/node':
         specifier: ^26.1.1
         version: 26.2.0

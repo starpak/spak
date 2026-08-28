@@ -4,6 +4,8 @@ import * as yaml from 'js-yaml'
 import * as path from 'path'
 import { T } from '@spakjs/i18n'
 
+const kUpdate = Symbol('update')
+
 export class FullReloadError extends Error {
   constructor(public readonly code: number) {
     super(`Full reload requested with exit code ${code}`)
@@ -50,8 +52,6 @@ function separate(source: any, isGroup = false) {
   }
   return [isGroup ? source : config, meta]
 }
-
-const kUpdate = Symbol('update')
 
 const group: Plugin.Object<Context> = {
   name: 'group',
@@ -115,7 +115,7 @@ const writable = {
   '.json': 'application/json',
   '.yaml': 'application/yaml',
   '.yml': 'application/yaml',
-}
+} satisfies Record<string, string>
 
 export abstract class Loader {
   static readonly kRecord = Symbol.for('spak.loader.record')
@@ -283,7 +283,7 @@ export abstract class Loader {
     })
   }
 
-  interpolate(source: any) {
+  interpolate(source: any): any {
     if (typeof source === 'string') {
       return interpolate(source, this.params, /\$\{\{(.+?)\}\}/g)
     } else if (!source || typeof source !== 'object') {
@@ -301,9 +301,10 @@ export abstract class Loader {
     return plugin
   }
 
-  keyFor = (plugin: any) => {
+  keyFor = (plugin: any): string | undefined => {
     const name = this.store.get(this.app.registry.resolve(plugin))
     if (name) return name.replace(/(spak-|^@spakjs\/)plugin-/, '')
+    return undefined
   }
 
   replace = (oldKey: any, newKey: any) => {
@@ -372,7 +373,7 @@ export abstract class Loader {
       parent.scope[Loader.kRecord][key] = fork
     }
     const filter = this.interpolate(meta.$filter)
-    fork.parent.filter = (session) => {
+    fork.parent.filter = (session: any) => {
       return parent.filter(session) && (isNullable(filter) || session.resolve(filter))
     }
     return fork
@@ -383,13 +384,14 @@ export abstract class Loader {
     if (fork) fork.dispose()
   }
 
-  getRefName = (fork: ForkScope) => {
+  getRefName = (fork: ForkScope): string | undefined => {
     const record = fork.parent.scope[Loader.kRecord]
-    if (!record) return
+    if (!record) return undefined
     for (const name in record) {
       if (record[name] !== fork) continue
       return name
     }
+    return undefined
   }
 
   paths = (scope: EffectScope): string[] => {
