@@ -66,7 +66,7 @@ function observeArray<T>(target: T[], update: () => void) {
   const proxy: Record<number, T> = {}
 
   for (const method of arrayProxyMethods) {
-    const original = Array.prototype[method] as Function
+    const original = (Array.prototype as any)[method] as Function
     defineProperty(target, method, function (...args: any[]) {
       update()
       return original.apply(this, args)
@@ -92,7 +92,7 @@ const setProxyMethods = ['add', 'delete', 'clear']
 
 function observeMap(target: Map<any, any>, update: () => void) {
   for (const method of mapProxyMethods) {
-    const original = Map.prototype[method]
+    const original = (Map.prototype as any)[method]
     defineProperty(target, method, function (...args: any[]) {
       update()
       return original.apply(this, args)
@@ -103,7 +103,7 @@ function observeMap(target: Map<any, any>, update: () => void) {
 
 function observeSet(target: Set<any>, update: () => void) {
   for (const method of setProxyMethods) {
-    const original = Set.prototype[method]
+    const original = (Set.prototype as any)[method]
     defineProperty(target, method, function (...args: any[]) {
       update()
       return original.apply(this, args)

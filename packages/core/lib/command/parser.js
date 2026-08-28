@@ -306,6 +306,7 @@ var Argv;
                         continue;
                     }
                     if (i > 1 && name.startsWith('no-') && !this._namedOptions[name]) {
+                        ;
                         options[(0, cosmokit_1.camelCase)(name.slice(3))] = false;
                         continue;
                     }
@@ -337,6 +338,7 @@ var Argv;
                     const optDecl = this._namedOptions[name];
                     const key = optDecl ? optDecl.name : (0, cosmokit_1.camelCase)(name);
                     if (optDecl && name in optDecl.values) {
+                        ;
                         options[key] = optDecl.values[name];
                     }
                     else {
@@ -350,6 +352,7 @@ var Argv;
             // assign default values
             for (const { name, fallback } of Object.values(this._options)) {
                 if (fallback !== undefined && !(name in options)) {
+                    ;
                     options[name] = fallback;
                 }
             }

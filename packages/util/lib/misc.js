@@ -32,13 +32,16 @@ function merge(head, base) {
         if (key === '__proto__' || key === 'constructor' || key === 'prototype')
             return;
         if (!Object.hasOwn(head, key)) {
+            ;
             head[key] = value;
             return;
         }
         if (typeof value === 'object' && typeof head[key] === 'object') {
+            ;
             head[key] = merge(head[key], value);
         }
         else {
+            ;
             head[key] = value;
         }
     });

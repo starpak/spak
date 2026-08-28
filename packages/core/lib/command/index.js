@@ -186,7 +186,8 @@ class Commander {
                         command.parent = parent;
                     }
                 }
-                return parent = command;
+                parent = command;
+                return;
             }
             const isLast = index === segments.length - 1;
             command = new command_1.Command(name, isLast ? decl : '', this.ctx, isLast ? config : {});

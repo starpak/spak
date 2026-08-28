@@ -12,7 +12,7 @@ export function enumKeys<T extends string>(data: Record<T, string | number>) {
 
 export function defineEnumProperty<T extends object>(object: T, key: keyof T, value: T[keyof T]) {
   object[key] = value
-  object[value as any] = key
+  object[value as unknown as string] = key as never
 }
 
 export function merge<T extends object>(head: T, base: T): T {
