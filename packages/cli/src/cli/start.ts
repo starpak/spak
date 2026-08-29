@@ -1,4 +1,5 @@
-import { hyphenate, isInteger } from '@spakjs/util'
+import { hyphenate, isInteger, projectDataDir } from '@spakjs/util'
+import { join } from 'path'
 import kleur from 'kleur'
 import { readFile, writeFile, unlink } from 'fs/promises'
 import { T } from '@spakjs/i18n'
@@ -13,7 +14,7 @@ process.env.SPAK_SHARED = JSON.stringify({
   startTime: Date.now(),
 })
 
-const PID_FILE = '.spak.pid'
+const PID_FILE = join(projectDataDir(), '.spak.pid')
 
 async function getRunningPid(): Promise<number | null> {
   try {

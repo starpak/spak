@@ -1,9 +1,11 @@
-```
 # TypeScript build info
 **/tsconfig.tsbuildinfo
 
 # Build outputs
 lib/
+
+# 项目数据目录（应用/registry/config/pid/缓存 —— 全部落在这，不提交）
+data/
 
 # Dependencies
 node_modules/

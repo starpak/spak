@@ -120,7 +120,7 @@
 - **npm**: `@spakjs/config`
 - **位置**: `packages/config/`
 - **做什么**:
-  - **用户级**（工作目录无关）配置管理：`~/.spak/config.json`（= CONFIG_DIR + CONFIG_FILE）。
+  - **用户级**（工作目录无关）配置管理：`data/config.json`（= CONFIG_DIR + CONFIG_FILE）。
   - API: `loadConfig()` / `saveConfig()` / `getConfig(key)` / `setConfig(key, value)` / `CONFIG_DIR` / `CONFIG_FILE`。
 - **不该做**:
   - ❌ 不再自带 config CLI 命令（已搬入 spak-cli → `commands/config.ts`）。
@@ -155,8 +155,8 @@
 - **npm**: `spm`
 - **位置**: `packages/spm/`
 - **做什么**:
-  1. **包管理**：`spm pack <appDir>`（打包 .pak）、`spm list`、`spm info <name>`（含权限声明展示）、`spm install <name|--file>`（内置**安全审查者**：防 zip-slip、可执行内容需 manifest 声明 exec/desktop + **permissions 权限声明校验**，缺失/非法即拒绝）、`spm uninstall <name>`、`spm publish --file <pak>`（本地 registry ~/.spak/.registry）。
-  2. **运行时启停**：`spm serve [--stop/--restart/--kill]`、`spm serve status`（pid 文件 ~/.spak/.pid？见 cli/start.ts）。
+  1. **包管理**：`spm pack <appDir>`（打包 .pak）、`spm list`、`spm info <name>`（含权限声明展示）、`spm install <name|--file>`（内置**安全审查者**：防 zip-slip、可执行内容需 manifest 声明 exec/desktop + **permissions 权限声明校验**，缺失/非法即拒绝）、`spm uninstall <name>`、`spm publish --file <pak>`（本地 registry data/.registry）。
+  2. **运行时启停**：`spm serve [--stop/--restart/--kill]`、`spm serve status`（pid 文件 data/.spak.pid？见 cli/start.ts）。
   3. **注入命令**：构建时把 `@spakjs/cli` 的 serve/config/cpc/i18n declarations 注册进 cac（bin: `lib/index.js`）。
 - **依赖**: `@spakjs/cli` / `@spakjs/i18n` / `@spakjs/util` / `@spakjs/log` / `@spakjs/apps`（workspace，供权限校验类型）。
 

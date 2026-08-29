@@ -37,6 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const util_1 = require("@spakjs/util");
+const path_1 = require("path");
 const kleur_1 = __importDefault(require("kleur"));
 const promises_1 = require("fs/promises");
 const i18n_1 = require("@spakjs/i18n");
@@ -48,7 +49,7 @@ const log_1 = require("@spakjs/log");
 process.env.SPAK_SHARED = JSON.stringify({
     startTime: Date.now(),
 });
-const PID_FILE = '.spak.pid';
+const PID_FILE = (0, path_1.join)((0, util_1.projectDataDir)(), '.spak.pid');
 async function getRunningPid() {
     try {
         const data = await (0, promises_1.readFile)(PID_FILE, 'utf8');

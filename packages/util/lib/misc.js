@@ -13,6 +13,8 @@ exports.makeArray = makeArray;
 exports.isNullable = isNullable;
 exports.valueMap = valueMap;
 exports.extend = extend;
+exports.projectDataDir = projectDataDir;
+exports.projectDataSubDir = projectDataSubDir;
 function isInteger(source) {
     return typeof source === 'number' && Math.floor(source) === source;
 }
@@ -82,7 +84,20 @@ function valueMap(obj, fn) {
     }
     return result;
 }
+const path_1 = require("path");
 function extend(prototype, methods) {
     Object.defineProperties(prototype, Object.getOwnPropertyDescriptors(methods));
+}
+// ===== Spak 项目数据目录 =====
+//
+// 存储策略：一切数据（应用、registry、config、pid、缓存）都落在
+// 「项目源码所在根」下的 data/ 子目录——不写全局 ~/.spak。
+// 优先尊重 SPAK_DATA_DIR 环境变量（二进制/CI 可显式指定）。
+function projectDataDir(cwd) {
+    return process.env.SPAK_DATA_DIR || (0, path_1.resolve)(cwd || process.cwd(), 'data');
+}
+/** Spak 数据目录下某个子目录（如 apps / registry / pid）。 */
+function projectDataSubDir(name, cwd) {
+    return (0, path_1.resolve)(projectDataDir(cwd), name);
 }
 //# sourceMappingURL=misc.js.map

@@ -20,7 +20,7 @@
 - **编译错误全面修复**：`@spakjs/util` 的 `defineEnumProperty`（TS7053）、`@spakjs/core` schema 的 symbol 索引访问、`@spakjs/loader` 的 shared 类型（EffectScope/ForkScope、`ensureScopeRecord` 等），`pnpm build` 全量通过。
 - **命令解析器修复**：`h.parse()` 返回 Fragment（children 是普通字符串）而非 koishi 风格的 text 元素数组，导致文本节点被当元素、空白被转义、整串退化成一个 token；现已正确识别字符串文本节点，并新增 `img` 领域以匹配既有测试。
 - **测试套件修复**：移除依赖已废弃子系统（koishi 分层 API / satori / 内存数据库）的死测试；`parser.spec.ts` 现 19 项全绿。
-- **幽灵引用清理**：删除配置与 CPC 白名单中不存在的 `plugin-server` / `plugin-http` / `plugin-hmr` / `plugin-daemon` 引用；清空 `~/.spak/config.json` 旧版 `server` 残留。
+- **幽灵引用清理**：删除配置与 CPC 白名单中不存在的 `plugin-server` / `plugin-http` / `plugin-hmr` / `plugin-daemon` 引用；清空 `data/config.json` 旧版 `server` 残留。
 - **i18n 补齐**：zh / en 全集对齐（210 个 key 对称），补充 `spak.cpc.ssetps.firewall_rule_invalid`。
 - **构建门禁**：接入 `simple-git-hooks`，`pre-commit` 必跑 `pnpm build && pnpm test`，编译不过一律阻止提交。
 - **文档对齐**：README（中/英）移除不存在的插件宣传与过期信息，版本号统一为 v0.1.0。

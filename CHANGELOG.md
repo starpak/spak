@@ -17,7 +17,7 @@
 
 ### 🐛 Fixes
 - **`spm` 成为唯一 CLI（v0.0.1）**：恢复并重构 Spak 包管理器为正式 CLI——
-  - **包管理**：`spm pack`（.pak 单文件打包）、`spm list` / `spm info` / `spm uninstall` / `spm publish`（本地 registry `~/.spak/.registry`）、`spm install`（带**安全审查者**：防 zip-slip 路径穿越、可执行内容需 manifest 声明 `exec`/`desktop`，非法拒绝）。
+  - **包管理**：`spm pack`（.pak 单文件打包）、`spm list` / `spm info` / `spm uninstall` / `spm publish`（本地 registry `data/.registry`）、`spm install`（带**安全审查者**：防 zip-slip 路径穿越、可执行内容需 manifest 声明 `exec`/`desktop`，非法拒绝）。
   - **运行时启停**：`spm serve [--stop/--restart/--kill]`、`spm serve status`（修复后台运行保活：stdin 方案改为 timer，setsid/nohup 不再意外退出）。
   - **i18n 迁移**：`spm i18n init`（扫描补 key）+ 新增 `spm i18n check`（干跑只报告不写文件）。
   - **注入架构（用户方案）**：命令实现全部保留在 `@spakjs/cli`，spm 壳构建时统一注册（先编 cli 再编 spm）。
@@ -33,7 +33,7 @@
 - **编译错误全面修复**：`@spakjs/util` `defineEnumProperty` 的 TS7053、`@spakjs/core` schema 的 symbol 索引访问、`@spakjs/loader` shared 类型（EffectScope/ForkScope、`ensureScopeRecord` 等），`pnpm build` 全量通过。
 - **命令解析器修复**：`h.parse()` 返回 Fragment（children 为普通字符串）而非 koishi 风格的 text 元素数组，导致文本节点被误当元素、空白被转义、整串退化成一个 token；现正确识别字符串文本节点。新增 `img` 领域以匹配既有测试。
 - **测试套件修复**：移除依赖已废弃子系统（koishi 分层 API / satori / 内存数据库）的死测试；`parser.spec.ts` 现 19 项全绿。
-- **幽灵引用清理**：删除配置与 CPC 白名单中不存在的 `plugin-server` / `plugin-http` / `plugin-hmr` / `plugin-daemon` 引用；清空 `~/.spak/config.json` 旧版 `server` 残留。
+- **幽灵引用清理**：删除配置与 CPC 白名单中不存在的 `plugin-server` / `plugin-http` / `plugin-hmr` / `plugin-daemon` 引用；清空 `data/config.json` 旧版 `server` 残留。
 - **i18n 补齐**：zh / en 全集对齐（135 个 key 对称，含全部 `spak.spm.*` 与新增 `i18n.check_clean`/`dry_run`/`static_dir_missing`）。
 - **构建门禁**：接入 `simple-git-hooks`，`pre-commit` 必跑 `pnpm build && pnpm test`，编译不过一律阻止提交。
 - **文档对齐**：README（中/英）以 spm 为唯一 CLI，版本 v1.0.0；SPAK_ROADMAP / MODULE_DIVISION 同步架构变更。

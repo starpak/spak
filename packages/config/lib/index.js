@@ -6,8 +6,9 @@ exports.getConfig = getConfig;
 exports.setConfig = setConfig;
 const fs_1 = require("fs");
 const path_1 = require("path");
-const os_1 = require("os");
-const CONFIG_DIR = (0, path_1.resolve)((0, os_1.homedir)(), '.spak');
+const util_1 = require("@spakjs/util");
+// 数据目录 = 项目源码根下的 data/（尊重 SPAK_DATA_DIR 覆盖，不写 ~/.spak）
+const CONFIG_DIR = (0, util_1.projectDataDir)();
 const CONFIG_FILE = (0, path_1.resolve)(CONFIG_DIR, 'config.json');
 const defaultConfig = {
     language: 'en',

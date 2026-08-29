@@ -8,24 +8,34 @@
 // 查可执行文件预声明（exec），未声明可执行内容的包拒绝安装。
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs'
-import { homedir } from 'os'
 import { join, resolve, sep } from 'path'
 import kleur from 'kleur'
 import { T } from '@spakjs/i18n'
 import { CommandDeclaration } from '@spakjs/cli'
 import { validateAppPermissions, isExecutableApp } from '@spakjs/apps'
+import { projectDataDir, projectDataSubDir } from '@spakjs/util'
 import { packApp } from './pack'
 import { extractZip } from './zip'
 import { version as spmVersion } from '../package.json'
 
-/** 应用安装根目录：~/.spak/.apps */
+/** 应用安装根目录：<项目根>/data/apps */
 export function appsDir(): string {
-  return join(homedir(), '.spak', '.apps')
+  return projectDataSubDir('apps')
 }
 
-/** 某个应用的实际安装路径：~/.spak/.apps/<name> */
+/** 某个应用的实际安装路径：<项目根>/data/apps/<name> */
 export function appDir(name: string): string {
   return join(appsDir(), name)
+}
+
+/** 本地 registry 根：<项目根>/data/registry */
+export function registryDir(): string {
+  return projectDataSubDir('registry')
+}
+
+/** 项目数据根（data/） */
+export function dataRoot(): string {
+  return projectDataDir()
 }
 
 // ---------- 安全审查 ----------
@@ -198,16 +208,16 @@ export function uninstallApp(name: string): void {
 
 // ---------- publish ----------
 
-/** 发布 .pak 到本地 registry（~/.spak/.registry/<name>-<version>.pak + 索引）。 */
+/** 发布 .pak 到本地 registry（<项目根>/data/registry/<name>-<version>.pak + 索引）。 */
 export function publishApp(opts: { name?: string; file: string }): string {
   const pakFile = resolve(opts.file)
   if (!existsSync(pakFile)) throw new Error(T('spak.spm.pak_not_found', { file: pakFile }))
   const manifest = readManifestFromZip(pakFile)
   const name = opts.name || manifest.name
-  const registryDir = join(homedir(), '.spak', '.registry')
-  mkdirSync(registryDir, { recursive: true })
-  const dest = join(registryDir, `${name}-${manifest.version}.pak`)
-  const indexFile = join(registryDir, 'index.json')
+  const registryDirPath = registryDir()
+  mkdirSync(registryDirPath, { recursive: true })
+  const dest = join(registryDirPath, `${name}-${manifest.version}.pak`)
+  const indexFile = join(registryDirPath, 'index.json')
   const index: Record<string, string> = existsSync(indexFile)
     ? JSON.parse(readFileSync(indexFile, 'utf8')) : {}
   index[name] = `${name}-${manifest.version}.pak`
@@ -218,12 +228,12 @@ export function publishApp(opts: { name?: string; file: string }): string {
 
 /** 从本地 registry 解析 .pak 路径。 */
 export function resolveFromRegistry(name: string): string | undefined {
-  const indexFile = join(homedir(), '.spak', '.registry', 'index.json')
+  const indexFile = join(registryDir(), 'index.json')
   if (!existsSync(indexFile)) return undefined
   const index: Record<string, string> = JSON.parse(readFileSync(indexFile, 'utf8'))
   const rel = index[name]
   if (!rel) return undefined
-  const pak = join(homedir(), '.spak', '.registry', rel)
+  const pak = join(registryDir(), rel)
   return existsSync(pak) ? pak : undefined
 }
 

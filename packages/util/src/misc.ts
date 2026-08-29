@@ -79,6 +79,22 @@ type Methods<T> = {
   [K in keyof T]?: T[K] extends (...args: infer A) => infer R ? (this: T, ...args: A) => R : T[K]
 }
 
+import { resolve } from 'path'
+
 export function extend<T>(prototype: T, methods: Methods<T>) {
   Object.defineProperties(prototype, Object.getOwnPropertyDescriptors(methods))
+}
+
+// ===== Spak 项目数据目录 =====
+//
+// 存储策略：一切数据（应用、registry、config、pid、缓存）都落在
+// 「项目源码所在根」下的 data/ 子目录——不写全局 ~/.spak。
+// 优先尊重 SPAK_DATA_DIR 环境变量（二进制/CI 可显式指定）。
+export function projectDataDir(cwd?: string): string {
+  return process.env.SPAK_DATA_DIR || resolve(cwd || process.cwd(), 'data')
+}
+
+/** Spak 数据目录下某个子目录（如 apps / registry / pid）。 */
+export function projectDataSubDir(name: string, cwd?: string): string {
+  return resolve(projectDataDir(cwd), name)
 }

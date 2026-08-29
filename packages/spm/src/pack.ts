@@ -5,18 +5,18 @@
 //   spak.app.json     应用清单（必需）
 //   <app 资源>        如 index.html / assets/* （由 manifest.staticDir 指向）
 //
-// 用途：一个 .pak = 一个可安装/可运行的应用，server 从 ~/.spak/.apps 加载。
+// 用途：一个 .pak = 一个可安装/可运行的应用，server 从 <项目根>/data/apps 加载。
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
-import { homedir } from 'os'
+import { projectDataSubDir } from '@spakjs/util'
 import { buildZip, dirToEntries } from './zip'
 import { T } from '@spakjs/i18n'
 
 export interface PackOptions {
   /** app 根目录（含 spak.app.json） */
   appDir: string
-  /** 输出 .pak 文件路径（可选，默认 ~/.spak/.apps/<name>.pak） */
+  /** 输出 .pak 文件路径（可选，默认 <项目根>/data/apps/<name>.pak） */
   out?: string
 }
 
@@ -75,7 +75,7 @@ export function packApp(opts: PackOptions): string {
   // 输出路径
   const out = opts.out
     ? resolve(opts.out)
-    : join(homedir(), '.spak', '.apps', `${name}.pak`)
+    : join(projectDataSubDir('apps'), `${name}.pak`)
 
   mkdirSync(resolve(out, '..'), { recursive: true })
   writeFileSync(out, zipBuf)

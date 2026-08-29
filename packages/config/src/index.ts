@@ -1,8 +1,9 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { resolve } from 'path'
-import { homedir } from 'os'
+import { projectDataDir } from '@spakjs/util'
 
-const CONFIG_DIR = resolve(homedir(), '.spak')
+// 数据目录 = 项目源码根下的 data/（尊重 SPAK_DATA_DIR 覆盖，不写 ~/.spak）
+const CONFIG_DIR = projectDataDir()
 const CONFIG_FILE = resolve(CONFIG_DIR, 'config.json')
 
 export interface SpakConfig {

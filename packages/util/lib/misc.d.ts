@@ -18,5 +18,8 @@ type Methods<T> = {
     [K in keyof T]?: T[K] extends (...args: infer A) => infer R ? (this: T, ...args: A) => R : T[K];
 };
 export declare function extend<T>(prototype: T, methods: Methods<T>): void;
+export declare function projectDataDir(cwd?: string): string;
+/** Spak 数据目录下某个子目录（如 apps / registry / pid）。 */
+export declare function projectDataSubDir(name: string, cwd?: string): string;
 export {};
 //# sourceMappingURL=misc.d.ts.map
