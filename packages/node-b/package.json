@@ -1,6 +1,6 @@
 {
   "name": "@spakjs/node-b",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Spak front-end build cache tool — builds plugin bundles once, records a whitelist so already-built packages are skipped on subsequent builds.",
   "type": "module",
   "main": "lib/index.js",

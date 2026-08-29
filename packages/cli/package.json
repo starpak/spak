@@ -1,7 +1,7 @@
 {
   "name": "@spakjs/cli",
   "description": "Spak CLI — serve / config / cpc commands and the createApp bootstrap for @spakjs/core",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "type": "commonjs",

@@ -1,6 +1,6 @@
 {
   "name": "spm",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Spak Builder CLI — sealed binary building (build/dev) and runtime control",
   "private": true,
   "type": "commonjs",
