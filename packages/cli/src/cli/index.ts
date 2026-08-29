@@ -10,6 +10,7 @@ import { registerDeclarations, generateCommandHelp } from './registry'
 import serveDeclarations from './start'
 import configDeclarations from '../commands/config'
 import cpcDeclarations from '../commands/cpc'
+import i18nDeclarations from '../commands/i18n'
 import { version } from '../../package.json'
 import { T } from '@spakjs/i18n'
 import { setGlobalFormatter, simpleFormatter, setDebugMode } from '@spakjs/log'
@@ -24,6 +25,7 @@ const declarations: CommandDeclaration[] = [
   ...serveDeclarations,
   ...configDeclarations,
   ...cpcDeclarations,
+  ...i18nDeclarations,
 ]
 
 registerDeclarations(cli, declarations)

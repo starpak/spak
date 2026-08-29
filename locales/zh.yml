@@ -84,6 +84,10 @@ spak:
     inject:
       added: "已注入 @spakjs/i18n 依赖到 {pkg}"
       created: "已为 {pkg} 创建 locales 目录"
+    i18n:
+      added: "已向 {file} 追加 {count} 个缺失 key（{lang}）"
+      uptodate: "共扫描 {count} 个 key，全部已收录，无需补全"
+      key_list: "新增 key"
     banner: "spak v{version} · {description}"
     version_line: "spak/{version} {platform} node-{nodever}"
     unknown_command: "未知命令 \"{cmd}\""
@@ -103,6 +107,8 @@ spak:
       start_ssetps_monitoring_memorylimitmb_from_config_or_spak_ssetps_memory_limit_mb_env: "启动 SSetPS 监控 (memoryLimitMB 来自配置或 SPAK_SSETPS_MEMORY_LIMIT_MB 环境变量)"
       trigger_circuit_breaker_for_a_plugin: "为插件触发熔断器"
       show_cpc_status: "显示 CPC 状态"
+      scan_all_packages_and_append_missing_i18n_keys_key_only_empty_content_to_locales_key_files: "遍历所有包，将源码中未收录的 i18n key 以空内容补入 locales key 文件"
+      i18n_key_management_commands: "i18n key 管理命令"
       config_file_path: "配置文件路径"
       subcommand_check_sandbox_ssetps_circuit_status: "子命令: check, sandbox, ssetps, circuit, status"
       plugin_name_argument: "插件名参数"

@@ -12,8 +12,9 @@ const registry_1 = require("./registry");
 const start_1 = __importDefault(require("./start"));
 const config_1 = __importDefault(require("../commands/config"));
 const cpc_1 = __importDefault(require("../commands/cpc"));
+const i18n_1 = __importDefault(require("../commands/i18n"));
 const package_json_1 = require("../../package.json");
-const i18n_1 = require("@spakjs/i18n");
+const i18n_2 = require("@spakjs/i18n");
 const log_1 = require("@spakjs/log");
 // Initialize CLI logger with simple formatter (normal mode)
 (0, log_1.setGlobalFormatter)(log_1.simpleFormatter);
@@ -23,6 +24,7 @@ const declarations = [
     ...start_1.default,
     ...config_1.default,
     ...cpc_1.default,
+    ...i18n_1.default,
 ];
 (0, registry_1.registerDeclarations)(cli, declarations);
 // Intercept --help for subcommands before cac parses them
@@ -64,11 +66,11 @@ if (!cli.matchedCommand && !argv.options.help) {
         const positionalArgs = process.argv.slice(2).filter(a => !a.startsWith('-'));
         if (positionalArgs.length > 0) {
             // Unknown command — show error, not the banner
-            console.error(kleur_1.default.red(`spak: ${(0, i18n_1.T)('spak.cli.unknown_command', { cmd: positionalArgs[0] })}`));
-            console.error(kleur_1.default.dim(`  ${(0, i18n_1.T)('spak.cli.try_help')}`));
+            console.error(kleur_1.default.red(`spak: ${(0, i18n_2.T)('spak.cli.unknown_command', { cmd: positionalArgs[0] })}`));
+            console.error(kleur_1.default.dim(`  ${(0, i18n_2.T)('spak.cli.try_help')}`));
             process.exit(1);
         }
-        const banner = `  ${kleur_1.default.bold().cyan('spak')} v${kleur_1.default.green(package_json_1.version)} · ${(0, i18n_1.T)('spak.intro.description')}`;
+        const banner = `  ${kleur_1.default.bold().cyan('spak')} v${kleur_1.default.green(package_json_1.version)} · ${(0, i18n_2.T)('spak.intro.description')}`;
         console.log(banner);
         process.exit(0);
     }

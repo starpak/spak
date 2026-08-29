@@ -84,6 +84,10 @@ spak:
     inject:
       added: "injected @spakjs/i18n dependency into {pkg}"
       created: "created locales dir for {pkg}"
+    i18n:
+      added: "appended {count} missing keys to {file} ({lang})"
+      uptodate: "scanned {count} keys; all already present, nothing to add"
+      key_list: "added keys"
     banner: "spak v{version} · {description}"
     version_line: "spak/{version} {platform} node-{nodever}"
     unknown_command: "unknown command \"{cmd}\""
@@ -103,6 +107,8 @@ spak:
       start_ssetps_monitoring_memorylimitmb_from_config_or_spak_ssetps_memory_limit_mb_env: "Start SSetPS monitoring (memoryLimitMB from config, or SPAK_SSETPS_MEMORY_LIMIT_MB env)"
       trigger_circuit_breaker_for_a_plugin: "Trigger circuit breaker for a plugin"
       show_cpc_status: "Show CPC status"
+      scan_all_packages_and_append_missing_i18n_keys_key_only_empty_content_to_locales_key_files: "scan all packages and append missing i18n keys (key-only, empty content) to locales key files"
+      i18n_key_management_commands: "i18n key management commands"
       config_file_path: "config file path"
       subcommand_check_sandbox_ssetps_circuit_status: "Subcommand: check, sandbox, ssetps, circuit, status"
       plugin_name_argument: "Plugin name argument"

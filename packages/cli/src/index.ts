@@ -15,6 +15,7 @@ export type { CommandDeclaration, CommandArg, CommandOption } from './cli/types'
 export { default as serveDeclarations } from './cli/start'
 export { default as configDeclarations } from './commands/config'
 export { default as cpcDeclarations } from './commands/cpc'
+export { default as i18nDeclarations } from './commands/i18n'
 export { version }
 
 export interface CreateAppOptions {

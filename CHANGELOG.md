@@ -8,6 +8,9 @@
 
 ## [Unreleased]
 
+### ✨ Features
+- **`spak i18n init` 命令**：遍历所有包源码提取 `T()`/`t()` 的 i18n key，将未收录进 `locales/{zh,en-US}.yml` 的 key 以「仅 key、空内容」形式追加补全（幂等、不破坏原有内容）。
+
 ### 🐛 Fixes
 - **编译错误全面修复**：`@spakjs/util` `defineEnumProperty` 的 TS7053、`@spakjs/core` schema 的 symbol 索引访问、`@spakjs/loader` shared 类型（EffectScope/ForkScope、`ensureScopeRecord` 等），`pnpm build` 全量通过。
 - **命令解析器修复**：`h.parse()` 返回 Fragment（children 为普通字符串）而非 koishi 风格的 text 元素数组，导致文本节点被误当元素、空白被转义、整串退化成一个 token；现正确识别字符串文本节点。新增 `img` 领域以匹配既有测试。
