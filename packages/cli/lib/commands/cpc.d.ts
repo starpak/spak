@@ -17,6 +17,8 @@ export declare function runModuleWhitelistCheck(failHard?: boolean): {
     unauthorized: string[];
     total: number;
 };
+export declare function isolatePlugin(name: string): void;
+export declare function terminateSandbox(name: string): void;
 declare const circuitBreakers: Map<string, boolean>;
 declare function triggerCircuitBreaker(pluginName: string): void;
 declare function restoreCircuitBreaker(pluginName: string): void;

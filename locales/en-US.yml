@@ -50,6 +50,7 @@ spak:
     description: "multi-file service framework"
   general:
     error: "An error occurred"
+    invalid_log_level: "invalid SPAK_LOG_LEVEL"
 
   # --- CLI main module (src/locales) ---
   cli:
@@ -58,6 +59,8 @@ spak:
       started: "Spak service started (pid={pid})"
       stopping: "Shutting down spak service... ({signal})"
       start_failed: "Failed to start spak service: {error}"
+    start:
+      read_config_failed: "Failed to read config: {error}"
     stop:
       sent: "Sent {signal} to spak service (pid={pid})"
       failed: "Failed to stop spak service (pid={pid}): {error}"
@@ -168,6 +171,8 @@ spak:
       isolation_aborted: "{msg} — isolation aborted"
       started: "[sandbox] Plugin {name} started"
       error: "[sandbox] {name} error: {error}"
+      memory_limit: "Sandbox memory limit: {limit}MB"
+      overbudget: "[sandbox] {name} memory over budget ({rss}MB); circuit-break + terminate!"
     ssetps:
       monitoring: "SSetPS monitoring started"
       memory_warning: "Memory usage at {usage}%"
@@ -178,6 +183,7 @@ spak:
       circuit_restored: "Circuit breaker restored for {name}"
       firewall_rule: "Firewall rule: {rule}"
       firewall_rule_invalid: "Invalid firewall rule: {rule}"
+      firewall_installed: "Firewall active: {rule}"
       tip: '  tip: re-run with NODE_OPTIONS="--expose-gc" to let SSetPS force garbage collection when memory is high.'
     test:
       serve: "Starting test server..."
@@ -307,10 +313,14 @@ spak.spm.arg_appdir: "app directory path"
 spak.spm.arg_name: "app name"
 spak.spm.audit_exec_undeclared: "{count} executable content detected but manifest does not declare exec: true; rejected"
 spak.spm.audit_forbidden_dir: "forbidden directory: {path}"
+spak.spm.audit_permissions_invalid: "invalid permissions declaration: {error}"
 spak.spm.audit_rejected: "security audit failed; rejected:"
 spak.spm.audit_unsafe_path: "unsafe path: {path}"
 spak.spm.info_dir: "install directory"
 spak.spm.info_exec: "executable content"
+spak.spm.info_permissions: "permissions"
+spak.spm.info_port: "port"
+spak.spm.info_static_dir: "static directory"
 spak.spm.info_version: "version"
 spak.spm.install_error: "install failed: {error}"
 spak.spm.install_need_source: "provide --file <path.pak> or an app name from the registry"

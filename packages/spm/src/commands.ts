@@ -13,6 +13,7 @@ import { join, resolve, sep } from 'path'
 import kleur from 'kleur'
 import { T } from '@spakjs/i18n'
 import { CommandDeclaration } from '@spakjs/cli'
+import { validateAppPermissions, isExecutableApp } from '@spakjs/apps'
 import { packApp } from './pack'
 import { extractZip } from './zip'
 import { version as spmVersion } from '../package.json'
@@ -39,11 +40,29 @@ export interface AuditResult {
   execTargets: string[]
 }
 
-/** 审查 .pak 内容：路径安全 + 可执行内容预声明。 */
+/** 审查 .pak 内容：路径安全 + 可执行内容预声明 + 权限声明校验。 */
 export function auditPak(pakEntries: { path: string; data: Buffer }[], manifest: AppManifest): AuditResult {
   const reasons: string[] = []
   const execTargets: string[] = []
   const isStaticFrontend = !!manifest.desktop || !!manifest.staticDir
+
+  // ===== 权限声明校验（CPC 第一道墙）=====
+  // 可执行（server 型）应用必须显式声明合法 permissions，缺省=最小权限，
+  // 未声明一律拒绝——防 .pak 应用越权（读写文件/访问网络/拉起子进程）。
+  const permValidation = validateAppPermissions(manifest.permissions)
+  if (isExecutableApp(manifest)) {
+    if (!permValidation.valid) {
+      for (const err of permValidation.errors) {
+        reasons.push(T('spak.spm.audit_permissions_invalid', { error: err }))
+      }
+    }
+  } else if (manifest.permissions !== undefined && !permValidation.valid) {
+    // 静态前端可选声明，但若声明了就必须合法
+    for (const err of permValidation.errors) {
+      reasons.push(T('spak.spm.audit_permissions_invalid', { error: err }))
+    }
+  }
+
   for (const entry of pakEntries) {
     const p = entry.path
     // zip-slip / 绝对路径防御
@@ -82,7 +101,14 @@ export function auditPak(pakEntries: { path: string; data: Buffer }[], manifest:
   return { ok, reasons, execTargets }
 }
 
-interface AppManifest { name: string; version: string; exec?: boolean; desktop?: boolean; staticDir?: string }
+interface AppManifest {
+  name: string
+  version: string
+  exec?: boolean
+  desktop?: boolean
+  staticDir?: string
+  permissions?: any
+}
 
 function readManifestFromZip(pakFile: string): AppManifest {
   const entries = extractZip(readFileSync(pakFile))
@@ -96,6 +122,7 @@ function readManifestFromZip(pakFile: string): AppManifest {
     exec: !!manifest.exec,
     desktop: !!manifest.desktop,
     staticDir: manifest.staticDir,
+    permissions: manifest.permissions,
   }
 }
 
@@ -256,8 +283,13 @@ export const spmDeclarations: CommandDeclaration[] = [
       console.log(`  ${T('spak.spm.info_version')}: ${kleur.green(manifest.version)}`)
       console.log(`  ${T('spak.spm.info_dir')}: ${dir}`)
       console.log(`  ${T('spak.spm.info_exec')}: ${manifest.exec ? kleur.yellow(T('spak.spm.yes')) : kleur.dim(T('spak.spm.no'))}`)
-      if (manifest.staticDir) console.log(`  staticDir: ${manifest.staticDir}`)
-      if (manifest.port) console.log(`  port: ${manifest.port}`)
+      if (manifest.staticDir) console.log(`  ${T('spak.spm.info_static_dir')}: ${manifest.staticDir}`)
+      if (manifest.port) console.log(`  ${T('spak.spm.info_port')}: ${manifest.port}`)
+      if (manifest.permissions) {
+        const p = manifest.permissions
+        const perms = `network=${p.network ?? 'none'}, fs=${p.fs ?? 'none'}, childProcess=${p.childProcess ?? false}`
+        console.log(`  ${T('spak.spm.info_permissions')}: ${kleur.cyan(perms)}`)
+      }
     },
   },
   {

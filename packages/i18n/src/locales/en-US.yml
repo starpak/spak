@@ -1,0 +1,20 @@
+# 包级翻译分片（i18n）— 权威源为项目根 /locales/en-US.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+general:
+  $: General Settings
+  name: English
+  paren: ' ({0}) '
+  quote: '"{0}"'
+  comma: ', '
+  and: and
+  or: or
+  day: day
+  hour: hour
+  minute: minute
+  second: second
+
+spak:
+  general:
+    error: An error occurred
+    invalid_log_level: invalid SPAK_LOG_LEVEL
+

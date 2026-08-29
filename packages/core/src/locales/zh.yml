@@ -1,0 +1,15 @@
+# 包级翻译分片（core）— 权威源为项目根 /locales/zh.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  core:
+    command_registered: 命令已注册：{name}
+    initialized: 核心模块已初始化
+    middleware_applied: 中间件已应用
+    plugin_error: 插件错误：{name} - {error}
+    plugin_loaded: 插件已加载：{name}
+    plugin_unloaded: 插件已卸载：{name}
+    schema_invalid: 数据校验失败：{error}
+    schema_valid: 数据校验通过
+    session_ended: 会话已结束
+    session_started: 会话已开始
+

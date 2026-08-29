@@ -50,6 +50,7 @@ spak:
     description: "多文件服务框架"
   general:
     error: "发生错误"
+    invalid_log_level: "SPAK_LOG_LEVEL 无效"
 
   # --- CLI 主模块 (src/locales) ---
   cli:
@@ -58,6 +59,8 @@ spak:
       started: "Spak 服务已启动 (pid={pid})"
       stopping: "正在关闭 Spak 服务... ({signal})"
       start_failed: "启动 Spak 服务失败: {error}"
+    start:
+      read_config_failed: "读取配置失败: {error}"
     stop:
       sent: "已发送 {signal} 信号到 Spak 服务 (pid={pid})"
       failed: "停止 Spak 服务失败 (pid={pid}): {error}"
@@ -168,6 +171,8 @@ spak:
       isolation_aborted: "{msg} — 隔离已中止"
       started: "[沙箱] 插件 {name} 已启动"
       error: "[沙箱] {name} 错误: {error}"
+      memory_limit: "沙箱内存上限: {limit}MB"
+      overbudget: "[沙箱] {name} 内存超限 ({rss}MB)，触发熔断并终止!"
     ssetps:
       monitoring: "SSetPS 监控已启动"
       memory_warning: "内存使用率 {usage}%"
@@ -178,6 +183,7 @@ spak:
       circuit_restored: "{name} 熔断器已恢复"
       firewall_rule: "防火墙规则: {rule}"
       firewall_rule_invalid: "无效的防火墙规则: {rule}"
+      firewall_installed: "防火墙已生效: {rule}"
       tip: "  提示: 使用 NODE_OPTIONS=\"--expose-gc\" 启动可让 SSetPS 在内存过高时强制 GC"
     test:
       serve: "正在启动测试服务器..."
@@ -307,10 +313,14 @@ spak.spm.arg_appdir: "app 目录路径"
 spak.spm.arg_name: "应用名称"
 spak.spm.audit_exec_undeclared: "检测到 {count} 个可执行内容，但清单未声明 exec: true，拒绝安装"
 spak.spm.audit_forbidden_dir: "包含禁止目录: {path}"
+spak.spm.audit_permissions_invalid: "权限声明非法: {error}"
 spak.spm.audit_rejected: "安全审查未通过，拒绝安装："
 spak.spm.audit_unsafe_path: "不安全路径: {path}"
 spak.spm.info_dir: "安装目录"
 spak.spm.info_exec: "可执行内容"
+spak.spm.info_permissions: "权限声明"
+spak.spm.info_port: "端口"
+spak.spm.info_static_dir: "静态目录"
 spak.spm.info_version: "版本"
 spak.spm.install_error: "安装失败: {error}"
 spak.spm.install_need_source: "请提供 --file <path.pak> 或 registry 中的应用名"

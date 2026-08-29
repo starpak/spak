@@ -159,7 +159,7 @@ async function startService(file) {
         await loader.readConfig(true);
     }
     catch (err) {
-        console.error(`[CLI] readConfig failed: ${err.stack || err.message}`);
+        console.error(`${kleur_1.default.red('[CLI]')} ${(0, i18n_1.T)('spak.cli.start.read_config_failed', { error: `${err.stack || err.message}` })}`);
         throw err;
     }
     // Host/port env overrides are applied directly via process.env
@@ -321,7 +321,7 @@ const serveDeclarations = [
             if (port)
                 process.env.SPAK_PORT = String(port);
             if (process.env.SPAK_LOG_LEVEL && (!(0, util_1.isInteger)(Number(process.env.SPAK_LOG_LEVEL)) || Number(process.env.SPAK_LOG_LEVEL) < 0)) {
-                console.warn(`${kleur_1.default.red('error')} ${(0, i18n_1.T)("spak.general.error")}`);
+                console.warn(`${kleur_1.default.red((0, i18n_1.T)("spak.general.error"))} ${(0, i18n_1.T)("spak.general.invalid_log_level")}`);
                 process.exit(1);
             }
             await startService(file).catch((error) => {

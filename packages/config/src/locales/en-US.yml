@@ -1,0 +1,10 @@
+# 包级翻译分片（config）— 权威源为项目根 /locales/en-US.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  config:
+    file: 'Config file: {path}'
+    loaded: Configuration loaded
+    not_found: Configuration file not found, using defaults
+    parse_error: 'Failed to parse configuration: {error}'
+    saved: Configuration saved
+

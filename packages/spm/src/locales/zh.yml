@@ -1,0 +1,40 @@
+# 包级翻译分片（spm）— 权威源为项目根 /locales/zh.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  spm:
+    arg_appdir: app 目录路径
+    arg_name: 应用名称
+    audit_exec_undeclared: '检测到 {count} 个可执行内容，但清单未声明 exec: true，拒绝安装'
+    audit_forbidden_dir: '包含禁止目录: {path}'
+    audit_permissions_invalid: '权限声明非法: {error}'
+    audit_rejected: 安全审查未通过，拒绝安装：
+    audit_unsafe_path: '不安全路径: {path}'
+    info_dir: 安装目录
+    info_exec: 可执行内容
+    info_permissions: 权限声明
+    info_port: 端口
+    info_static_dir: 静态目录
+    info_version: 版本
+    install_error: '安装失败: {error}'
+    install_need_source: 请提供 --file <path.pak> 或 registry 中的应用名
+    installed: ✓ {name}/{version} 已安装
+    intro: Spak 专属包管理器 · 打包 / 安装 / 管理应用
+    manifest_not_found: 未找到清单文件 {dir}/spak.app.json
+    manifest_not_in_pak: '{file} 内缺少 spak.app.json 清单'
+    manifest_parse_error: '清单解析失败 {file}: {error}'
+    'no': 否
+    no_apps: （暂无已安装应用）
+    not_installed: '应用未安装: {name}'
+    opt_file: .pak 文件路径
+    opt_out: 输出 .pak 路径（默认 ~/.spak/.apps/<name>.pak）
+    pack_error: '打包失败: {error}'
+    pack_requires_dir: '用法: spm pack <appDir> [--out <file.pak>]'
+    packed: ✓ {appDir} → {target}
+    pak_not_found: '文件不存在: {file}'
+    publish_error: '发布失败: {error}'
+    publish_need_file: '用法: spm publish --file <path.pak> [<name>]'
+    published: '✓ 已发布: {file}'
+    uninstalled: ✓ {name} 已卸载
+    'yes': 是
+    static_dir_missing: '静态目录缺失，请先构建: {dir}'
+

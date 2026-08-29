@@ -1,0 +1,15 @@
+# 包级翻译分片（core）— 权威源为项目根 /locales/en-US.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  core:
+    command_registered: 'Command registered: {name}'
+    initialized: Core initialized
+    middleware_applied: Middleware applied
+    plugin_error: 'Plugin error: {name} - {error}'
+    plugin_loaded: 'Plugin loaded: {name}'
+    plugin_unloaded: 'Plugin unloaded: {name}'
+    schema_invalid: 'Schema validation failed: {error}'
+    schema_valid: Schema validation passed
+    session_ended: Session ended
+    session_started: Session started
+

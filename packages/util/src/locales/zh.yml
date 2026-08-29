@@ -1,0 +1,8 @@
+# 包级翻译分片（util）— 权威源为项目根 /locales/zh.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  util:
+    escape_reg_exp: 已转义正则表达式字符串
+    interpolated: 插值后的字符串：{result}
+    observed: 已监听对象：{label}
+

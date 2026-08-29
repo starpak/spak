@@ -1,0 +1,42 @@
+# 包级翻译分片（spm）— 权威源为项目根 /locales/en-US.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  spm:
+    arg_appdir: app directory path
+    arg_name: app name
+    audit_exec_undeclared: >-
+      {count} executable content detected but manifest does not declare exec:
+      true; rejected
+    audit_forbidden_dir: 'forbidden directory: {path}'
+    audit_permissions_invalid: 'invalid permissions declaration: {error}'
+    audit_rejected: 'security audit failed; rejected:'
+    audit_unsafe_path: 'unsafe path: {path}'
+    info_dir: install directory
+    info_exec: executable content
+    info_permissions: permissions
+    info_port: port
+    info_static_dir: static directory
+    info_version: version
+    install_error: 'install failed: {error}'
+    install_need_source: provide --file <path.pak> or an app name from the registry
+    installed: ✓ installed {name}/{version}
+    intro: Spak package manager · pack / install / manage apps
+    manifest_not_found: manifest not found at {dir}/spak.app.json
+    manifest_not_in_pak: no spak.app.json manifest inside {file}
+    manifest_parse_error: 'failed to parse manifest {file}: {error}'
+    'no': 'no'
+    no_apps: (no apps installed)
+    not_installed: 'app not installed: {name}'
+    opt_file: path to the .pak file
+    opt_out: output .pak path (default ~/.spak/.apps/<name>.pak)
+    pack_error: 'pack failed: {error}'
+    pack_requires_dir: 'usage: spm pack <appDir> [--out <file.pak>]'
+    packed: ✓ {appDir} → {target}
+    pak_not_found: 'file not found: {file}'
+    publish_error: 'publish failed: {error}'
+    publish_need_file: 'usage: spm publish --file <path.pak> [<name>]'
+    published: '✓ published: {file}'
+    uninstalled: ✓ uninstalled {name}
+    'yes': 'yes'
+    static_dir_missing: 'static directory missing, build it first: {dir}'
+

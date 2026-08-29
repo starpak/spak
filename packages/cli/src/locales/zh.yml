@@ -1,0 +1,195 @@
+# 包级翻译分片（cli）— 权威源为项目根 /locales/zh.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  intro:
+    description: 多文件服务框架
+  cli:
+    serve:
+      not_running: Spak 服务未运行
+      started: Spak 服务已启动 (pid={pid})
+      stopping: 正在关闭 Spak 服务... ({signal})
+      start_failed: '启动 Spak 服务失败: {error}'
+    start:
+      read_config_failed: '读取配置失败: {error}'
+    stop:
+      sent: 已发送 {signal} 信号到 Spak 服务 (pid={pid})
+      failed: '停止 Spak 服务失败 (pid={pid}): {error}'
+    status:
+      title: Spak 服务状态
+      service: 服务
+      pid_value: '  PID: {pid}'
+      port_value: '  端口: {port}'
+      uptime_value: '  运行时间: {uptime}'
+      plugins_value: '  插件数: {count}'
+      requests_value: '  请求数: {count}'
+      hardware: 硬件
+      memory_value: '  内存: {used} / {total}'
+      free_value: '  可用: {free}'
+      load_value: '  负载: {load}'
+      cpu_value: '  CPU: {usage}'
+      platform_value: '  平台: {platform}'
+      environment: 环境
+      host_value: '  主机: {host}'
+      node_value: '  Node: {version}'
+      log_value: '  日志: spak.log'
+      pid_file_value: '  PID文件: .spak.pid'
+      not_running: Spak 服务未运行
+    inject:
+      added: 已注入 @spakjs/i18n 依赖到 {pkg}
+      created: 已为 {pkg} 创建 locales 目录
+    i18n:
+      added: 已向 {file} 追加 {count} 个缺失 key（{lang}）
+      uptodate: 共扫描 {count} 个 key，全部已收录，无需补全
+      key_list: 新增 key
+      check_clean: 共扫描 {count} 个 key，全部已收录，检查通过
+      dry_run: （check 干跑模式：仅报告，未写入任何文件）
+    banner: spak v{version} · {description}
+    version_line: spak/{version} {platform} node-{nodever}
+    unknown_command: 未知命令 "{cmd}"
+    try_help: 试试 'spak --help' 查看可用命令
+    help:
+      start_spak_application: 启动 spak 应用
+      show_spak_service_status: 显示 spak 服务状态
+      inject_spakjs_locales_dependency_and_create_empty_locales_dir_for_each_package_in_workspace: 为 workspace 中每个包注入 @spakjs/i18n 依赖并创建空 locales 目录
+      manage_spak_configuration: 管理 Spak 配置
+      list_all_configuration: 列出所有配置
+      get_a_configuration_value: 获取配置值
+      set_a_configuration_value: 设置配置值
+      run_cpc_test_suite: 运行 CPC 测试套件
+      check_plug_in_collection_commands: 插件安全检查 (CPC) 命令
+      check_all_plugins_and_built_in_packages: 检查所有插件和内置包
+      isolate_a_plugin_in_sandbox: 在沙箱中隔离插件
+      start_ssetps_monitoring_memorylimitmb_from_config_or_spak_ssetps_memory_limit_mb_env: 启动 SSetPS 监控 (memoryLimitMB 来自配置或 SPAK_SSETPS_MEMORY_LIMIT_MB 环境变量)
+      trigger_circuit_breaker_for_a_plugin: 为插件触发熔断器
+      show_cpc_status: 显示 CPC 状态
+      scan_all_packages_and_append_missing_i18n_keys_key_only_empty_content_to_locales_key_files: 遍历所有包，将源码中未收录的 i18n key 以空内容补入 locales key 文件
+      i18n_key_management_commands: i18n key 管理命令
+      config_file_path: 配置文件路径
+      subcommand_check_sandbox_ssetps_circuit_status: '子命令: check, sandbox, ssetps, circuit, status'
+      plugin_name_argument: 插件名参数
+      sub_action_argument: 子操作参数
+      configuration_key: 配置键
+      configuration_value: 配置值
+      plugin_name: 插件名
+      specify_debug_namespace: 指定调试命名空间
+      specify_log_level_default_2: '指定日志级别 (默认: 2)'
+      show_timestamp_in_logs: 日志中显示时间戳
+      specify_server_host_default_0_0_0_0: '指定服务器主机 (默认: 0.0.0.0)'
+      specify_server_port_default_4321: '指定服务器端口 (默认: 4321)'
+      stop_running_spak_instance: 停止运行中的 spak 实例
+      restart_running_spak_instance: 重启运行中的 spak 实例
+      force_kill_running_spak_instance: 强制杀死运行中的 spak 实例
+      disable_plugin_sandbox_warning_unsafe_plugins_run_without_isolation: '禁用插件沙箱 (警告: 不安全, 插件将在无隔离环境下运行)'
+  cpc:
+    title: 插件安全检查 (CPC)
+    help: |
+      CPC 命令:
+        spak cpc check          检查所有插件和包
+        spak cpc sandbox <名称> 在沙箱中隔离插件
+        spak cpc sandbox stop <名称> 停止沙箱中的插件
+        spak cpc ssetps         启动 SSetPS 监控
+        spak cpc circuit <名称> 触发熔断器
+        spak cpc circuit restore <名称> 恢复熔断器
+        spak cpc status         显示 CPC 状态
+    check:
+      starting: 正在检查插件和包...
+      complete: '{valid}/{total} 项检查通过'
+      ok: 正常
+      pkg_not_found: 包目录未找到
+      missing_dir: '缺失目录: {dir}'
+      missing_file: '缺失文件: {file}'
+      plugin_not_found: 插件目录未找到
+      pkg_json_not_found: 未找到 package.json
+      invalid_pkg_json: 无效的 package.json
+      main_not_found: '主入口未找到: {main}'
+      missing_deps: '缺失依赖: {deps}'
+      whitelist_checking: 正在执行模块白名单检查...
+      whitelist_unknown_module: '未知模块不在白名单中: {name}'
+      whitelist_violation: 'CPC 白名单校验失败: 发现 {count} 个未经授权的模块，为安全起见进程将立即退出。'
+      whitelist_passed: 模块白名单校验通过：{count}/{total} 个模块均为授权模块
+    sandbox:
+      isolating: '正在隔离插件: {name}...'
+      isolated: 插件 {name} 已隔离 (pid={pid})
+      terminated: 沙箱已终止 (pid={pid})
+      usage_start: '用法: spak cpc sandbox <名称>'
+      usage_stop: '用法: spak cpc sandbox stop <名称>'
+      enabled: 沙箱已启用
+      disabled_warning: 沙箱已禁用 — 插件将在无隔离环境下运行 (不安全!)
+      isolation_aborted: '{msg} — 隔离已中止'
+      started: '[沙箱] 插件 {name} 已启动'
+      error: '[沙箱] {name} 错误: {error}'
+      memory_limit: '沙箱内存上限: {limit}MB'
+      overbudget: '[沙箱] {name} 内存超限 ({rss}MB)，触发熔断并终止!'
+    ssetps:
+      monitoring: SSetPS 监控已启动
+      memory_warning: 内存使用率 {usage}%
+      healthy: 内存健康 ({usage}%)
+      memory_cleaned: GC 释放了 {freed}MB
+      circuit_break: 已为 {name} 触发熔断器
+      circuit_open: '{name} 熔断器已断开'
+      circuit_restored: '{name} 熔断器已恢复'
+      firewall_rule: '防火墙规则: {rule}'
+      firewall_rule_invalid: '无效的防火墙规则: {rule}'
+      firewall_installed: '防火墙已生效: {rule}'
+      tip: '  提示: 使用 NODE_OPTIONS="--expose-gc" 启动可让 SSetPS 在内存过高时强制 GC'
+    test:
+      serve: 正在启动测试服务器...
+      serve_running: 测试服务器运行在 {url}
+      starting: 正在运行 CPC 测试...
+      complete: '{pass}/{total} 项测试通过'
+      debug_enabled: 调试模式已启用
+      debug_level: '日志级别: verbose'
+      debug_env: '环境: test'
+    config:
+      not_available: 'CPC 未启用。请在配置中设置 ''cpc.enabled: true'''
+    process_isolation:
+      enabled: 进程隔离已启用
+    status:
+      sandbox: '沙箱:'
+      circuit_breakers: '熔断器:'
+      ssetps: 'SSetPS:'
+      active: 活跃
+      inactive: 未活跃
+      memory: '内存:'
+      unknown: '未知命令: {sub}'
+      memory_detail: '{used} / {limit}MB (阈值 80%)'
+    circuit:
+      usage_restore: '用法: spak cpc circuit restore <名称>'
+      usage_trigger: '用法: spak cpc circuit <名称>'
+  ccmd:
+    config:
+      help: |
+        配置命令:
+          spak config list          列出所有配置
+          spak config get <键>     获取配置值
+          spak config set <键> <值>  设置配置值
+      get_usage: '用法: spak config get <键>'
+      key_not_found: '未找到键: {key}'
+      get_value: '{key} = {value}'
+      set_usage: '用法: spak config set <键> <值>'
+      language_invalid: '无效的语言: {lang}。你可以选择：{options}'
+      language_set: '语言已设置为: {lang}'
+      set_success: 已设置 {key} = {value}
+      memory_limit_invalid: 内存限制必须是有效的数字
+  server:
+    banner: |2-
+
+        ╔══════════════════════════════════════╗
+        ║       S P A K   S E R V E R          ║
+        ╚══════════════════════════════════════╝
+    started: Spak Server 已在 http://localhost:{port} 启动
+    desktop: '桌面: {name}'
+    routes: '路由: {count} 已注册'
+    desktop_none: 无
+    desktop_selected: '[server] 桌面已选择: {name}'
+    desktop_auto: '[server] 桌面自动选择: {name}'
+    manifest_name_required: manifest.name 为必填项
+    not_found: 未找到
+  log:
+    banner_spak: '          S P A K   S E R V E R       '
+    started: ✓ Spak v{version} 已启动 (pid={pid})
+    config: '  config: {path}'
+    listening: '  listening: {host}:{port}'
+    plugins: '  plugins: {list}'
+    shutting_down: ◇ Spak 正在关闭 (pid={pid}, signal={signal}, uptime={uptime})
+

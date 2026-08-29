@@ -1,0 +1,203 @@
+# 包级翻译分片（cli）— 权威源为项目根 /locales/en-US.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  intro:
+    description: multi-file service framework
+  cli:
+    serve:
+      not_running: Spak service is not running
+      started: Spak service started (pid={pid})
+      stopping: Shutting down spak service... ({signal})
+      start_failed: 'Failed to start spak service: {error}'
+    start:
+      read_config_failed: 'Failed to read config: {error}'
+    stop:
+      sent: Sent {signal} to spak service (pid={pid})
+      failed: 'Failed to stop spak service (pid={pid}): {error}'
+    status:
+      title: Spak Service Status
+      service: Service
+      pid_value: '  PID: {pid}'
+      port_value: '  Port: {port}'
+      uptime_value: '  Uptime: {uptime}'
+      plugins_value: '  Plugins: {count}'
+      requests_value: '  Requests: {count}'
+      hardware: Hardware
+      memory_value: '  Memory: {used} / {total}'
+      free_value: '  Free: {free}'
+      load_value: '  Load: {load}'
+      cpu_value: '  CPU: {usage}'
+      platform_value: '  Platform: {platform}'
+      environment: Environment
+      host_value: '  Host: {host}'
+      node_value: '  Node: {version}'
+      log_value: '  Log: spak.log'
+      pid_file_value: '  PID File: .spak.pid'
+      not_running: Spak service is not running
+    inject:
+      added: injected @spakjs/i18n dependency into {pkg}
+      created: created locales dir for {pkg}
+    i18n:
+      added: appended {count} missing keys to {file} ({lang})
+      uptodate: scanned {count} keys; all already present, nothing to add
+      key_list: added keys
+      check_clean: scanned {count} keys; all already present, check passed
+      dry_run: '(check dry-run mode: reporting only, nothing written)'
+    banner: spak v{version} · {description}
+    version_line: spak/{version} {platform} node-{nodever}
+    unknown_command: unknown command "{cmd}"
+    try_help: try 'spak --help' for available commands
+    help:
+      start_spak_application: start spak application
+      show_spak_service_status: show spak service status
+      inject_spakjs_locales_dependency_and_create_empty_locales_dir_for_each_package_in_workspace: >-
+        inject @spakjs/locales dependency and create empty locales dir for each
+        package in workspace
+      manage_spak_configuration: Manage Spak configuration
+      list_all_configuration: List all configuration
+      get_a_configuration_value: Get a configuration value
+      set_a_configuration_value: Set a configuration value
+      run_cpc_test_suite: Run CPC test suite
+      check_plug_in_collection_commands: Check Plug-in Collection commands
+      check_all_plugins_and_built_in_packages: Check all plugins and built-in packages
+      isolate_a_plugin_in_sandbox: Isolate a plugin in sandbox
+      start_ssetps_monitoring_memorylimitmb_from_config_or_spak_ssetps_memory_limit_mb_env: >-
+        Start SSetPS monitoring (memoryLimitMB from config, or
+        SPAK_SSETPS_MEMORY_LIMIT_MB env)
+      trigger_circuit_breaker_for_a_plugin: Trigger circuit breaker for a plugin
+      show_cpc_status: Show CPC status
+      scan_all_packages_and_append_missing_i18n_keys_key_only_empty_content_to_locales_key_files: >-
+        scan all packages and append missing i18n keys (key-only, empty content)
+        to locales key files
+      i18n_key_management_commands: i18n key management commands
+      config_file_path: config file path
+      subcommand_check_sandbox_ssetps_circuit_status: 'Subcommand: check, sandbox, ssetps, circuit, status'
+      plugin_name_argument: Plugin name argument
+      sub_action_argument: Sub-action argument
+      configuration_key: Configuration key
+      configuration_value: Configuration value
+      plugin_name: Plugin name
+      specify_debug_namespace: specify debug namespace
+      specify_log_level_default_2: 'specify log level (default: 2)'
+      show_timestamp_in_logs: show timestamp in logs
+      specify_server_host_default_0_0_0_0: 'specify server host (default: 0.0.0.0)'
+      specify_server_port_default_4321: 'specify server port (default: 4321)'
+      stop_running_spak_instance: stop running spak instance
+      restart_running_spak_instance: restart running spak instance
+      force_kill_running_spak_instance: force kill running spak instance
+      disable_plugin_sandbox_warning_unsafe_plugins_run_without_isolation: 'disable plugin sandbox (WARNING: unsafe, plugins run without isolation)'
+  cpc:
+    title: Check Plug-in Collection (CPC)
+    help: |
+      CPC Commands:
+        spak cpc check          Check all plugins and packages
+        spak cpc sandbox <name> Isolate a plugin in sandbox
+        spak cpc sandbox stop <name> Stop sandboxed plugin
+        spak cpc ssetps         Start SSetPS monitoring
+        spak cpc circuit <name> Trigger circuit breaker
+        spak cpc circuit restore <name> Restore circuit breaker
+        spak cpc status         Show CPC status
+    check:
+      starting: Checking plugins and packages...
+      complete: '{valid}/{total} checks passed'
+      ok: OK
+      pkg_not_found: package directory not found
+      missing_dir: 'missing directory: {dir}'
+      missing_file: 'missing file: {file}'
+      plugin_not_found: plugin directory not found
+      pkg_json_not_found: package.json not found
+      invalid_pkg_json: invalid package.json
+      main_not_found: 'main entry not found: {main}'
+      missing_deps: 'missing dependencies: {deps}'
+      whitelist_checking: Running module whitelist validation...
+      whitelist_unknown_module: 'Unauthorized module not in whitelist: {name}'
+      whitelist_violation: >-
+        CPC whitelist validation failed: {count} unauthorized module(s) detected.
+        Process will exit for security.
+      whitelist_passed: 'Module whitelist validation passed: {count}/{total} modules are authorized'
+    sandbox:
+      isolating: 'Isolating plugin: {name}...'
+      isolated: Plugin {name} isolated (pid={pid})
+      terminated: Sandbox terminated (pid={pid})
+      usage_start: 'Usage: spak cpc sandbox <name>'
+      usage_stop: 'Usage: spak cpc sandbox stop <name>'
+      enabled: Sandbox enabled
+      disabled_warning: SANDBOX DISABLED — plugins run without isolation (unsafe!)
+      isolation_aborted: '{msg} — isolation aborted'
+      started: '[sandbox] Plugin {name} started'
+      error: '[sandbox] {name} error: {error}'
+      memory_limit: 'Sandbox memory limit: {limit}MB'
+      overbudget: '[sandbox] {name} memory over budget ({rss}MB); circuit-break + terminate!'
+    ssetps:
+      monitoring: SSetPS monitoring started
+      memory_warning: Memory usage at {usage}%
+      healthy: Memory healthy ({usage}%)
+      memory_cleaned: GC freed {freed}MB
+      circuit_break: Circuit breaker triggered for {name}
+      circuit_open: Circuit breaker OPEN for {name}
+      circuit_restored: Circuit breaker restored for {name}
+      firewall_rule: 'Firewall rule: {rule}'
+      firewall_rule_invalid: 'Invalid firewall rule: {rule}'
+      firewall_installed: 'Firewall active: {rule}'
+      tip: '  tip: re-run with NODE_OPTIONS="--expose-gc" to let SSetPS force garbage collection when memory is high.'
+    test:
+      serve: Starting test server...
+      serve_running: Test server running at {url}
+      starting: Running CPC tests...
+      complete: '{pass}/{total} tests passed'
+      debug_enabled: Debug mode enabled
+      debug_level: 'Log level: verbose'
+      debug_env: 'Environment: test'
+    config:
+      not_available: 'CPC is not enabled. Set ''cpc.enabled: true'' in config.'
+    process_isolation:
+      enabled: Process isolation enabled
+    status:
+      sandbox: 'Sandboxes:'
+      circuit_breakers: 'Circuit breakers:'
+      ssetps: 'SSetPS:'
+      active: active
+      inactive: inactive
+      memory: 'Memory:'
+      unknown: 'Unknown command: {sub}'
+      memory_detail: '{used} / {limit}MB (threshold 80%)'
+    circuit:
+      usage_restore: 'Usage: spak cpc circuit restore <name>'
+      usage_trigger: 'Usage: spak cpc circuit <name>'
+  ccmd:
+    config:
+      help: |
+        Config Commands:
+          spak config list          List all configuration
+          spak config get <key>     Get a configuration value
+          spak config set <key> <value>  Set a configuration value
+      get_usage: 'Usage: spak config get <key>'
+      key_not_found: 'Key not found: {key}'
+      get_value: '{key} = {value}'
+      set_usage: 'Usage: spak config set <key> <value>'
+      language_invalid: 'Invalid language: {lang}. You can choose: {options}'
+      language_set: 'Language set to: {lang}'
+      set_success: Set {key} = {value}
+      memory_limit_invalid: Memory limit must be a valid number
+  server:
+    banner: |2-
+
+        ╔══════════════════════════════════════╗
+        ║       S P A K   S E R V E R          ║
+        ╚══════════════════════════════════════╝
+    started: Spak Server running at http://localhost:{port}
+    desktop: 'Desktop: {name}'
+    routes: 'Routes: {count} registered'
+    desktop_none: none
+    desktop_selected: '[server] Desktop selected: {name}'
+    desktop_auto: '[server] Desktop auto-selected: {name}'
+    manifest_name_required: manifest.name is required
+    not_found: not found
+  log:
+    banner_spak: '          S P A K   S E R V E R       '
+    started: ✓ Spak v{version} started (pid={pid})
+    config: '  config: {path}'
+    listening: '  listening: {host}:{port}'
+    plugins: '  plugins: {list}'
+    shutting_down: ◇ Spak shutting down (pid={pid}, signal={signal}, uptime={uptime})
+

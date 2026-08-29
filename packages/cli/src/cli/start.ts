@@ -124,7 +124,7 @@ async function startService(file?: string) {
     await loader.init(file)
     await loader.readConfig(true)
   } catch (err: any) {
-    console.error(`[CLI] readConfig failed: ${err.stack || err.message}`)
+    console.error(`${kleur.red('[CLI]')} ${T('spak.cli.start.read_config_failed', { error: `${err.stack || err.message}` })}`)
     throw err
   }
 
@@ -282,7 +282,7 @@ const serveDeclarations: CommandDeclaration[] = [
       if (port) process.env.SPAK_PORT = String(port)
 
       if (process.env.SPAK_LOG_LEVEL && (!isInteger(Number(process.env.SPAK_LOG_LEVEL)) || Number(process.env.SPAK_LOG_LEVEL) < 0)) {
-        console.warn(`${kleur.red('error')} ${T("spak.general.error")}`)
+        console.warn(`${kleur.red(T("spak.general.error"))} ${T("spak.general.invalid_log_level")}`)
         process.exit(1)
       }
 

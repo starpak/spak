@@ -13,6 +13,7 @@
   "references": [
     { "path": "../i18n" },
     { "path": "../util" },
-    { "path": "../cli" }
+    { "path": "../cli" },
+    { "path": "../apps" }
   ]
 }

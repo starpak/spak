@@ -1,0 +1,10 @@
+# 包级翻译分片（config）— 权威源为项目根 /locales/zh.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  config:
+    file: 配置文件路径：{path}
+    loaded: 配置已加载
+    not_found: 未找到配置文件，将使用默认配置
+    parse_error: 解析配置失败：{error}
+    saved: 配置已保存
+

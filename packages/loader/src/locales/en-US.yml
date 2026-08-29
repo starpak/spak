@@ -1,0 +1,24 @@
+# 包级翻译分片（loader）— 权威源为项目根 /locales/en-US.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  loader:
+    applied: Plugin {name} loaded
+    applying: Applying plugin {name}
+    config_error: 'Error reading configuration: {error}'
+    config_not_found: |
+      config file not found
+      Spak searched the following locations but could not find a config file:
+        - {path1}
+        - {path2}
+        - {path3}
+      Please create a config file, for example:
+        spak.config.yml or spak.config.json or spak.yml or spak.json
+    config_read: Reading configuration from {path}
+    failed: 'Failed to load plugin {name}: {error}'
+    reloaded: Plugin {name} reloaded
+    reloading: Reloading plugin {name}
+    searching: 'Searching for config: {path}'
+    starting: Loading plugins...
+    unloaded: Plugin {name} unloaded
+    unloading: Unloading plugin {name}
+

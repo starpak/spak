@@ -1,0 +1,24 @@
+# 包级翻译分片（loader）— 权威源为项目根 /locales/zh.yml，本文件由拆分脚本生成
+# 供发布后的包自包含 i18n；加载时会与根 locales 合并（根优先）
+spak:
+  loader:
+    applied: 插件 {name} 已加载
+    applying: 正在加载插件 {name}
+    config_error: 读取配置出错：{error}
+    config_not_found: |
+      未找到配置文件
+      Spak 搜索了以下位置但未找到配置文件:
+        - {path1}
+        - {path2}
+        - {path3}
+      请创建一个配置文件，例如:
+        spak.config.yml 或 spak.config.json 或 spak.yml 或 spak.json
+    config_read: 正在从 {path} 读取配置
+    failed: 加载插件 {name} 失败：{error}
+    reloaded: 插件 {name} 已重新加载
+    reloading: 正在重新加载插件 {name}
+    searching: 正在搜索配置文件：{path}
+    starting: 正在加载插件...
+    unloaded: 插件 {name} 已卸载
+    unloading: 正在卸载插件 {name}
+

@@ -17,6 +17,12 @@
     "./cli": {
       "require": "./lib/cli/index.js"
     },
+    "./cli/firewall": {
+      "require": "./lib/cli/firewall.js"
+    },
+    "./lib/cli/firewall": {
+      "require": "./lib/cli/firewall.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

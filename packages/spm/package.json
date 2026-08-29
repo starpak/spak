@@ -15,6 +15,7 @@
   "dependencies": {
     "@spakjs/i18n": "workspace:^",
     "@spakjs/util": "workspace:^",
+    "@spakjs/apps": "workspace:^",
     "@spakjs/cli": "workspace:^"
   }
 }

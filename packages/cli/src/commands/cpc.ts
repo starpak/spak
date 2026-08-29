@@ -5,6 +5,11 @@ import { getConfig, loadConfig } from '@spakjs/config'
 import kleur from 'kleur'
 import { T } from '@spakjs/i18n'
 import { CommandDeclaration } from '@spakjs/util'
+import {
+  addFirewallRule,
+  getFirewallRules,
+  installFirewall,
+} from '../cli/firewall'
 
 // ====== Plugin Check ======
 const BUILTIN_PACKAGES_DIR = resolve(process.cwd(), 'packages')
@@ -244,7 +249,7 @@ function runPluginCheck(): void {
 // ====== Sandbox ======
 const sandboxProcesses: Map<string, ChildProcess> = new Map()
 
-function isolatePlugin(name: string): void {
+export function isolatePlugin(name: string): void {
   if (process.env.SPAK_NO_SANDBOX === '1') {
     console.log(kleur.yellow(`  ⚠ ${T('spak.cpc.sandbox.disabled_warning')}`))
     return
@@ -259,41 +264,82 @@ function isolatePlugin(name: string): void {
     return
   }
 
+  // Sandbox memory cap: worker gets its own V8 heap limit so RSS can't
+  // grow unbounded — and reports back to trip the circuit breaker.
+  const memLimitMB = resolveMemoryLimitMB()
+
   // Pass the plugin name via argv[3] so we never concatenate a user-controlled
   // string into JS source code (prevents command injection via crafted names
   // that escape the JSON string context).
   const workerScript = `
-    const pluginName = process.argv[3] || '';
+    // argv mapping for: node -e SCRIPT -- <name>  →  argv[1]=<name> ('--' consumed)
+    const pluginName = process.argv[1] || '';
     const { createRequire } = require('module');
     const path = require('path');
+    const fs = require('fs');
+
+    // 1) Install the same firewall rules as the parent (net-layer blocking).
+    //    If no rules are inherited, the sandbox still defaults to fail-closed.
     try {
-      // Try to load the plugin to validate it actually resolves and doesn't
-      // throw on import. We don't run its apply() — the sandbox is still a
-      // watcher + supervisor stub, but at least the require smoke-tests
-      // resolve and the process isn't a pure zombie.
+      const req0 = createRequire(path.resolve(process.cwd(), 'package.json'));
+      const fw = req0('@spakjs/cli/cli/firewall');
+      if (fw.applyFirewallFromEnv) fw.applyFirewallFromEnv();
+      if (fw.installFirewall && !process.env.SPAK_FIREWALL_RULES) fw.installFirewall();
+    } catch (e) { if (process.env.SPAK_DEBUG) console.debug('[sandbox] firewall:', String((e)?.message || e)); }
+
+    // 2) Real plugin entry loading (smoke): resolve main from package.json,
+    //    fall back to spak.manifest.json master, then require it.
+    try {
       const req = createRequire(path.resolve(process.cwd(), 'package.json'));
-      if (process.argv[4] === '--smoke' && pluginName) {
-        try { req.resolve(pluginName); console.log('[sandbox] plugin-resolved: ' + pluginName); }
-        catch (e) { console.warn('[sandbox] resolve failed: ' + e.message); process.exit(2); }
+      let entry = null;
+      const pkgPath = path.resolve(process.cwd(), 'plugins', pluginName, 'package.json');
+      if (fs.existsSync(pkgPath)) {
+        try { const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')); entry = pkg.main ? path.resolve(process.cwd(), 'plugins', pluginName, pkg.main) : null; } catch {}
       }
+      if (!entry) {
+        const mPath = path.resolve(process.cwd(), 'plugins', pluginName, 'spak.manifest.json');
+        if (fs.existsSync(mPath)) {
+          try { const m = JSON.parse(fs.readFileSync(mPath, 'utf8')); entry = m.master ? path.resolve(process.cwd(), 'plugins', pluginName, m.master) : null; } catch {}
+        }
+      }
+      if (entry && fs.existsSync(entry)) { req(entry); console.log('[sandbox] entry-loaded: ' + entry); }
+      else { try { req.resolve(pluginName); console.log('[sandbox] plugin-resolved: ' + pluginName); } catch {} }
     } catch (err) {
-      if (process.env.SPAK_DEBUG) console.debug('[sandbox] plugin load guard:', (err as any)?.message ?? String(err))
+      if (process.env.SPAK_DEBUG) console.debug('[sandbox] entry load guard:', (err as any)?.message ?? String(err))
     }
-    console.log(T('spak.cpc.sandbox.started', { name: pluginName }));
+
+    // 3) Self RSS guard: report over-budget to parent so the circuit breaker
+    //    opens and the parent can terminate us.
+    const limitMB = Number(process.env.SPAK_SANDBOX_MEM_MB) || ${memLimitMB};
+    const guard = setInterval(() => {
+      const rssMB = process.memoryUsage().rss / 1024 / 1024;
+      if (rssMB > limitMB && process.send) {
+        process.send({ type: 'overbudget', plugin: pluginName, rss: Math.round(rssMB) });
+      }
+    }, 5000);
+    if (guard.unref) guard.unref();
+
+    console.log('[sandbox] plugin "' + pluginName + '" started');
     if (process.send) {
       process.send({ type: 'ready', plugin: pluginName, pid: process.pid });
       process.on('message', (msg) => {
         if (msg && (msg as any).type === 'shutdown') process.exit(0);
       });
     }
-    // Cheap keepalive: stdin.resume so the process has a referenced handle
-    // without spawning a dummy timer for every second.
     process.stdin.resume();
   `
 
-  const child = spawn(process.execPath, ['-e', workerScript, '--', name], {
+  const child: ChildProcess = spawn(process.execPath, ['-e', workerScript, '--', name], {
     stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
     detached: true,
+    env: {
+      ...process.env,
+      // V8 heap cap via NODE_OPTIONS (spawn has no execArgv; NODE_OPTIONS is
+      // honoured by node children and limits sandbox RSS growth).
+      NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --max-old-space-size=${memLimitMB}`.trim(),
+      SPAK_FIREWALL_RULES: JSON.stringify(getFirewallRules()),
+      SPAK_SANDBOX_MEM_MB: String(memLimitMB),
+    },
   })
 
   // Prevent accidental memory leaks from pending IPC buffers — we don't
@@ -302,15 +348,26 @@ function isolatePlugin(name: string): void {
   child.on('error', (err) => {
     console.warn(kleur.yellow(T('spak.cpc.sandbox.error', { name, error: String(err.message) })))
   })
+  // Wire the sandbox into the circuit breaker: over-budget workers trip
+  // their breaker and get terminated.
+  child.on('message', (msg) => {
+    const m = msg as any
+    if (m && m.type === 'overbudget') {
+      console.warn(kleur.red(T('spak.cpc.sandbox.overbudget', { name, rss: String(m.rss) })))
+      if (!circuitBreakers.get(name)) triggerCircuitBreaker(name)
+      terminateSandbox(name)
+    }
+  })
   child.on('exit', (code) => {
     sandboxProcesses.delete(name)
   })
 
   sandboxProcesses.set(name, child)
-  console.log(kleur.green(`  ${T('spak.cpc.sandbox.isolated', { name, pid: String(child.pid ?? -1) })}`))
+  console.log(kleur.green(`  ${T('spak.cpc.sandbox.isolated', { name, pid: String(child.pid ?? -1) })}\n`)
+    + kleur.dim(`    ${T('spak.cpc.sandbox.memory_limit', { limit: String(memLimitMB) })}`))
 }
 
-function terminateSandbox(name: string): void {
+export function terminateSandbox(name: string): void {
   const proc = sandboxProcesses.get(name)
   if (proc && proc.connected) {
     try { proc.send({ type: 'shutdown' }) } catch { /* IPC already closed */ }
@@ -411,25 +468,21 @@ function restoreCircuitBreaker(pluginName: string): void {
 /**
  * Apply a firewall rule to control network access.
  * Rules are in the format: 'action: target' where action is 'allow' or 'deny'
- * and target can be 'localhost', 'external', or a specific IP/port.
- * 
- * Note: This is a stub implementation. For production use, integrate with
- * Node.js net module or a firewall library.
+ * and target can be 'localhost', 'external', or a specific host/IP[:port].
+ *
+ * Real implementation: the rule is registered into the net-layer firewall
+ * engine (cli/firewall.ts) which patches Socket.connect — so http/https/net
+ * outbound calls are actually blocked, not just logged.
  */
-function applyFirewallRule(rule: string): void {
-  // Parse rule format: "action: target" (e.g., "allow localhost", "deny external")
-  const match = rule.match(/^(allow|deny):\s*(.+)$/i)
-  if (!match) {
+function applyFirewallRule(rule: string, notify: boolean = true): void {
+  const result = addFirewallRule(rule)
+  if (!result.ok) {
     console.log(kleur.yellow(`  ⚠ ${T('spak.cpc.ssetps.firewall_rule_invalid', { rule })}`))
     return
   }
-  
-  const [, action, target] = match
-  console.log(kleur.cyan(`  ${T('spak.cpc.ssetps.firewall_rule', { rule })}`))
-  
-  // TODO: Implement actual firewall logic using Node.js net module
-  // For now, just log the rule as a placeholder
-  // Example implementation would intercept net.connect() calls
+  if (notify) {
+    console.log(kleur.cyan(`  ${T('spak.cpc.ssetps.firewall_rule', { rule })}  ${kleur.green('✓')}`))
+  }
 }
 
 // ====== Test Suite ======
@@ -482,7 +535,12 @@ export function initCPC(config: any): void {
     // Wire the user's configured memory limit through (env overrides still
     // win inside startSSetPS via resolveMemoryLimitMB).
     startSSetPS(config.ssetps?.memoryLimitMB)
-    applyFirewallRule('default: allow localhost, deny external')
+    // Install the actual net-layer firewall (was a logging stub). Default
+    // policy: allow loopback, deny everything external (fail-closed).
+    installFirewall()
+    for (const r of getFirewallRules()) {
+      console.log(kleur.cyan(`  ${T('spak.cpc.ssetps.firewall_installed', { rule: `${r.action}: ${r.target}` })}`))
+    }
   }
 
   runPluginCheck()

@@ -29,17 +29,18 @@
     "manifest"
   ],
   "dependencies": {
+    "@babel/code-frame": "^8.0.0",
     "@spakjs/core": "workspace:^",
     "@spakjs/i18n": "workspace:^",
-    "@spakjs/log": "workspace:^",
     "@spakjs/loader": "workspace:^",
-    "cosmokit": "^1.8.1",
+    "@spakjs/log": "workspace:^",
     "chokidar": "^3.6.0",
+    "cosmokit": "^1.8.1",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.9",
     "@types/babel__code-frame": "^7.0.6",
+    "@types/js-yaml": "^4.0.9",
     "esbuild": "^0.27.2"
   }
 }
