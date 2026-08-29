@@ -1,6 +1,6 @@
 {
     "name": "spak",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "description": "Spak - 企业级 AI Agent 开发框架 (Koishi-based monorepo facade) - v0.1.0: Agent SDK 完成",
     "packageManager": "pnpm@10.8.0",
     "workspaces": [
