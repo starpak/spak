@@ -155,10 +155,10 @@
 - **npm**: `spm`
 - **位置**: `packages/spm/`
 - **做什么**:
-  1. **包管理**：`spm pack <appDir>`（打包 .pak）、`spm list`、`spm info <name>`、`spm install <name|--file>`（内置**安全审查者**：防 zip-slip、可执行内容需 manifest 声明 exec/desktop）、`spm uninstall <name>`、`spm publish --file <pak>`（本地 registry ~/.spak/.registry）。
+  1. **包管理**：`spm pack <appDir>`（打包 .pak）、`spm list`、`spm info <name>`（含权限声明展示）、`spm install <name|--file>`（内置**安全审查者**：防 zip-slip、可执行内容需 manifest 声明 exec/desktop + **permissions 权限声明校验**，缺失/非法即拒绝）、`spm uninstall <name>`、`spm publish --file <pak>`（本地 registry ~/.spak/.registry）。
   2. **运行时启停**：`spm serve [--stop/--restart/--kill]`、`spm serve status`（pid 文件 ~/.spak/.pid？见 cli/start.ts）。
   3. **注入命令**：构建时把 `@spakjs/cli` 的 serve/config/cpc/i18n declarations 注册进 cac（bin: `lib/index.js`）。
-- **依赖**: `@spakjs/cli` / `@spakjs/i18n` / `@spakjs/util` / `@spakjs/log`（workspace）。
+- **依赖**: `@spakjs/cli` / `@spakjs/i18n` / `@spakjs/util` / `@spakjs/log` / `@spakjs/apps`（workspace，供权限校验类型）。
 
 ### 2.8 Plugins（`plugins/*`，保留，4 个）
 每个插件都是可选的，只在用户 `spak.config.yml` 里显式声明 `plugins: { "@spakjs/plugin-xxx": ... }` 才加载。

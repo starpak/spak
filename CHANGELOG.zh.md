@@ -7,7 +7,14 @@
 ## [Unreleased]
 
 ### ✨ 新功能
-- **`spak i18n init` 命令**：遍历所有包源码提取 `T()`/`t()` 的 i18n key，将未收录进 `locales/{zh,en-US}.yml` 的 key 以「仅 key、空内容」形式追加补全（幂等、不破坏原有内容）。
+- **CPC 安全补强**：
+  - **manifest permissions 声明**：可执行应用必须在 `spak.app.json` 明示 `network`/`fs`/`childProcess` 权限，缺失或非法即被 `spm install` 安全审查者拒收（缺省最小权限、fail-closed）；`spm info` 会展示声明的权限。
+  - **真实网络防火墙**：net/tls 层 `allow`/`deny` 规则（默认 `allow: localhost` + `deny: external`），失败默认拒绝；CPC 启动时装默认规则，沙箱经 `SPAK_FIREWALL_RULES` 环境变量继承（错误码 `ECFWACCESS` / `CFW-DENY`）。
+  - **沙箱加固**：真装载插件入口（package.json `main` → `spak.manifest.json` master → `require.resolve`）、每 worker 独立 V8 内存帽（`NODE_OPTIONS --max-old-space-size`）、RSS 自检超限上报 `overbudget` → 父进程开熔断并终止沙箱（已实测触发）。
+  - **输出全 i18n**：用户可见 CLI 输出全部走 locales（143 key 中英对称）；包级翻译拆分为 `packages/*/src/locales`（权威源仍为根 `locales/`）。
+
+### 🐛 修复
+- **`spm i18n init` 命令**：遍历所有包源码提取 `T()`/`t()` 的 i18n key，将未收录进 `locales/{zh,en-US}.yml` 的 key 以「仅 key、空内容」形式追加补全（幂等、不破坏原有内容）。
 
 ### 🐛 修复
 - **编译错误全面修复**：`@spakjs/util` 的 `defineEnumProperty`（TS7053）、`@spakjs/core` schema 的 symbol 索引访问、`@spakjs/loader` 的 shared 类型（EffectScope/ForkScope、`ensureScopeRecord` 等），`pnpm build` 全量通过。

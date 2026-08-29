@@ -9,6 +9,13 @@
 ## [Unreleased]
 
 ### ✨ Features
+- **CPC security hardening**：
+  - **manifest permissions** — executable apps must declare `network`/`fs`/`childProcess` in `spak.app.json`; missing or invalid declarations are rejected by the `spm install` auditor (fail-closed, minimal by default); `spm info` now prints the granted permissions.
+  - **real network firewall** — net/tls-layer `allow`/`deny` rules (default `allow: localhost`, `deny: external`), fail-closed (no rule match → blocked); installed on CPC startup; sandbox workers inherit rules via `SPAK_FIREWALL_RULES` env (`ECFWACCESS` / `CFW-DENY`).
+  - **hardened sandbox** — real plugin entry loading (package.json `main` → `spak.manifest.json` master → `require.resolve`), per-worker V8 heap cap (`NODE_OPTIONS --max-old-space-size`), self RSS guard reporting `overbudget` → parent opens the circuit breaker and terminates the worker.
+  - **i18n everywhere** — all user-visible CLI output routed through locales (143 keys, zh/en symmetric); split per-package locale shards into `packages/*/src/locales` (authoritative source remains root `locales/`).
+
+### 🐛 Fixes
 - **`spm` 成为唯一 CLI（v0.0.1）**：恢复并重构 Spak 包管理器为正式 CLI——
   - **包管理**：`spm pack`（.pak 单文件打包）、`spm list` / `spm info` / `spm uninstall` / `spm publish`（本地 registry `~/.spak/.registry`）、`spm install`（带**安全审查者**：防 zip-slip 路径穿越、可执行内容需 manifest 声明 `exec`/`desktop`，非法拒绝）。
   - **运行时启停**：`spm serve [--stop/--restart/--kill]`、`spm serve status`（修复后台运行保活：stdin 方案改为 timer，setsid/nohup 不再意外退出）。
