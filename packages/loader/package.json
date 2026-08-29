@@ -1,7 +1,7 @@
 {
   "name": "@spakjs/loader",
   "description": "Config Loader for Spak",
-  "version": "0.0.8",
+  "version": "1.0.0",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "exports": {

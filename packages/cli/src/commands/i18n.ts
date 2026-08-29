@@ -55,7 +55,7 @@ function collectKeysFromDir(dir: string, keys: Set<string>): void {
   }
 }
 
-async function runI18nInit(): Promise<void> {
+async function runI18nInit(dryRun = false): Promise<void> {
   const root = process.cwd()
 
   // 1) 扫描所有包 + 根 src 提取 key
@@ -86,8 +86,10 @@ async function runI18nInit(): Promise<void> {
     const existing = loadYmlTranslation(lang)
     const missing = [...scannedKeys].filter((k) => !(k in existing)).sort()
     if (!missing.length) return []
-    const block = BANNER + missing.map((k) => `${k}: ""`).join('\n') + '\n'
-    writeFileSync(file, readFileSync(file, 'utf8') + '\n' + block, 'utf8')
+    if (!dryRun) {
+      const block = BANNER + missing.map((k) => `${k}: ""`).join('\n') + '\n'
+      writeFileSync(file, readFileSync(file, 'utf8') + '\n' + block, 'utf8')
+    }
     return missing
   }
 
@@ -96,15 +98,20 @@ async function runI18nInit(): Promise<void> {
 
   // 3) 输出结果
   if (!zhAdded.length && !enAdded.length) {
-    console.log(kleur.green(T('spak.cli.i18n.uptodate', { count: String(scannedKeys.size) })))
+    console.log(kleur.green(dryRun
+      ? T('spak.cli.i18n.check_clean', { count: String(scannedKeys.size) })
+      : T('spak.cli.i18n.uptodate', { count: String(scannedKeys.size) })))
     return
   }
   const zhCount = zhAdded.length
   const enCount = enAdded.length
-  if (zhCount) console.log(kleur.green(T('spak.cli.i18n.added', { lang: 'zh', count: String(zhCount), file: 'locales/zh.yml' })))
-  if (enCount) console.log(kleur.green(T('spak.cli.i18n.added', { lang: 'en-US', count: String(enCount), file: 'locales/en-US.yml' })))
+  if (zhCount) console.log(kleur.green(T('spak.cli.i18n.added', { lang: 'zh', count: String(zhCount), file: dryRun ? 'locales/zh.yml (check)' : 'locales/zh.yml' })))
+  if (enCount) console.log(kleur.green(T('spak.cli.i18n.added', { lang: 'en-US', count: String(enCount), file: dryRun ? 'locales/en-US.yml (check)' : 'locales/en-US.yml' })))
   if (zhAdded.length) {
     console.log(kleur.dim(`  ${T('spak.cli.i18n.key_list')}: ${zhAdded.join(', ')}`))
+  }
+  if (dryRun && (zhAdded.length || enAdded.length)) {
+    console.log(kleur.yellow(T('spak.cli.i18n.dry_run')))
   }
 }
 
@@ -121,6 +128,13 @@ export const i18nDeclarations: CommandDeclaration[] = [
     description: 'scan all packages and append missing i18n keys (key-only, empty content) to locales key files',
     action: async () => {
       await runI18nInit()
+    },
+  },
+  {
+    command: 'i18n check',
+    description: 'dry-run: report which i18n keys are missing without writing anything',
+    action: async () => {
+      await runI18nInit(true)
     },
   },
 ]

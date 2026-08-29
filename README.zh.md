@@ -2,7 +2,7 @@
 
 > 一个基于 Koishi 的多文件服务项目框架的说！
 
-> **框架版本**: v0.1.0
+> **框架版本**: v1.0.0
 > **English**: [README.md](README.md)
 
 ---
@@ -20,7 +20,8 @@
 | 包包名 | 是干什么的喵～ |
 |--------|--------------|
 | `@spakjs/core` 🧠 | 大脑核心的说！命令、中间件、i18n、权限、Schema、会话管理都在这里～ |
-| `@spakjs/cli` 🎮 | CLI 入口喵！`spak serve`、`spak config`、`spak cpc`、`spak init-locales`。所有输出都是彩色、人性化的哦！ |
+| `spm` 📦 | **Spak 专属 CLI** (v0.0.1)：包管理（`pack`/`list`/`info`/`install`/`uninstall`/`publish`）、运行时启停（`serve`/`stop`/`restart`/`kill`/`status`）、config/CPC/i18n 命令，命令由 `@spakjs/cli` 构建时注入。 |
+| `@spakjs/cli` 🎮 | 命令库（注入进 spm）：serve/config/cpc/i18n 声明。 |
 | `@spakjs/loader` 📂 | 配置加载器，支持 YAML/JSON，处理 env 文件和插件生命周期 |
 | `@spakjs/config` ⚙️ | 配置管理器，存储到 `~/.spak/config.json` |
 | `@spakjs/i18n` 🌐 | 一体化国际化工具：Locale 树、回退算法、yml 翻译加载器、`T()` 助手函数 |
@@ -45,8 +46,8 @@ Spak 内置了**手写**的翻译喵！：
 
 切换语言方法：
 ```bash
-spak config set language zh   # 切换成中文
-spak config set language en   # 切回英文
+spm config set language zh   # 切换成中文
+spm config set language en   # 切回英文
 ```
 
 ---
@@ -84,33 +85,33 @@ plugins: {}
 spak serve
 
 # 或者指定配置文件
-spak serve ./spak.config.yml
+spm serve ./spak.config.yml
 
 # 停止正在运行的实例
-spak serve --stop
+spm serve --stop
 
 # 重启 / 强制杀死正在运行的实例
-spak serve --restart
-spak serve --kill
+spm serve --restart
+spm serve --kill
 ```
 
 ### CLI 命令
 
 ```bash
 # 配置管理
-spak config get <键名>
-spak config set <键名> <值>
-spak config list
+spm config get <键名>
+spm config set <键名> <值>
+spm config list
 
 # 插件安全检查（CPC）
-spak cpc check
-spak cpc status
-spak cpc sandbox <插件名>
-spak cpc ssetps
+spm cpc check
+spm cpc status
+spm cpc sandbox <插件名>
+spm cpc ssetps
 spak cpc circuit <插件名>
 
 # 为 workspace 包注入 i18n
-spak init-locales
+spm init-locales
 ```
 
 ---

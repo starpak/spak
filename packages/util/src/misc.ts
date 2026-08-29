@@ -59,7 +59,7 @@ export const Random = {
   float: (min: number, max: number) => Math.random() * (max - min) + min,
 }
 
-export type Dict = Record<string, any>
+export type Dict<T = any> = Record<string, T>
 
 export function isNullable(value: any): boolean {
   return value == null

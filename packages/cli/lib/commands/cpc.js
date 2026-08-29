@@ -37,6 +37,11 @@ const MODULE_WHITELIST = new Set([
     '@spakjs/agent',
     '@spakjs/cli',
     '@spakjs/node-b',
+    // --- Apps runtime (.pak) & Spak Package Manager ---
+    '@spakjs/apps',
+    'apps',
+    '@spakjs/spm',
+    'spm',
     'util',
     'message',
     'log',

@@ -31,3 +31,5 @@ htmlcov/
 # Temporary files
 *.tmp
 ```
+# App build outputs
+**/dist/

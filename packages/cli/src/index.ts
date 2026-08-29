@@ -12,6 +12,7 @@ import { runModuleWhitelistCheck } from './commands/cpc'
 import { version } from './version'
 
 export type { CommandDeclaration, CommandArg, CommandOption } from './cli/types'
+export { registerDeclarations, generateCommandHelp } from './cli/registry'
 export { default as serveDeclarations } from './cli/start'
 export { default as configDeclarations } from './commands/config'
 export { default as cpcDeclarations } from './commands/cpc'

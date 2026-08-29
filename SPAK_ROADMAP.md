@@ -1,8 +1,8 @@
 # Spak 企业级 AI Agent 平台 - 实施规划
 
-> **版本**: v0.1.0 → v0.2.0 → v0.3.0 → v0.4.0 → ... → v1.0.0
+> **版本**: v1.0.0（运行时）· spm v0.0.1（CLI）
 > **目标**: 打造企业级 AI Agent 平台
-> **最后更新**: 2026-08-15（阶段2.5: Core 独立化 + 构建工具链）
+> **最后更新**: 2026-08-29（阶段2.5: CLI 收归 spm + 应用打包体系）
 
 ---
 
@@ -498,10 +498,12 @@ class FailoverProtocol {
 **目标**: core 独立成真核 + 独立 CLI 包 + 前端构建缓存工具链
 
 - [x] 删除废弃官网 `website/`（Astro 静态站，当前用不到）
-- [x] 新增 `packages/cli`（@spakjs/cli）：承载 serve / config / cpc 命令与 `createApp` bootstrap
+- [x] 新增 `packages/cli`（@spakjs/cli）：承载 serve / config / cpc / i18n 命令声明与 `createApp` bootstrap
 - [x] `@spakjs/core` 回归纯内核：零 i18n/输出依赖，扫清 `core↔i18n` 循环依赖
-- [x] `spak` 主包退化为纯 re-export 入口，`bin.js` 委托 `@spakjs/cli`
+- [x] `spak` 转为纯运行时身份（v1.0.0），`bin.js` 仅保留 `-v` 与引导提示，CLI 全部移交 `spm`
 - [x] 新增 `packages/node-b`（@spakjs/node-b）：纯前端构建缓存工具（白名单防二次构建）
+- [x] 恢复 `packages/apps` + 迁入 `packages/spm`：spm 成为唯一 CLI（打包/安装/审查/启停/i18n），apps 提供 .pak 运行时
+- [x] spm 支持 `pack`/`list`/`info`/`install`(带安全审查)/`uninstall`/`publish` + `serve` 启停 + `i18n init/check`
 - [ ] （后续）把 DSH 前端源码搬到本项目并爆改（deep adaptation）做 Web GUI
 - [ ] （后续）node-b 接入 Web GUI 的插件包构建缓存机制
 
@@ -516,9 +518,11 @@ class FailoverProtocol {
 
 ```
 packages/core/     # @spakjs/core — 纯内核（零 i18n/输出依赖）
-packages/cli/      # @spakjs/cli  — CLI + createApp bootstrap（绑定 core 到 Node 运行时）
+packages/cli/      # @spakjs/cli  — 命令库（构建时注入 spm）+ createApp bootstrap
+packages/spm/      # spm — 唯一 CLI：包管理 + 运行时启停 + i18n（壳在 spm，命令实现注入自 cli）
+packages/apps/     # @spakjs/apps — .pak 应用运行时（manifest / HMR / INO）
 packages/node-b/   # @spakjs/node-b — 前端构建缓存工具（产物 + 白名单）
-spak (根)          # 纯 re-export 入口壳，bin 委托 @spakjs/cli
+spak (根)          # 纯运行时身份：bin.js 仅 -v + 引导用 spm
 ```
 
 ##### 2.5.3 后续排期
@@ -1205,6 +1209,7 @@ enum SessionStatus {
 |------|------|------|--------|------|
 | 阶段1 | v0.1.0 | 1-2个月 | Agent SDK 完成 | ✅ 已完成 |
 | 阶段2 | v0.2.0 | 2-3个月 | Agent 集群完成 | ✅ 已完成 |
+| 阶段2.5 | v1.0.0 | — | CLI 收归 spm（包管理/审查/启停/i18n）+ .pak 应用体系 | ✅ 已完成 |
 | 阶段3 | v0.3.0 | 1-2个月 | 多 Agent 协作完成 | 🔄 进行中 |
 | 阶段4 | v0.4.0 | 2-3个月 | 管理平台完成 | ⏳ 待开始 |
 | 阶段5 | v0.5.0 | 3-4个月 | 运维系统完成 | ⏳ 待开始 |

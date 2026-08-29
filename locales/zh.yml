@@ -88,6 +88,8 @@ spak:
       added: "已向 {file} 追加 {count} 个缺失 key（{lang}）"
       uptodate: "共扫描 {count} 个 key，全部已收录，无需补全"
       key_list: "新增 key"
+      check_clean: "共扫描 {count} 个 key，全部已收录，检查通过"
+      dry_run: "（check 干跑模式：仅报告，未写入任何文件）"
     banner: "spak v{version} · {description}"
     version_line: "spak/{version} {platform} node-{nodever}"
     unknown_command: "未知命令 \"{cmd}\""
@@ -297,3 +299,42 @@ spak:
     listening: "  listening: {host}:{port}"
     plugins: "  plugins: {list}"
     shutting_down: "◇ Spak 正在关闭 (pid={pid}, signal={signal}, uptime={uptime})"
+
+# ==========================================
+# spak i18n init — 自动补全（仅 key，待翻译）
+# ==========================================
+spak.spm.arg_appdir: "app 目录路径"
+spak.spm.arg_name: "应用名称"
+spak.spm.audit_exec_undeclared: "检测到 {count} 个可执行内容，但清单未声明 exec: true，拒绝安装"
+spak.spm.audit_forbidden_dir: "包含禁止目录: {path}"
+spak.spm.audit_rejected: "安全审查未通过，拒绝安装："
+spak.spm.audit_unsafe_path: "不安全路径: {path}"
+spak.spm.info_dir: "安装目录"
+spak.spm.info_exec: "可执行内容"
+spak.spm.info_version: "版本"
+spak.spm.install_error: "安装失败: {error}"
+spak.spm.install_need_source: "请提供 --file <path.pak> 或 registry 中的应用名"
+spak.spm.installed: "✓ {name}/{version} 已安装"
+spak.spm.intro: "Spak 专属包管理器 · 打包 / 安装 / 管理应用"
+spak.spm.manifest_not_found: "未找到清单文件 {dir}/spak.app.json"
+spak.spm.manifest_not_in_pak: "{file} 内缺少 spak.app.json 清单"
+spak.spm.manifest_parse_error: "清单解析失败 {file}: {error}"
+spak.spm.no: "否"
+spak.spm.no_apps: "（暂无已安装应用）"
+spak.spm.not_installed: "应用未安装: {name}"
+spak.spm.opt_file: ".pak 文件路径"
+spak.spm.opt_out: "输出 .pak 路径（默认 ~/.spak/.apps/<name>.pak）"
+spak.spm.pack_error: "打包失败: {error}"
+spak.spm.pack_requires_dir: "用法: spm pack <appDir> [--out <file.pak>]"
+spak.spm.packed: "✓ {appDir} → {target}"
+spak.spm.pak_not_found: "文件不存在: {file}"
+spak.spm.publish_error: "发布失败: {error}"
+spak.spm.publish_need_file: "用法: spm publish --file <path.pak> [<name>]"
+spak.spm.published: "✓ 已发布: {file}"
+spak.spm.uninstalled: "✓ {name} 已卸载"
+spak.spm.yes: "是"
+
+# ==========================================
+# spak i18n init — 自动补全（仅 key，待翻译）
+# ==========================================
+spak.spm.static_dir_missing: "静态目录缺失，请先构建: {dir}"

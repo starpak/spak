@@ -11,9 +11,10 @@
 | 名字 | npm 包名 | 真实角色 | 做什么 |
 |---|---|---|---|
 | **core** | `@spakjs/core` | **纯运行时内核（Logic Core）** | Context / Commander / Processor / I18n 渲染 / Permissions / Schema / Filter / Session —— 不依赖 `fs`、`process`，可跑浏览器。 |
-| **spak** | `spak`（就是根 package.json） | **发门面/入口包（Facade）** | 自己**不实现任何业务逻辑**，只做两件事：<br>① `export *` 所有子包 API，让用户 `import { Context, h, t, createApp } from 'spak'` 一行搞定。<br>② 提供 `createApp(options)` 这样的 glue 函数，把 core + loader + i18n.init 串起来。 |
+| **spak** | `spak`（就是根 package.json） | **纯运行时身份（Runtime Identity）** | 自己**不实现任何业务逻辑**：v1.0.0 起 CLI 全部移交 `spm`（packages/spm），`bin.js` 仅保留 `spak -v` 版本响应，其余输入引导使用 `spm`。对外 API 仍由 core/i18n/loader 等子包直接提供。 |
+| **spm** | `spm`（packages/spm） | **唯一 CLI（Spak Package Manager）** | 包管理：`pack`/`list`/`info`/`install`（带安全审查者）/`uninstall`/`publish`；运行时启停：`serve`/`--stop`/`--restart`/`--kill`/`status`；Config / CPC / i18n 命令（命令实现注入自 `@spakjs/cli`，构建时先编 cli 再编 spm）。 |
 
-→ **没有冲突**。core 是引擎，spak 是把引擎、轮胎、方向盘全部装配好、拧好螺丝、交付给用户的整车。你可以单独买引擎（`@spakjs/core`），也可以直接买整车（`spak`），丰俭由人。
+→ **没有冲突**。core 是引擎，spak 是运行时身份（v1.0.0），spm 是唯一的驾驶台（CLI），@spakjs/cli 是驾驶台里的仪表盘（命令库）。你可以单独用引擎（`@spakjs/core`），也可以直接用整车（spm + spak）。
 
 ---
 
@@ -138,20 +139,28 @@
   - NodeLoader 子类（index.ts）：dotenv、full reload（通过 IPC，非 IPC 场景安全降级为直接 `process.exit`）。
 - **不该做**: ❌ 实现命令行解析、❌ 提供 T() 翻译 API（用 I18n 包）。
 
-### 2.6 `@spakjs/cli`（spak-cli，保留）
+### 2.6 `@spakjs/cli`（命令库，构建时注入 spm）
 - **npm**: `@spakjs/cli`
-- **位置**: `packages/spak-cli/`
+- **位置**: `packages/cli/`
 - **做什么**:
-  - 基于 `cac` 的命令行入口（`cli/index.ts` → registerDeclarations + 自定义 subcommand help 生成）。
-  - 所有命令的 declarations **全部放在 `cli/src/commands/*.ts`**，不再发独立的 npm 小包（§4 说明）。
-    - `commands/config.ts`：`spak config get/set/list`（原 `@spakjs/ccmd`）。
-    - `commands/cpc.ts`：`spak cpc check/sandbox/ssetps/circuit/status` + `spak test`（原 `@spakjs/cpc`）。
-    - `cli/start.ts`：`spak serve/status/stop/restart/kill/init-locales`（保留，本就是 CLI 启动相关的）。
-  - `cli/registry.ts`：扁平化命令路由（因为 cac 对二级子命令支持弱，手动实现了路由 + 帮助）。
+  - **命令实现库**（不是可执行入口）：所有命令 declarations 存放在 `cli/src/commands/*.ts` 与 `cli/src/cli/*.ts`，由 `spm`（packages/spm）在构建时注入并统一注册。
+    - `commands/config.ts`：`config get/set/list`（原 `@spakjs/ccmd`）。
+    - `commands/cpc.ts`：`cpc check/sandbox/ssetps/circuit/status` + `test`（原 `@spakjs/cpc`）。
+    - `cli/start.ts`：`serve/status/stop/restart/kill/init-locales`。
+  - `cli/registry.ts`：扁平化命令路由 + 自定义 subcommand help 生成（cac 对二级子命令支持弱，手动实现路由 + l10n）。
   - `cli/types.ts`：重导出 util 里的 CommandDeclaration 类型。
-- **不该做**: ❌ 把命令拆成独立 package（ccmd/cpc 已删除，原因见 §4）、❌ 往 src 里塞任何运行时中间件（中间件是 core/plugin 的职责）。
+- **不该做**: ❌ 直接作为可执行 CLI 被调用（入口在 spm）、❌ 把命令拆成独立 package（ccmd/cpc 已删除）。
 
-### 2.7 Plugins（`plugins/*`，保留，4 个）
+### 2.7 `spm`（唯一 CLI，本次新立）
+- **npm**: `spm`
+- **位置**: `packages/spm/`
+- **做什么**:
+  1. **包管理**：`spm pack <appDir>`（打包 .pak）、`spm list`、`spm info <name>`、`spm install <name|--file>`（内置**安全审查者**：防 zip-slip、可执行内容需 manifest 声明 exec/desktop）、`spm uninstall <name>`、`spm publish --file <pak>`（本地 registry ~/.spak/.registry）。
+  2. **运行时启停**：`spm serve [--stop/--restart/--kill]`、`spm serve status`（pid 文件 ~/.spak/.pid？见 cli/start.ts）。
+  3. **注入命令**：构建时把 `@spakjs/cli` 的 serve/config/cpc/i18n declarations 注册进 cac（bin: `lib/index.js`）。
+- **依赖**: `@spakjs/cli` / `@spakjs/i18n` / `@spakjs/util` / `@spakjs/log`（workspace）。
+
+### 2.8 Plugins（`plugins/*`，保留，4 个）
 每个插件都是可选的，只在用户 `spak.config.yml` 里显式声明 `plugins: { "@spakjs/plugin-xxx": ... }` 才加载。
 
 | 包 | 职责 | Node-only？ |
@@ -163,17 +172,15 @@
 
 **禁止 Plugins**: ❌ 再 import `koishi`，必须统一 `from '@spakjs/core'`（hmr/daemon 已修）。❌ 再 require.resolve `@koishijs/*`（hmr 已修 → `@spakjs/*`）。
 
-### 2.8 `spak`（根主包 / Facade，本次修正后）
+### 2.8 `spak`（根主包 / 纯运行时身份，v1.0.0 修正）
 - **npm**: `spak`（就是根）
-- **位置**: `/`（package.json + src/index.ts）
+- **位置**: `/`（package.json + bin.js）
 - **做什么**:
-  1. `export * from '@spakjs/core'` / `@spakjs/message` / `@spakjs/util` / `@spakjs/i18n` / `@spakjs/loader` / `Config` / `CommandDeclaration` 类型。
-  2. 提供 `createApp(options)` glue 函数：`new NodeLoader()` → `init(file)` → `readConfig()` → `setLanguage()` → `loader.createApp()` → `i18n.init(app.i18n)`，用户一行拿到准备好的 app。
-  3. `bin: { spak: packages/spak-cli/bin.js }` 提供 CLI 快捷入口（所以 `npm i -g spak` 后有 `spak serve`）。
-  4. 声明 workspaces: `packages/*`、`plugins/*`，作为 pnpm monorepo 根。
+  1. `bin.js` 仅保留运行时身份：`spak -v` 打印版本；其余输入一律引导用户使用 `spm`（CLI 已整体移交）。
+  2. 对外 API 由子包直接提供（`@spakjs/core` / `i18n` / `loader` 等），无需根层 re-export 门面（商业版起点即务实的单一路径）。
+  3. 声明 workspaces: `packages/*`，作为 pnpm monorepo 根。
 - **不该做**:
-  - ❌ **再在 package.json 里塞一堆逻辑包当 workspace 根却不 re-export**（这次修了：有 main/typings/exports 有 src/index.ts 了）。
-  - ❌ 在这里实现命令、中间件、Schema 校验等逻辑。
+  - ❌ 实现任何命令（那是 spm 的职责）。
   - ❌ user code 出现 `import { ... } from 'spak/packages/core/src/...'` 这种跨内部路径的用法（用 `exports` 字段封闭）。
 
 ### 2.9 `@spakjs/log`（新增，Node 能力层）

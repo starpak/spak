@@ -1,0 +1,10 @@
+{
+  "name": "desktop",
+  "version": "0.0.6",
+  "desktop": true,
+  "staticDir": "./dist",
+  "routes": [
+    { "method": "GET", "path": "/lock", "handler": "LockScreen" },
+    { "method": "GET", "path": "/desktop", "handler": "Desktop" }
+  ]
+}

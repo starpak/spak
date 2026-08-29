@@ -74,15 +74,22 @@ fi
 
 # Step 2: Global binary registration
 echo ""
-echo -e "  ${CYAN}◇${NC}  Registering spak command..."
+echo -e "  ${CYAN}◇${NC}  Registering spm command..."
 
-BIN_SOURCE="$PROJECT_ROOT/bin.js"
-BIN_TARGET_SYS="/usr/local/bin/spak"
-BIN_TARGET_USER="$HOME/.local/bin/spak"
-BIN_PROJECT_DIR="$PROJECT_ROOT/bin/spak"
+# spm is the primary CLI (package manager + runtime control).
+# spak is now a pure runtime identity (only -v / guidance to spm).
+SPM_BIN_SOURCE="$PROJECT_ROOT/packages/spm/lib/index.js"
+SPAK_BIN_SOURCE="$PROJECT_ROOT/bin.js"
 
-# Make the source executable so a symlink (or copy) works on every platform.
-chmod +x "$BIN_SOURCE"
+# Registration targets: spm is the CLI, spak stays as the runtime identity.
+BIN_TARGET_SYS="/usr/local/bin/spm"
+SPAK_TARGET_SYS="/usr/local/bin/spak"
+BIN_TARGET_USER="$HOME/.local/bin/spm"
+SPAK_TARGET_USER="$HOME/.local/bin/spak"
+
+# Make the sources executable so a symlink (or copy) works on every platform.
+chmod +x "$SPM_BIN_SOURCE"
+chmod +x "$SPAK_BIN_SOURCE"
 
 REGISTERED=""
 
@@ -100,13 +107,20 @@ cleanup_stale_spak() {
       rm -f "$stale" 2>/dev/null || true
       echo -e "  ${DIM}  Removed stale global link: ${stale}${NC}"
     fi
+    stale="$pnpm_bin/spm"
+    if [ -L "$stale" ] || [ -f "$stale" ]; then
+      rm -f "$stale" 2>/dev/null || true
+      echo -e "  ${DIM}  Removed stale global link: ${stale}${NC}"
+    fi
   fi
-  # 2) local node_modules/.bin/spak
-  stale="$PROJECT_ROOT/node_modules/.bin/spak"
-  if [ -L "$stale" ] || [ -f "$stale" ]; then
-    rm -f "$stale" 2>/dev/null || true
-    echo -e "  ${DIM}  Removed stale link: ${stale}${NC}"
-  fi
+  # 2) local node_modules/.bin/spak + spm
+  for name in spak spm; do
+    stale="$PROJECT_ROOT/node_modules/.bin/$name"
+    if [ -L "$stale" ] || [ -f "$stale" ]; then
+      rm -f "$stale" 2>/dev/null || true
+      echo -e "  ${DIM}  Removed stale link: ${stale}${NC}"
+    fi
+  done
   # 3) previous dist fallback
   stale="$PROJECT_ROOT/dist/spak"
   if [ -f "$stale" ]; then
@@ -116,11 +130,11 @@ cleanup_stale_spak() {
 }
 
 # Helper: try to link a binary into a directory, returns 0 on success.
-# Usage: try_link <target> [source] [name]
+# Usage: try_link <target> <source> <name>
 try_link() {
   local target="$1"
-  local source="${2:-$BIN_SOURCE}"
-  local name="${3:-spak}"
+  local source="$2"
+  local name="$3"
   if [ -w "$(dirname "$target")" ]; then
     if [ -L "$target" ] || [ ! -e "$target" ]; then
       ln -sf "$source" "$target" 2>/dev/null || return 1
@@ -132,9 +146,10 @@ try_link() {
   return 1
 }
 
-# Always try to drop a copy into the project's own bin/ too.
+# Always try to drop copies into the project's own bin/ too.
 mkdir -p "$PROJECT_ROOT/bin" 2>/dev/null || true
-ln -sf "$BIN_SOURCE" "$BIN_PROJECT_DIR" 2>/dev/null || true
+ln -sf "$SPM_BIN_SOURCE" "$PROJECT_ROOT/bin/spm" 2>/dev/null || true
+ln -sf "$SPAK_BIN_SOURCE" "$PROJECT_ROOT/bin/spak" 2>/dev/null || true
 
 # Check if we're in a virtual/container environment (no global writes at all)
 IN_VENV=false
@@ -143,34 +158,38 @@ if [ -n "$CI" ] || [ -n "$CONTAINER" ] || [ -f "/.dockerenv" ]; then
 fi
 
 if [ "$IN_VENV" = true ]; then
-  BUILD_OUTPUT="$PROJECT_ROOT/bin/spak"
-  mkdir -p "$PROJECT_ROOT/bin" 2>/dev/null || true
-  cp -f "$BIN_SOURCE" "$BUILD_OUTPUT" 2>/dev/null || true
+  BUILD_OUTPUT="$PROJECT_ROOT/bin/spm"
+  cp -f "$SPM_BIN_SOURCE" "$BUILD_OUTPUT" 2>/dev/null || true
   chmod +x "$BUILD_OUTPUT" 2>/dev/null || true
+  BUILD_OUTPUT2="$PROJECT_ROOT/bin/spak"
+  cp -f "$SPAK_BIN_SOURCE" "$BUILD_OUTPUT2" 2>/dev/null || true
+  chmod +x "$BUILD_OUTPUT2" 2>/dev/null || true
   cleanup_stale_spak
   echo -e "  ${YELLOW}⚠${NC}  Virtual environment detected"
-  echo -e "  ${GREEN}✓${NC}  Binary installed to ${DIM}$BUILD_OUTPUT${NC}"
+  echo -e "  ${GREEN}✓${NC}  Binaries installed to ${DIM}$PROJECT_ROOT/bin${NC}"
   echo ""
-  echo -e "  ${DIM}  To use spak command, add to PATH or run:${NC}"
+  echo -e "  ${DIM}  To use spm command, add to PATH or run:${NC}"
   echo -e "  ${DIM}  export PATH=\"\$PATH:$PROJECT_ROOT/bin\"${NC}"
 else
   cleanup_stale_spak
   # Try the system bin first (most reliable global location on this host),
   # fall back to user-local bin, then finally the project bin copy.
-  if try_link "$BIN_TARGET_SYS"; then
-    :
-  elif try_link "$BIN_TARGET_USER"; then
-    :
+  if try_link "$BIN_TARGET_SYS" "$SPM_BIN_SOURCE" "spm"
+  then :
+  elif try_link "$BIN_TARGET_USER" "$SPM_BIN_SOURCE" "spm"
+  then :
   else
-    BUILD_OUTPUT="$PROJECT_ROOT/bin/spak"
-    mkdir -p "$PROJECT_ROOT/bin" 2>/dev/null || true
-    cp -f "$BIN_SOURCE" "$BUILD_OUTPUT" 2>/dev/null || true
+    BUILD_OUTPUT="$PROJECT_ROOT/bin/spm"
+    cp -f "$SPM_BIN_SOURCE" "$BUILD_OUTPUT" 2>/dev/null || true
     chmod +x "$BUILD_OUTPUT" 2>/dev/null || true
     echo -e "  ${YELLOW}⚠${NC}  Neither ${DIM}$BIN_TARGET_SYS${NC} nor ${DIM}$BIN_TARGET_USER${NC} are writable"
-    echo -e "  ${GREEN}✓${NC}  Binary copied to ${DIM}$BUILD_OUTPUT${NC}"
-    echo ""
-    echo -e "  ${DIM}  Use it directly or add to PATH:${NC}"
-    echo -e "  ${DIM}  export PATH=\"\$PATH:$PROJECT_ROOT/bin\"${NC}"
+    echo -e "  ${GREEN}✓${NC}  spm binary available at ${DIM}$BUILD_OUTPUT${NC}"
+  fi
+  # Register spak as a runtime identity too (same target dirs).
+  if try_link "$SPAK_TARGET_SYS" "$SPAK_BIN_SOURCE" "spak"; then
+    :
+  elif try_link "$SPAK_TARGET_USER" "$SPAK_BIN_SOURCE" "spak"; then
+    :
   fi
   # If we installed into ~/.local/bin, remind the user if it's not in PATH.
   if [ -n "$REGISTERED" ] && [ "$REGISTERED" = "$BIN_TARGET_USER" ]; then
@@ -178,7 +197,7 @@ else
       *":$HOME/.local/bin:"*) ;;
       *)
         echo -e "  ${YELLOW}⚠${NC}  ${DIM}\$HOME/.local/bin${NC} is not currently in your \$PATH"
-        echo -e "  ${DIM}  Add this to your shell rc to use the 'spak' command globally:${NC}"
+        echo -e "  ${DIM}  Add this to your shell rc to use the 'spm' command globally:${NC}"
         echo -e "  ${DIM}  export PATH=\"\$HOME/.local/bin:\$PATH\"${NC}"
         ;;
     esac

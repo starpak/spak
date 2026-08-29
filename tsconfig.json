@@ -29,5 +29,9 @@
     { "path": "packages/node-b" },
     // CLI — depends on core + loader + i18n + log + config
     { "path": "packages/cli" },
+    // Spak Package Manager (CLI shell) — depends on cli + i18n + util
+    { "path": "packages/spm" },
+    // Apps runtime (.pak loader) — depends on core + i18n + log + loader
+    { "path": "packages/apps" },
   ]
 }

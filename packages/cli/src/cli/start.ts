@@ -146,11 +146,11 @@ async function startService(file?: string) {
   process.on('SIGTERM', () => onSignal('SIGTERM'))
 
   if (!app.scope.runtime.children.length) {
-    // Keep the Node.js event loop alive without spawning a dummy timer.
-    // Referencing stdin keeps the process running identically to how a
-    // long-running HTTP/IPC server would, and plays nicely with the
-    // SIGINT/SIGTERM handlers above.
-    process.stdin.resume()
+    // Keep the Node.js event loop alive. A periodic no-op timer is used
+    // instead of process.stdin.resume() so the server survives both
+    // foreground and background (setsid/nohup, stdin=/dev/null) runs,
+    // and still terminates cleanly via the SIGINT/SIGTERM handlers above.
+    setInterval(() => {}, 1000)
   }
 }
 

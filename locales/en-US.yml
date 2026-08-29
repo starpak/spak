@@ -88,6 +88,8 @@ spak:
       added: "appended {count} missing keys to {file} ({lang})"
       uptodate: "scanned {count} keys; all already present, nothing to add"
       key_list: "added keys"
+      check_clean: "scanned {count} keys; all already present, check passed"
+      dry_run: "(check dry-run mode: reporting only, nothing written)"
     banner: "spak v{version} · {description}"
     version_line: "spak/{version} {platform} node-{nodever}"
     unknown_command: "unknown command \"{cmd}\""
@@ -297,3 +299,42 @@ spak:
     listening: "  listening: {host}:{port}"
     plugins: "  plugins: {list}"
     shutting_down: "◇ Spak shutting down (pid={pid}, signal={signal}, uptime={uptime})"
+
+# ==========================================
+# spak i18n init — 自动补全（仅 key，待翻译）
+# ==========================================
+spak.spm.arg_appdir: "app directory path"
+spak.spm.arg_name: "app name"
+spak.spm.audit_exec_undeclared: "{count} executable content detected but manifest does not declare exec: true; rejected"
+spak.spm.audit_forbidden_dir: "forbidden directory: {path}"
+spak.spm.audit_rejected: "security audit failed; rejected:"
+spak.spm.audit_unsafe_path: "unsafe path: {path}"
+spak.spm.info_dir: "install directory"
+spak.spm.info_exec: "executable content"
+spak.spm.info_version: "version"
+spak.spm.install_error: "install failed: {error}"
+spak.spm.install_need_source: "provide --file <path.pak> or an app name from the registry"
+spak.spm.installed: "✓ installed {name}/{version}"
+spak.spm.intro: "Spak package manager · pack / install / manage apps"
+spak.spm.manifest_not_found: "manifest not found at {dir}/spak.app.json"
+spak.spm.manifest_not_in_pak: "no spak.app.json manifest inside {file}"
+spak.spm.manifest_parse_error: "failed to parse manifest {file}: {error}"
+spak.spm.no: "no"
+spak.spm.no_apps: "(no apps installed)"
+spak.spm.not_installed: "app not installed: {name}"
+spak.spm.opt_file: "path to the .pak file"
+spak.spm.opt_out: "output .pak path (default ~/.spak/.apps/<name>.pak)"
+spak.spm.pack_error: "pack failed: {error}"
+spak.spm.pack_requires_dir: "usage: spm pack <appDir> [--out <file.pak>]"
+spak.spm.packed: "✓ {appDir} → {target}"
+spak.spm.pak_not_found: "file not found: {file}"
+spak.spm.publish_error: "publish failed: {error}"
+spak.spm.publish_need_file: "usage: spm publish --file <path.pak> [<name>]"
+spak.spm.published: "✓ published: {file}"
+spak.spm.uninstalled: "✓ uninstalled {name}"
+spak.spm.yes: "yes"
+
+# ==========================================
+# spak i18n init — 自动补全（仅 key，待翻译）
+# ==========================================
+spak.spm.static_dir_missing: "static directory missing, build it first: {dir}"

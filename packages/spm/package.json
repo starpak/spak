@@ -1,0 +1,20 @@
+{
+  "name": "spm",
+  "version": "0.0.1",
+  "description": "Spak Package Manager — Spak 专属包管理器与 CLI（管理 .pak 打包、安装、发布与运行时启停）",
+  "private": true,
+  "type": "commonjs",
+  "main": "lib/index.js",
+  "bin": {
+    "spm": "lib/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@spakjs/i18n": "workspace:^",
+    "@spakjs/util": "workspace:^",
+    "@spakjs/cli": "workspace:^"
+  }
+}

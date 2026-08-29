@@ -11,7 +11,7 @@ export declare const Random: {
     int: (min: number, max: number) => number;
     float: (min: number, max: number) => number;
 };
-export type Dict = Record<string, any>;
+export type Dict<T = any> = Record<string, T>;
 export declare function isNullable(value: any): boolean;
 export declare function valueMap<K extends string, V>(obj: Record<string, V>, fn: (value: V, key: K) => V): Record<string, V>;
 type Methods<T> = {

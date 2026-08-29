@@ -8,11 +8,13 @@ function l10n(desc: string): string {
   // For help text, we use T() with a convention: spak.cli.help.<slug>
   // where slug is the lowercased description with non-alphanumerics folded
   // into single underscores. If no translation is found, T() returns the
-  // key itself, so we fall back to the original English description.
+  // key itself (or a "(missing)" marker), so we fall back to the original
+  // description (which may itself be English or Chinese).
   const slug = desc.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
   const key = `spak.cli.help.${slug}`
   const translated = T(key)
-  return translated === key ? desc : translated
+  if (translated === key || translated.endsWith('(missing)')) return desc
+  return translated
 }
 
 /**
@@ -126,7 +128,7 @@ export function registerDeclarations(cli: CAC, declarations: CommandDeclaration[
         for (const opt of decl.options) {
           if (!allOptions.has(opt.name)) {
             allOptions.set(opt.name, opt.description)
-            cmd.option(`--${opt.name}${opt.default ? ` [${opt.name}]` : ''}`, opt.description)
+            cmd.option(`--${opt.name} [${opt.name}]`, opt.description)
           }
         }
       }
@@ -141,7 +143,18 @@ export function registerDeclarations(cli: CAC, declarations: CommandDeclaration[
       // Extract subcommand from process.argv
       const argv = process.argv
       const rootIdx = argv.indexOf(rootName)
-      const subArgs = rootIdx >= 0 ? argv.slice(rootIdx + 1).filter(a => !a.startsWith('-')) : []
+      // Positional extraction: skip flags and their following values.
+      const rest = rootIdx >= 0 ? argv.slice(rootIdx + 1) : []
+      const subArgs: string[] = []
+      for (let i = 0; i < rest.length; i++) {
+        const a = rest[i]
+        if (a.startsWith('-')) {
+          // skip the option value if the next token is not a flag
+          if (i + 1 < rest.length && !rest[i + 1].startsWith('-')) i++
+          continue
+        }
+        subArgs.push(a)
+      }
       const subCmd = subArgs.join(' ')
 
       // Handle --help

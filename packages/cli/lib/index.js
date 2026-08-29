@@ -42,13 +42,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = exports.i18nDeclarations = exports.cpcDeclarations = exports.configDeclarations = exports.serveDeclarations = void 0;
+exports.version = exports.i18nDeclarations = exports.cpcDeclarations = exports.configDeclarations = exports.serveDeclarations = exports.generateCommandHelp = exports.registerDeclarations = void 0;
 exports.createApp = createApp;
 const i18n_1 = require("@spakjs/i18n");
 const log_1 = require("@spakjs/log");
 const cpc_1 = require("./commands/cpc");
 const version_1 = require("./version");
 Object.defineProperty(exports, "version", { enumerable: true, get: function () { return version_1.version; } });
+var registry_1 = require("./cli/registry");
+Object.defineProperty(exports, "registerDeclarations", { enumerable: true, get: function () { return registry_1.registerDeclarations; } });
+Object.defineProperty(exports, "generateCommandHelp", { enumerable: true, get: function () { return registry_1.generateCommandHelp; } });
 var start_1 = require("./cli/start");
 Object.defineProperty(exports, "serveDeclarations", { enumerable: true, get: function () { return __importDefault(start_1).default; } });
 var config_1 = require("./commands/config");
