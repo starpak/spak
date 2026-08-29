@@ -169,6 +169,7 @@ spak:
       circuit_open: "{name} 熔断器已断开"
       circuit_restored: "{name} 熔断器已恢复"
       firewall_rule: "防火墙规则: {rule}"
+      firewall_rule_invalid: "无效的防火墙规则: {rule}"
       tip: "  提示: 使用 NODE_OPTIONS=\"--expose-gc\" 启动可让 SSetPS 在内存过高时强制 GC"
     test:
       serve: "正在启动测试服务器..."

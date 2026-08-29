@@ -2,7 +2,7 @@
 
 > 一个基于 Koishi 的多文件服务项目框架的说！
 
-> **框架版本**: v0.0.8
+> **框架版本**: v0.1.0
 > **English**: [README.md](README.md)
 
 ---
@@ -20,22 +20,17 @@
 | 包包名 | 是干什么的喵～ |
 |--------|--------------|
 | `@spakjs/core` 🧠 | 大脑核心的说！命令、中间件、i18n、权限、Schema、会话管理都在这里～ |
-| `@spakjs/cli` 🎮 | CLI 入口喵！`spak serve`、`spak config`、`spak cpc`、`spak status`。所有输出都是彩色、人性化的哦！ |
+| `@spakjs/cli` 🎮 | CLI 入口喵！`spak serve`、`spak config`、`spak cpc`、`spak init-locales`。所有输出都是彩色、人性化的哦！ |
 | `@spakjs/loader` 📂 | 配置加载器，支持 YAML/JSON，处理 env 文件和插件生命周期 |
 | `@spakjs/config` ⚙️ | 配置管理器，存储到 `~/.spak/config.json` |
 | `@spakjs/i18n` 🌐 | 一体化国际化工具：Locale 树、回退算法、yml 翻译加载器、`T()` 助手函数 |
 | `@spakjs/log` 📝 | **独立日志模块**喵！多传输通道（控制台/文件/流）、日志级别、结构化日志，还内置了 Cordis Logger 桥接哦～ |
 | `@spakjs/message` 💬 | 消息和元素工具库 |
 | `@spakjs/util` 🧰 | 工具箱：命令声明、对象监听、字符串插值、各种小工具 |
+| `@spakjs/agent` 🤖 | Agent SDK：管理、工具、提供商、模板、指标收集 |
+| `@spakjs/node-b` 🧰 | Node 桥接工具库 |
 
-## 插件们
-
-| 插件名 | 说明 |
-|--------|------|
-| `@spakjs/plugin-server` 🖥️ | 服务器服务和路由（HTTP/Socket） |
-| `@spakjs/plugin-http` 🌐 | HTTP 和 WebSocket 客户端 |
-| `@spakjs/plugin-hmr` 🔥 | 热模块替换，开发用喵 |
-| `@spakjs/plugin-daemon` 👻 | 后台守护进程 — 日志写入文件，脱离终端运行 |
+> 咱目前**没有内置插件**喵！插件统一从 `spak.config.yml` / `~/.spak/config.json` 加载（见下文）～
 
 ---
 
@@ -78,14 +73,8 @@ pnpm build
 
 ```yaml
 name: my-spak-app
-plugins:
-  '@spakjs/plugin-server':
-    host: 0.0.0.0
-    port: 4321
-  '@spakjs/plugin-http': null
-  '@spakjs/plugin-daemon':
-    enabled: true
-    logFile: spak.log
+version: 0.1.0
+plugins: {}
 ```
 
 ### 启动！(=ↀωↀ=)✧
@@ -97,11 +86,12 @@ spak serve
 # 或者指定配置文件
 spak serve ./spak.config.yml
 
-# 查看运行状态
-spak serve status
-
 # 停止正在运行的实例
 spak serve --stop
+
+# 重启 / 强制杀死正在运行的实例
+spak serve --restart
+spak serve --kill
 ```
 
 ### CLI 命令
@@ -116,7 +106,11 @@ spak config list
 spak cpc check
 spak cpc status
 spak cpc sandbox <插件名>
+spak cpc ssetps
 spak cpc circuit <插件名>
+
+# 为 workspace 包注入 i18n
+spak init-locales
 ```
 
 ---
@@ -125,20 +119,22 @@ spak cpc circuit <插件名>
 
 ```
 spak/
+├── bin/             # CLI 入口
+├── docs/            # 设计文档
+├── locales/         # 手写翻译文件（zh/en）
 ├── packages/        # 核心包喵！
 │   ├── core/        # 框架核心（命令、i18n、中间件...）
-│   ├── spak-cli/    # CLI 入口（serve、config、cpc 命令）
+│   ├── cli/         # CLI 入口（serve、config、cpc 命令）
 │   ├── loader/      # 配置 + 插件加载器
 │   ├── config/      # 配置管理器
 │   ├── i18n/        # 翻译引擎 + LocaleTree
-│   ├── log/         # 🆕 独立多通道日志模块
+│   ├── log/         # 独立多通道日志模块
 │   ├── message/     # 消息元素工具
-│   └── util/        # 工具库
-├── plugins/         # 插件们喵～
-│   ├── server/      # HTTP/Socket 服务器
-│   ├── http/        # HTTP/WebSocket 客户端
-│   ├── hmr/         # 热模块替换
-│   └── daemon/      # 后台守护进程 + 日志路由
+│   ├── util/        # 工具库
+│   ├── agent/       # Agent SDK
+│   └── node-b/      # Node 桥接工具
+├── src/             # workspace 根入口
+├── run/             # 构建脚本
 └── spak.config.yml
 ```
 

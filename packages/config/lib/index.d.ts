@@ -1,9 +1,5 @@
 export interface SpakConfig {
     language: string;
-    server: {
-        host: string;
-        port: number;
-    };
     plugins: Record<string, any>;
     cpc?: {
         enabled?: boolean;

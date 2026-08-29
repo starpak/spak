@@ -40,6 +40,7 @@ const fs_1 = require("fs");
 const yaml = __importStar(require("js-yaml"));
 const path = __importStar(require("path"));
 const i18n_1 = require("@spakjs/i18n");
+const kUpdate = Symbol('update');
 class FullReloadError extends Error {
     code;
     constructor(code) {
@@ -65,12 +66,11 @@ function separate(source, isGroup = false) {
     }
     return [isGroup ? source : config, meta];
 }
-const kUpdate = Symbol('update');
 const group = {
     name: 'group',
     reusable: true,
     apply(ctx, plugins) {
-        ctx.scope[Loader.kRecord] ||= Object.create(null);
+        ensureScopeRecord(ctx.scope);
         for (const name in plugins || {}) {
             if (name.startsWith('~') || name.startsWith('$'))
                 continue;
@@ -83,7 +83,7 @@ const group = {
             for (const key in { ...old, ...neo }) {
                 if (key.startsWith('~') || key.startsWith('$'))
                     continue;
-                const fork = ctx.scope[Loader.kRecord][key];
+                const fork = ensureScopeRecord(ctx.scope)[key];
                 if (!fork) {
                     ctx.loader.reload(ctx, key, neo[key]);
                 }
@@ -127,6 +127,13 @@ const writable = {
     '.yaml': 'application/yaml',
     '.yml': 'application/yaml',
 };
+// Runtime record attached to a scope via a symbol. The symbol (`Symbol.for`)
+// is not a `unique symbol`, so it cannot be used as a computed property key in
+// a type literal — we route all accesses through this typed helper instead of
+// sprinkling `as any` casts over the file.
+function ensureScopeRecord(scope) {
+    return scope[Loader.kRecord] ||= Object.create(null);
+}
 class Loader {
     static kRecord = Symbol.for('spak.loader.record');
     static exitCode = 51;
@@ -313,6 +320,7 @@ class Loader {
         const name = this.store.get(this.app.registry.resolve(plugin));
         if (name)
             return name.replace(/(spak-|^@spakjs\/)plugin-/, '');
+        return undefined;
     };
     replace = (oldKey, newKey) => {
         oldKey = this.app.registry.resolve(oldKey);
@@ -359,7 +367,7 @@ class Loader {
         this.app.logger('loader').info('%s plugin %c', type, key);
     };
     reload = async (parent, key, source) => {
-        let fork = parent.scope[Loader.kRecord][key];
+        let fork = ensureScopeRecord(parent.scope)[key];
         const name = key.split(':', 1)[0];
         const [config, meta] = separate(source, name === 'group');
         if (fork) {
@@ -367,6 +375,7 @@ class Loader {
                 this.unload(parent, key);
                 return;
             }
+            ;
             fork[kUpdate] = true;
             fork.update(config);
         }
@@ -384,7 +393,7 @@ class Loader {
             if (!fork)
                 return;
             fork.key = key.slice(name.length + 1);
-            parent.scope[Loader.kRecord][key] = fork;
+            ensureScopeRecord(parent.scope)[key] = fork;
         }
         const filter = this.interpolate(meta.$filter);
         fork.parent.filter = (session) => {
@@ -393,19 +402,20 @@ class Loader {
         return fork;
     };
     unload = (ctx, key) => {
-        const fork = ctx.scope[Loader.kRecord][key];
+        const fork = ensureScopeRecord(ctx.scope)[key];
         if (fork)
             fork.dispose();
     };
     getRefName = (fork) => {
         const record = fork.parent.scope[Loader.kRecord];
         if (!record)
-            return;
+            return undefined;
         for (const name in record) {
             if (record[name] !== fork)
                 continue;
             return name;
         }
+        return undefined;
     };
     paths = (scope) => {
         // root scope
@@ -426,7 +436,7 @@ class Loader {
         const app = this.app = new core_1.Context(this.interpolate(this.config));
         app.provide('loader', this, true);
         app.provide('baseDir', this.baseDir, true);
-        app.scope[Loader.kRecord] = Object.create(null);
+        ensureScopeRecord(app.scope);
         const fork = await this.reload(app, 'group:entry', this.config.plugins || {});
         this.entry = fork.ctx;
         app.accept((config) => {
@@ -440,15 +450,16 @@ class Loader {
         });
         // write config with `~` prefix
         app.on('internal/fork', (fork) => {
-            if (fork.uid || !fork.parent.scope[Loader.kRecord])
+            const record = fork.parent.scope[Loader.kRecord];
+            if (fork.uid || !record)
                 return;
-            const key = Object.keys(fork.parent.scope[Loader.kRecord]).find(key => {
-                return fork.parent.scope[Loader.kRecord][key] === fork;
+            const key = Object.keys(record).find(key => {
+                return record[key] === fork;
             });
             if (!key)
                 return;
             this.logUpdate('unload', fork.parent, key);
-            delete fork.parent.scope[Loader.kRecord][key];
+            delete record[key];
             if (!app.registry.has(fork.runtime.plugin))
                 return;
             rename(fork.parent.scope.config, key, '~' + key, fork.parent.scope.config[key]);
@@ -460,8 +471,10 @@ class Loader {
                 this.logUpdate('reload', fork.parent, key);
         });
         app.on('internal/before-update', (fork, config) => {
-            if (fork[kUpdate])
-                return delete fork[kUpdate];
+            if (fork[kUpdate]) {
+                delete fork[kUpdate];
+                return;
+            }
             const name = this.getRefName(fork);
             if (!name)
                 return;

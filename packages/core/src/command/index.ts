@@ -62,6 +62,21 @@ export class Commander {
 
     this.domain('el', source => h.parse(source).children as any, { greedy: true })
     this.domain('elements', source => h.parse(source).children as any, { greedy: true })
+    this.domain('img', source => {
+      const findImg = (children: any[]): any => {
+        for (const child of children) {
+          if (typeof child === 'string') continue
+          if (child instanceof h && child.type === 'img') return child
+          const nested = findImg(child.children || [])
+          if (nested) return nested
+        }
+        return undefined
+      }
+      const img = findImg(h.parse(source).children)
+      if (!img) throw new Error('internal.invalid-argument')
+      // Flatten the element: consumers expect the attrs on the result itself.
+      return { ...(img.attrs || {}), type: img.type }
+    })
     this.domain('string', source => h.unescape(source))
     this.domain('text', source => h.unescape(source), { greedy: true })
     this.domain('rawtext', source => new h('', { content: h.parse(source).map(c => c.toString()).join('') }).toString(), { greedy: true })

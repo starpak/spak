@@ -88,8 +88,14 @@ var Argv;
         }
         parse(source, terminator = '') {
             const tokens = [];
+            // `h.parse()` returns a Fragment whose children are plain **strings**
+            // for text (unlike koishi's array of `h('text', ...)` elements). Treat
+            // any string child as literal text; only real elements (img/at/quote…)
+            // get their internal whitespace escaped so tokenization cannot split them.
             source = element_1.h.parse(source).map((el) => {
-                return el.type === 'text' ? el.toString() : whitespace.escape(el.toString());
+                return typeof el === 'string' || el?.type === 'text'
+                    ? String(el)
+                    : whitespace.escape(String(el));
             }).join('');
             let rest = source, term = '';
             const stopReg = `\\s+|[${(0, util_1.escapeRegExp)(terminator)}]|$`;

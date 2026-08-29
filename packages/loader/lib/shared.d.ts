@@ -60,7 +60,7 @@ export declare abstract class Loader {
     private forkPlugin;
     isTruthyLike: (expr: any) => boolean;
     private logUpdate;
-    reload: (parent: Context, key: string, source: any) => Promise<any>;
+    reload: (parent: Context, key: string, source: any) => Promise<ForkScope | undefined>;
     unload: (ctx: Context, key: string) => void;
     getRefName: (fork: ForkScope) => string | undefined;
     paths: (scope: EffectScope) => string[];

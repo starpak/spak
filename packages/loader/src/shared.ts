@@ -57,7 +57,7 @@ const group: Plugin.Object<Context> = {
   name: 'group',
   reusable: true,
   apply(ctx, plugins) {
-    ctx.scope[Loader.kRecord] ||= Object.create(null)
+    ensureScopeRecord(ctx.scope)
 
     for (const name in plugins || {}) {
       if (name.startsWith('~') || name.startsWith('$')) continue
@@ -71,7 +71,7 @@ const group: Plugin.Object<Context> = {
       // update inner plugins
       for (const key in { ...old, ...neo }) {
         if (key.startsWith('~') || key.startsWith('$')) continue
-        const fork = ctx.scope[Loader.kRecord][key]
+        const fork = ensureScopeRecord(ctx.scope)[key]
         if (!fork) {
           ctx.loader.reload(ctx, key, neo[key])
         } else if (!(key in neo)) {
@@ -111,11 +111,19 @@ function rename(object: Record<string, any>, old: string, neo: string, value: an
   insertKey(object, temp, orderedKeys)
 }
 
-const writable = {
+const writable: Record<string, string> = {
   '.json': 'application/json',
   '.yaml': 'application/yaml',
   '.yml': 'application/yaml',
-} satisfies Record<string, string>
+}
+
+// Runtime record attached to a scope via a symbol. The symbol (`Symbol.for`)
+// is not a `unique symbol`, so it cannot be used as a computed property key in
+// a type literal — we route all accesses through this typed helper instead of
+// sprinkling `as any` casts over the file.
+function ensureScopeRecord(scope: EffectScope): Record<string, ForkScope> {
+  return (scope as any)[Loader.kRecord] ||= Object.create(null)
+}
 
 export abstract class Loader {
   static readonly kRecord = Symbol.for('spak.loader.record')
@@ -349,7 +357,7 @@ export abstract class Loader {
   }
 
   reload = async (parent: Context, key: string, source: any) => {
-    let fork = parent.scope[Loader.kRecord][key]
+    let fork: ForkScope | undefined = ensureScopeRecord(parent.scope)[key]
     const name = key.split(':', 1)[0]
     const [config, meta] = separate(source, name === 'group')
     if (fork) {
@@ -357,7 +365,7 @@ export abstract class Loader {
         this.unload(parent, key)
         return
       }
-      fork[kUpdate] = true
+      ;(fork as any)[kUpdate] = true
       fork.update(config)
     } else {
       if (!this.isTruthyLike(meta.$if)) return
@@ -369,8 +377,8 @@ export abstract class Loader {
         fork = await this.forkPlugin(name, config, ctx)
       }
       if (!fork) return
-      fork.key = key.slice(name.length + 1)
-      parent.scope[Loader.kRecord][key] = fork
+      ;(fork as any).key = key.slice(name.length + 1)
+      ensureScopeRecord(parent.scope)[key] = fork
     }
     const filter = this.interpolate(meta.$filter)
     fork.parent.filter = (session: any) => {
@@ -380,12 +388,12 @@ export abstract class Loader {
   }
 
   unload = (ctx: Context, key: string) => {
-    const fork = ctx.scope[Loader.kRecord][key]
+    const fork = ensureScopeRecord(ctx.scope)[key]
     if (fork) fork.dispose()
   }
 
   getRefName = (fork: ForkScope): string | undefined => {
-    const record = fork.parent.scope[Loader.kRecord]
+    const record = (fork.parent.scope as any)[Loader.kRecord] as Record<string, ForkScope> | undefined
     if (!record) return undefined
     for (const name in record) {
       if (record[name] !== fork) continue
@@ -414,9 +422,9 @@ export abstract class Loader {
     const app = this.app = new Context(this.interpolate(this.config))
     app.provide('loader', this, true)
     app.provide('baseDir', this.baseDir, true)
-    app.scope[Loader.kRecord] = Object.create(null)
+    ensureScopeRecord(app.scope)
     const fork = await this.reload(app, 'group:entry', (this.config as any).plugins || {})
-    this.entry = fork.ctx
+    this.entry = fork!.ctx
 
     app.accept((config) => {
       app.spak.config = config
@@ -432,13 +440,14 @@ export abstract class Loader {
 
     // write config with `~` prefix
     app.on('internal/fork', (fork) => {
-      if (fork.uid || !fork.parent.scope[Loader.kRecord]) return
-      const key = Object.keys(fork.parent.scope[Loader.kRecord]).find(key => {
-        return fork.parent.scope[Loader.kRecord][key] === fork
+const record = (fork.parent.scope as any)[Loader.kRecord] as Record<string, ForkScope> | undefined
+      if (fork.uid || !record) return
+      const key = Object.keys(record).find(key => {
+        return record[key] === fork
       })
       if (!key) return
       this.logUpdate('unload', fork.parent, key)
-      delete fork.parent.scope[Loader.kRecord][key]
+      delete record[key]
       if (!app.registry.has(fork.runtime.plugin)) return
       rename(fork.parent.scope.config, key, '~' + key, fork.parent.scope.config[key])
       this.writeConfig()
@@ -450,7 +459,10 @@ export abstract class Loader {
     })
 
     app.on('internal/before-update', (fork, config) => {
-      if (fork[kUpdate]) return delete fork[kUpdate]
+      if ((fork as any)[kUpdate]) {
+        delete (fork as any)[kUpdate]
+        return
+      }
       const name = this.getRefName(fork)
       if (!name) return
       const { schema } = fork.runtime

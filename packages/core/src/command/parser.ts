@@ -128,8 +128,14 @@ export namespace Argv {
 
     parse(source: string, terminator = ''): Argv {
       const tokens: Token[] = []
-      source = h.parse(source).map((el) => {
-        return el.type === 'text' ? el.toString() : whitespace.escape(el.toString())
+      // `h.parse()` returns a Fragment whose children are plain **strings**
+      // for text (unlike koishi's array of `h('text', ...)` elements). Treat
+      // any string child as literal text; only real elements (img/at/quote…)
+      // get their internal whitespace escaped so tokenization cannot split them.
+      source = h.parse(source).map((el: any) => {
+        return typeof el === 'string' || el?.type === 'text'
+          ? String(el)
+          : whitespace.escape(String(el))
       }).join('')
       let rest = source, term = ''
       const stopReg = `\\s+|[${escapeRegExp(terminator)}]|$`

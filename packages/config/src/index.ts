@@ -7,10 +7,6 @@ const CONFIG_FILE = resolve(CONFIG_DIR, 'config.json')
 
 export interface SpakConfig {
   language: string
-  server: {
-    host: string
-    port: number
-  }
   plugins: Record<string, any>
   cpc?: {
     enabled?: boolean
@@ -26,10 +22,6 @@ export interface SpakConfig {
 
 const defaultConfig: SpakConfig = {
   language: 'en',
-  server: {
-    host: '0.0.0.0',
-    port: 4321,
-  },
   plugins: {},
 }
 

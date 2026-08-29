@@ -51,6 +51,25 @@ class Commander {
         ctx.schema.extend('command', command_1.Command.Config, 1000);
         this.domain('el', source => element_1.h.parse(source).children, { greedy: true });
         this.domain('elements', source => element_1.h.parse(source).children, { greedy: true });
+        this.domain('img', source => {
+            const findImg = (children) => {
+                for (const child of children) {
+                    if (typeof child === 'string')
+                        continue;
+                    if (child instanceof element_1.h && child.type === 'img')
+                        return child;
+                    const nested = findImg(child.children || []);
+                    if (nested)
+                        return nested;
+                }
+                return undefined;
+            };
+            const img = findImg(element_1.h.parse(source).children);
+            if (!img)
+                throw new Error('internal.invalid-argument');
+            // Flatten the element: consumers expect the attrs on the result itself.
+            return { ...(img.attrs || {}), type: img.type };
+        });
         this.domain('string', source => element_1.h.unescape(source));
         this.domain('text', source => element_1.h.unescape(source), { greedy: true });
         this.domain('rawtext', source => new element_1.h('', { content: element_1.h.parse(source).map(c => c.toString()).join('') }).toString(), { greedy: true });

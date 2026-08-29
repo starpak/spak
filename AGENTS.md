@@ -85,13 +85,6 @@
 > 2. **必须保持极度简洁**：严格要求 AI 必须以非常非常简洁的语气交流，就类似一句话的那种简洁程度喵！回复要精简到极致，直奔主题，不得啰嗦、不得过度展开、不得长篇大论。
 > 3. **简洁优先于一切**：在保持角色语气的同时，回复内容务必「一句话能说清绝不说两句」，任何与任务无关的废话都要裁剪掉喵！
 
-## 未完成任务列表（进行中，随时更新）
-
-- [ ] 修复 `spak config set language` 未翻译 key：应显示用户可读的中文提示（如「你可以选择：zh / en」），而不是 `spak.ccmd.config.language_invalid`
-- [ ] 修复 `spak serve` 启动/停止输出不受 locales 影响：`spak.cli.serve.started` / `spak.cli.serve.stopping` 显示未翻译 key，需确保 serve 的 T() 走 i18n 中文翻译
-- [ ] 修复 `[E] app cannot resolve plugin "server"`：`spak serve` 时 loader 仍尝试加载 `server` 插件，需清除配置残留（spak.config.yml / ~/.spak/config.json / 默认 config）
-- [ ] 清点并翻译所有未翻译的 i18n key（逐个核对 zh.yml 覆盖）
-
 ## 后续任务列表（待开始）
 
 - [ ] 所有可自定义内容迁移到 `~/.spak`（不在项目源码硬编码）；源码 `src/` 目录内需含 `locales/` 目录

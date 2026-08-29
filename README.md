@@ -29,23 +29,18 @@ Spak uses **TypeScript** with a **pnpm monorepo** architecture.
 
 | Package | Description |
 |---------|-------------|
-| `@spakjs/core` 🧠 | **Agent SDK**: Complete AI Agent development framework with management, tools, providers, templates, and metrics. |
-| `@spakjs/cli` 🎮 | CLI entry point: `spak serve`, `spak config`, `spak cpc`, `spak status`. All outputs are colorized and human-friendly. |
+| `@spakjs/core` 🧠 | **Framework core**: commands, middleware, i18n, permissions, Schema, session management. |
+| `@spakjs/cli` 🎮 | CLI entry point: `spak serve`, `spak config`, `spak cpc`, `spak init-locales`. All outputs are colorized and human-friendly. |
 | `@spakjs/loader` 📂 | Config loader, supports YAML/JSON. Handles env files, plugin resolution and lifecycle. |
 | `@spakjs/config` ⚙️ | Central configuration manager, persists to `~/.spak/config.json`. |
 | `@spakjs/i18n` 🌐 | Integrated i18n: locale tree, fallback algorithm, yml translation loader, `T()` helper. |
 | `@spakjs/log` 📝 | **Independent logging module** — multi-transport logger (Console/File/Stream), log levels, structured logging, with Cordis Logger bridge. |
 | `@spakjs/message` 💬 | Message helpers and element utilities. |
 | `@spakjs/util` 🧰 | Utility functions: command declarations, object observation, string interpolation, misc helpers. |
+| `@spakjs/agent` 🤖 | Agent SDK: management, tools, providers, templates, and metrics. |
+| `@spakjs/node-b` 🧰 | Node bridge utilities. |
 
-## Plugins
-
-| Plugin | Description |
-|--------|-------------|
-| `@spakjs/plugin-server` 🖥️ | Server service and routing (HTTP/Socket). |
-| `@spakjs/plugin-http` 🌐 | HTTP and WebSocket client. |
-| `@spakjs/plugin-hmr` 🔥 | Hot Module Replacement for development. |
-| `@spakjs/plugin-daemon` 👻 | Background daemon process — routes logs to file, detaches from terminal. |
+> Spak currently ships **no built-in plugins**. Plugins are loaded from `spak.config.yml` / `~/.spak/config.json` (see below).
 
 ---
 
@@ -88,14 +83,8 @@ Create **spak.config.yml**:
 
 ```yaml
 name: my-spak-app
-plugins:
-  '@spakjs/plugin-server':
-    host: 0.0.0.0
-    port: 4321
-  '@spakjs/plugin-http': null
-  '@spakjs/plugin-daemon':
-    enabled: true
-    logFile: spak.log
+version: 0.1.0
+plugins: {}
 ```
 
 ### Run
@@ -107,11 +96,12 @@ spak serve
 # Or specify a config file
 spak serve ./spak.config.yml
 
-# Check runtime status
-spak serve status
-
 # Stop the running instance
 spak serve --stop
+
+# Restart / force-kill the running instance
+spak serve --restart
+spak serve --kill
 ```
 
 ### CLI Commands
@@ -126,7 +116,11 @@ spak config list
 spak cpc check
 spak cpc status
 spak cpc sandbox <plugin-name>
+spak cpc ssetps
 spak cpc circuit <plugin-name>
+
+# Inject i18n into workspace packages
+spak init-locales
 ```
 
 ---
@@ -135,20 +129,22 @@ spak cpc circuit <plugin-name>
 
 ```
 spak/
+├── bin/             # CLI entry
+├── docs/            # Design docs
+├── locales/         # Handwritten translation files (zh/en)
 ├── packages/        # Core packages
 │   ├── core/        # Framework core (commands, i18n, middleware, ...)
-│   ├── spak-cli/    # CLI entry (serve, config, cpc commands)
+│   ├── cli/         # CLI entry (serve, config, cpc commands)
 │   ├── loader/      # Config + plugin loader
 │   ├── config/      # Central configuration manager
 │   ├── i18n/        # Translation engine + LocaleTree
-│   ├── log/         # 🆕 Independent multi-transport logger
+│   ├── log/         # Independent multi-transport logger
 │   ├── message/     # Message element helpers
-│   └── util/        # Utility library
-├── plugins/         # Plugins
-│   ├── server/      # HTTP/Socket server
-│   ├── http/        # HTTP/WebSocket client
-│   ├── hmr/         # Hot module reload
-│   └── daemon/      # Background daemon + log routing
+│   ├── util/        # Utility library
+│   ├── agent/       # Agent SDK
+│   └── node-b/      # Node bridge utilities
+├── src/             # Workspace root entry
+├── run/             # Build scripts
 └── spak.config.yml
 ```
 

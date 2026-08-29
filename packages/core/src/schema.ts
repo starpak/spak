@@ -66,6 +66,10 @@ Schema.prototype.computed = function computed(this: Schema, options = {}) {
 
 const kSchemaOrder = Symbol('schema-order')
 
+// Local type carrying the private symbol so indexing error TS7053 is avoided
+// without weakening the rest of the Schema type.
+type SchemaWithOrder = Schema & { [kSchemaOrder]?: number }
+
 declare module './context' {
   interface Context {
     schema: SchemaService
@@ -92,8 +96,8 @@ export class SchemaService {
     // compared `undefined < 0 → false` and made all unordered entries
     // behave as if they were order=0, which broke insertion semantics.
     const list = target.list || []
-    const index = list.findIndex(a => (a[kSchemaOrder] ?? Number.POSITIVE_INFINITY) > order)
-    schema[kSchemaOrder] = order
+    const index = list.findIndex(a => ((a as SchemaWithOrder)[kSchemaOrder] ?? Number.POSITIVE_INFINITY) > order)
+    ;(schema as SchemaWithOrder)[kSchemaOrder] = order
     if (index >= 0) {
       list.splice(index, 0, schema)
     } else {

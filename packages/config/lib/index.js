@@ -11,10 +11,6 @@ const CONFIG_DIR = (0, path_1.resolve)((0, os_1.homedir)(), '.spak');
 const CONFIG_FILE = (0, path_1.resolve)(CONFIG_DIR, 'config.json');
 const defaultConfig = {
     language: 'en',
-    server: {
-        host: '0.0.0.0',
-        port: 4321,
-    },
     plugins: {},
 };
 function ensureConfigDir() {

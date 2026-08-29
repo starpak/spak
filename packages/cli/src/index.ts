@@ -22,7 +22,7 @@ export interface CreateAppOptions {
   config?: string
   /** Initial language override for the i18n system (e.g. 'zh', 'en'). */
   language?: string
-  /** Shortcut: set `process.env.SPAK_HOST` / `SPAK_PORT` for plugin-server. */
+  /** Shortcut: set `process.env.SPAK_HOST` / `SPAK_PORT` for server plugins. */
   host?: string
   port?: string | number
   /** Extra env vars merged into process.env before loader init. */

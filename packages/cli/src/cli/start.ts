@@ -129,7 +129,7 @@ async function startService(file?: string) {
   }
 
   // Host/port env overrides are applied directly via process.env
-  // (SPAK_HOST / SPAK_PORT), consumed by server plugins.
+  // (SPAK_HOST / SPAK_PORT), consumed by server-style plugins.
 
   const app = await loader.createApp()
   await app.start()

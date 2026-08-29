@@ -169,6 +169,7 @@ spak:
       circuit_open: "Circuit breaker OPEN for {name}"
       circuit_restored: "Circuit breaker restored for {name}"
       firewall_rule: "Firewall rule: {rule}"
+      firewall_rule_invalid: "Invalid firewall rule: {rule}"
       tip: '  tip: re-run with NODE_OPTIONS="--expose-gc" to let SSetPS force garbage collection when memory is high.'
     test:
       serve: "Starting test server..."

@@ -38,15 +38,6 @@ const MODULE_WHITELIST: ReadonlySet<string> = new Set([
   'agent',
   'cli',
   'node-b',
-  // --- Known/approved @spakjs plugins ---
-  '@spakjs/plugin-server',
-  '@spakjs/plugin-http',
-  '@spakjs/plugin-hmr',
-  '@spakjs/plugin-daemon',
-  'plugin-server',
-  'plugin-http',
-  'plugin-hmr',
-  'plugin-daemon',
 ])
 
 /**
