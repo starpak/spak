@@ -12,6 +12,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LocaleTree = void 0;
 exports.fallback = fallback;
+exports.loadEmbeddedTranslations = loadEmbeddedTranslations;
 exports.loadYmlTranslation = loadYmlTranslation;
 exports.init = init;
 exports.t = t;
@@ -89,6 +90,18 @@ const js_yaml_1 = require("js-yaml");
 let _i18n = null;
 // Fallback cache: manually loaded from yml files when i18n is not available
 const fallbackCache = {};
+/**
+ * Register pre-baked (embedded) translations at startup — used by the
+ * self-contained (SEA) binary build where no locale files exist on disk.
+ * Flat dot-notation keys, same shape as flattenKeys() output.
+ */
+function loadEmbeddedTranslations(lang, flat) {
+    if (!flat || typeof flat !== 'object')
+        return;
+    const existing = fallbackCache[lang] || {};
+    Object.assign(existing, flat);
+    fallbackCache[lang] = existing;
+}
 /**
  * Flatten a nested object (produced by loading .yml) into dot-notation flat
  * keys, e.g. `{ spak: { cli: { serve: { started: "..." } } } }` becomes
@@ -239,5 +252,5 @@ function setLanguage(lang) {
 function getCurrentLanguage() {
     return (0, config_1.getConfig)('language') || 'en';
 }
-exports.default = { init, t, T, setLanguage, getCurrentLanguage, loadYmlTranslation };
+exports.default = { init, t, T, setLanguage, getCurrentLanguage, loadYmlTranslation, loadEmbeddedTranslations };
 //# sourceMappingURL=index.js.map

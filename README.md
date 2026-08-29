@@ -19,7 +19,7 @@
 - 🎛️ **Configuration Management** - Centralized configuration management
 - 🌍 **i18n** - Multi-language support (zh/en)
 - 🖥️ **CLI Tooling** - `spm` package manager + runtime control
-- 📦 **App Packaging** - `.pak` single-file apps with a built-in security auditor
+- 📦 **封闭二进制构建** - `spm build` 产出自包含 SEA 单文件二进制（框架 + APP 内嵌），任何同架构 Linux 免 Node 直跑
 - 📝 **Independent Logging** - Multi-transport logging system
 
 Spak uses **TypeScript** with a **pnpm monorepo** architecture.
@@ -30,7 +30,7 @@ Spak uses **TypeScript** with a **pnpm monorepo** architecture.
 
 | Package | Description |
 |---------|-------------|
-| `spm` 📦 | **The Spak CLI** (v0.0.1): package manager (`pack`/`list`/`info`/`install`/`uninstall`/`publish`), runtime control (`serve`/`stop`/`restart`/`kill`/`status`), config & CPC & i18n commands. Commands are injected from `@spakjs/cli` at build time. |
+| `spm` 📦 | **The Spak CLI** (v0.0.1): build 封闭二进制（`build`/`dev`），runtime control (`serve`/`stop`/`restart`/`kill`/`status`), config & CPC & i18n commands. Commands are injected from `@spakjs/cli` at build time. |
 | `@spakjs/core` 🧠 | **Framework core**: commands, middleware, i18n, permissions, Schema, session management. |
 | `@spakjs/cli` 🎮 | Command library (injected into `spm`): serve/config/cpc/i18n declarations. |
 | `@spakjs/loader` 📂 | Config loader, supports YAML/JSON. Handles env files, plugin resolution and lifecycle. |
@@ -42,7 +42,7 @@ Spak uses **TypeScript** with a **pnpm monorepo** architecture.
 | `@spakjs/agent` 🤖 | Agent SDK: management, tools, providers, templates, and metrics. |
 | `@spakjs/mlang` 🌐 | Language model abstraction layer. |
 | `@spakjs/node-b` 🧰 | Node bridge utilities & front-end build cache. |
-| `@spakjs/apps` 📦 | Apps runtime (.pak): manifest spec, HMR watcher, INO conflict system. |
+| `@spakjs/apps` 📦 | Apps runtime: manifest 规范, HMR watcher, INO conflict system. |
 
 > **CLI ownership**: `spm` is the single CLI. `spak` is now a pure runtime identity (only `spak -v`; everything else guides you to `spm`). Plugins are loaded from `spak.config.yml` / `~/.spak/config.json` (see below).
 
@@ -109,24 +109,23 @@ spm serve --kill
 spm serve status
 ```
 
-### App Packaging (`spm`)
+### Build sealed binaries (`spm`)
 
 ```bash
-# Build a Vite/static app, then pack it into a .pak single-file package
-cd apps/desktop && pnpm build
-spm pack ../apps/desktop          # → ~/.spak/.apps/desktop.pak
+# Build an app under APPS/ (a directory defaults to the master entry of
+# spak.manifest.json) into a self-contained single-file binary:
+# framework runtime + embedded APP, runs on any same-arch Linux, no Node needed
+spm build -i APPS/hello -n hello -v 1.0.0     # → dist/hello-1.0.0 (~118MB)
 
-# Install / list / inspect / uninstall
-spm install --file ~/.spak/.apps/desktop.pak   # security audit runs automatically
-spm list
-spm info <name>
-spm uninstall <name>
+# Development mode: watch sources, HMR hot restart by default (second-level loop)
+spm dev -i APPS/hello -n hello -v 1.0.0
 
-# Publish to the local registry
-spm publish --file <path.pak> [<name>]
+# --no-hmr: full SEA binary rebuild on every change (identical to final artifact)
+spm dev -i APPS/hello --no-hmr
 
-# Serve installed .pak apps (by the app server example in apps/server)
-node apps/server/src/server.ts    # serves ~/.spak/.apps/*.pak on :4695
+# The artifact runs directly: no args = executes the APP entry;
+# -h/-v = framework help/version; framework command args = command surface
+./dist/hello-1.0.0
 ```
 
 ### CLI Commands
@@ -165,7 +164,7 @@ spak/
 │   ├── core/        # Framework core (commands, i18n, middleware, ...)
 │   ├── cli/         # Command library (injected into spm)
 │   ├── spm/         # The Spak CLI: package manager + runtime control
-│   ├── apps/        # Apps runtime (.pak): manifest, HMR, INO
+│   ├── apps/        # Apps runtime: manifest 规范, HMR, INO 冲突系统
 │   ├── loader/      # Config + plugin loader
 │   ├── config/      # Central configuration manager
 │   ├── i18n/        # Translation engine + LocaleTree

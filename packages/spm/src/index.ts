@@ -1,9 +1,11 @@
 #!/usr/bin/env node
-// ===== spm — Spak Package Manager CLI =====
+// ===== spm — Spak Builder CLI =====
 //
-// spm 是 Spak 的专属 CLI：包管理（pack/list/info/install/uninstall/publish）、
-// 应用管理（i18n init/check）、运行时启停（serve/stop/restart/kill/status）。
-// 命令实现位于 @spakjs/cli（构建时注入），spm 负责壳编排与包管理命令。
+// spm is Spak's dedicated CLI: sealed-binary building (build/dev),
+// i18n management (i18n init/check), and runtime control
+// (serve/stop/restart/kill/status). Command implementations live in
+// @spakjs/cli (injected at build time); spm owns the shell orchestration
+// and the builder commands.
 
 import { cac } from 'cac'
 import kleur from 'kleur'
@@ -23,7 +25,7 @@ import { spmDeclarations } from './commands'
 // CLI logger: simple formatter
 setGlobalFormatter(simpleFormatter)
 
-const cli = cac('spm').help().version(spmVersion)
+const cli = cac('spm').help()
 
 const declarations: CommandDeclaration[] = [
   ...serveDeclarations,
@@ -53,9 +55,14 @@ if (helpIndex > 0) {
   }
 }
 
-// spm -v prints only the version line (spm + spak runtime)
+// spm -v prints only the version line (spm + spak runtime).
+// NOTE: only effective in a non-child-command context — a subcommand's -v
+// is a business option (e.g. build -v <version>) and must not be intercepted.
+const firstPositional = process.argv.slice(2).find(a => !a.startsWith('-'))
+const topLevelCommands = new Set(declarations.map(d => d.command.split(' ')[0]))
+const isChildContext = !!firstPositional && topLevelCommands.has(firstPositional)
 const hasVersionFlag = process.argv.slice(2).some(a => a === '-v' || a === '--version')
-if (hasVersionFlag) {
+if (!isChildContext && hasVersionFlag) {
   const platform = `${process.platform} ${process.arch}`
   const spakVersion = require('@spakjs/cli/package.json').version
   console.log(`${kleur.bold().cyan('spm')}/${kleur.green(spmVersion)} ${kleur.yellow(platform)} node-${process.version}`)

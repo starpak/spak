@@ -8,6 +8,15 @@
 
 ## [Unreleased]
 
+### 🚀 Builder 2.0 — sealed binaries
+- **`spm build -i <app> -n <name> -v <version>`**：builds a self-contained single-file binary (Node SEA) — the framework runtime (core/loader/apps/i18n/cli) plus the embedded APP entry, no Node required at runtime; entry resolution supports a file or a directory via `spak.manifest.json`'s `master`.
+- **`spm dev`**：development mode — watches source files with HMR hot restart by default (polling-based, resilient to inotify event storms); `--no-hmr` runs a full SEA rebuild and restarts the real binary (build-time simulation).
+- **`.pak` package system removed**：`pack`/`list`/`info`/`install`/`uninstall`/`publish` are gone; the audit/permission responsibilities moved upstream (validated at build time, then embedded).
+- **SEA runtime adaptation**：embedded translations (prefix-compatible, `en-US → en`), sandbox worker re-exec (`--spak-sandbox`), version-flag conflict resolved (subcommand `-v` is a business option, not intercepted), `__dirname`/`__filename` safe placeholders.
+- **Monorepo fallback resolver**：`@spakjs/*` imports from user code under `APPS/` resolve to `packages/<name>/lib` artifacts.
+- **`packages/apps`**：`hmr.ts` `createRequire` is now defensive (works inside bundles/SEA where `require.resolve` does not exist).
+- **Sample app `APPS/hello`**：manifests-driven entry + direct `@spakjs/apps` import proving embedded framework capabilities.
+
 ### ✨ Features
 - **CPC security hardening**：
   - **manifest permissions** — executable apps must declare `network`/`fs`/`childProcess` in `spak.app.json`; missing or invalid declarations are rejected by the `spm install` auditor (fail-closed, minimal by default); `spm info` now prints the granted permissions.

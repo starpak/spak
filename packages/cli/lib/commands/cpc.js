@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.circuitBreakers = void 0;
 exports.runModuleWhitelistCheck = runModuleWhitelistCheck;
+exports.runSandboxWorker = runSandboxWorker;
 exports.isolatePlugin = isolatePlugin;
 exports.terminateSandbox = terminateSandbox;
 exports.isAvailable = isAvailable;
@@ -222,6 +223,89 @@ function runPluginCheck() {
 }
 // ====== Sandbox ======
 const sandboxProcesses = new Map();
+/**
+ * Sandbox worker 主进程内运行入口（SEA 二进制标记分支）。
+ *
+ * 封闭二进制里 spawn 子进程用「自 re-exec」：
+ *   spawn(process.execPath, ['--spak-sandbox', name])
+ * 主 bundle 启动时检测到该标记，直接执行本函数（内嵌代码）；
+ * 防火墙来自同包模块引用，无需 cwd 的 node_modules ——
+ * 与非 SEA 场景的 `node -e` 字符串脚本行为等价。
+ */
+function runSandboxWorker(name) {
+    const pluginName = name || '';
+    const path = require('path');
+    const fs = require('fs');
+    const { createRequire } = require('module');
+    // 1) 安装防火墙规则（env 继承则直接应用；否则默认 fail-closed）
+    try {
+        if (typeof firewall_1.applyFirewallFromEnv === 'function')
+            (0, firewall_1.applyFirewallFromEnv)();
+        if (typeof firewall_1.installFirewall === 'function' && !process.env.SPAK_FIREWALL_RULES)
+            (0, firewall_1.installFirewall)();
+    }
+    catch (e) {
+        if (process.env.SPAK_DEBUG)
+            console.debug('[sandbox] firewall:', String(e?.message || e));
+    }
+    // 2) 真实入口 loading（smoke）：plugins/<name> 存在则装载
+    try {
+        const req = createRequire(path.resolve(process.cwd(), 'package.json'));
+        let entry = null;
+        const pkgPath = path.resolve(process.cwd(), 'plugins', pluginName, 'package.json');
+        if (fs.existsSync(pkgPath)) {
+            try {
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+                entry = pkg.main ? path.resolve(process.cwd(), 'plugins', pluginName, pkg.main) : null;
+            }
+            catch { }
+        }
+        if (!entry) {
+            const mPath = path.resolve(process.cwd(), 'plugins', pluginName, 'spak.manifest.json');
+            if (fs.existsSync(mPath)) {
+                try {
+                    const m = JSON.parse(fs.readFileSync(mPath, 'utf8'));
+                    entry = m.master ? path.resolve(process.cwd(), 'plugins', pluginName, m.master) : null;
+                }
+                catch { }
+            }
+        }
+        if (entry && fs.existsSync(entry)) {
+            req(entry);
+            console.log('[sandbox] entry-loaded: ' + entry);
+        }
+        else {
+            try {
+                req.resolve(pluginName);
+                console.log('[sandbox] plugin-resolved: ' + pluginName);
+            }
+            catch { }
+        }
+    }
+    catch (err) {
+        if (process.env.SPAK_DEBUG)
+            console.debug('[sandbox] entry load guard:', err?.message ?? String(err));
+    }
+    // 3) RSS 自守卫：超预算上报父进程触发熔断
+    const limitMB = Number(process.env.SPAK_SANDBOX_MEM_MB) || 512;
+    const guard = setInterval(() => {
+        const rssMB = process.memoryUsage().rss / 1024 / 1024;
+        if (rssMB > limitMB && process.send) {
+            process.send({ type: 'overbudget', plugin: pluginName, rss: Math.round(rssMB) });
+        }
+    }, 5000);
+    if (guard.unref)
+        guard.unref();
+    console.log('[sandbox] plugin "' + pluginName + '" started');
+    if (process.send) {
+        process.send({ type: 'ready', plugin: pluginName, pid: process.pid });
+        process.on('message', (msg) => {
+            if (msg && msg.type === 'shutdown')
+                process.exit(0);
+        });
+    }
+    process.stdin.resume();
+}
 function isolatePlugin(name) {
     if (process.env.SPAK_NO_SANDBOX === '1') {
         console.log(kleur_1.default.yellow(`  ⚠ ${(0, i18n_1.T)('spak.cpc.sandbox.disabled_warning')}`));
@@ -297,18 +381,40 @@ function isolatePlugin(name) {
     }
     process.stdin.resume();
   `;
-    const child = (0, child_process_1.spawn)(process.execPath, ['-e', workerScript, '--', name], {
-        stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
-        detached: true,
-        env: {
-            ...process.env,
-            // V8 heap cap via NODE_OPTIONS (spawn has no execArgv; NODE_OPTIONS is
-            // honoured by node children and limits sandbox RSS growth).
-            NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --max-old-space-size=${memLimitMB}`.trim(),
-            SPAK_FIREWALL_RULES: JSON.stringify((0, firewall_1.getFirewallRules)()),
-            SPAK_SANDBOX_MEM_MB: String(memLimitMB),
-        },
-    });
+    const isSea = (() => {
+        try {
+            const sea = require('node:sea');
+            return typeof sea.isSea === 'function' && sea.isSea();
+        }
+        catch {
+            return false;
+        }
+    })();
+    // SEA 二进制：自 re-exec 走内嵌 runSandboxWorker 分支；
+    // 普通 node 环境：保持原 `node -e` 字符串脚本行为。
+    const child = isSea
+        ? (0, child_process_1.spawn)(process.execPath, ['--spak-sandbox', name], {
+            stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+            detached: true,
+            env: {
+                ...process.env,
+                NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --max-old-space-size=${memLimitMB}`.trim(),
+                SPAK_FIREWALL_RULES: JSON.stringify((0, firewall_1.getFirewallRules)()),
+                SPAK_SANDBOX_MEM_MB: String(memLimitMB),
+            },
+        })
+        : (0, child_process_1.spawn)(process.execPath, ['-e', workerScript, '--', name], {
+            stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+            detached: true,
+            env: {
+                ...process.env,
+                // V8 heap cap via NODE_OPTIONS (spawn has no execArgv; NODE_OPTIONS is
+                // honoured by node children and limits sandbox RSS growth).
+                NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --max-old-space-size=${memLimitMB}`.trim(),
+                SPAK_FIREWALL_RULES: JSON.stringify((0, firewall_1.getFirewallRules)()),
+                SPAK_SANDBOX_MEM_MB: String(memLimitMB),
+            },
+        });
     // Prevent accidental memory leaks from pending IPC buffers — we don't
     // forward raw stdio to the user's terminal (they are ignored above) but
     // we still want lifecycle notifications.

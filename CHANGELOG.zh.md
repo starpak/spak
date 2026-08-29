@@ -6,6 +6,15 @@
 
 ## [Unreleased]
 
+### 🚀 构建器 2.0 —— 封闭二进制
+- **`spm build -i <软件> -n <name> -v <version>`**：产出自包含单文件二进制（Node SEA）——框架运行时（core/loader/apps/i18n/cli）+ 内嵌 APP 入口全部打入，运行免 Node；入口支持文件或目录（目录默认读 `spak.manifest.json` 的 `master`）。
+- **`spm dev`**：开发模式——默认 watch + HMR 热重启（轮询实现，抗 inotify 事件风暴）；`--no-hmr` 每次变更完整 SEA 重建并重启真二进制（构建期仿真）。
+- **废弃 .pak 应用包体系**：`pack`/`list`/`info`/`install`/`uninstall`/`publish` 移除；审查/权限职责上移（构建期校验后内嵌）。
+- **SEA 运行时适配**：内嵌翻译（语言前缀兼容 `en-US → en`）、沙箱子进程自 re-exec（`--spak-sandbox`）、版本旗冲突解决（子命令 `-v` 是业务选项不被全局拦截）、`__dirname`/`__filename` 安全占位。
+- **Monorepo 回退解析**：`APPS/` 下用户代码的 `@spakjs/*` 引用统一归位到 `packages/<name>/lib` 产物。
+- **`packages/apps`**：`hmr.ts` 的 `createRequire` 改为防御式（适配 bundle/SEA 中不存在 `require.resolve` 的环境）。
+- **样例应用 `APPS/hello`**：manifest 驱动入口 + 直接 `import '@spakjs/apps'` 验证框架能力内嵌。
+
 ### ✨ 新功能
 - **CPC 安全补强**：
   - **manifest permissions 声明**：可执行应用必须在 `spak.app.json` 明示 `network`/`fs`/`childProcess` 权限，缺失或非法即被 `spm install` 安全审查者拒收（缺省最小权限、fail-closed）；`spm info` 会展示声明的权限。

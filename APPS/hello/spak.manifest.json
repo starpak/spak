@@ -1,0 +1,9 @@
+{
+  "name": "hello",
+  "version": "1.0.0",
+  "master": "index.ts",
+  "author": "spak",
+  "dependencies": {},
+  "permissions": { "network": "none", "fs": "none", "childProcess": false },
+  "description": "Hello world — verifies the SPAK sealed binary and embedded framework capabilities"
+}

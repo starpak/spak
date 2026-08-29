@@ -93,6 +93,18 @@ let _i18n: I18n | null = null
 const fallbackCache: Record<string, Record<string, string>> = {}
 
 /**
+ * Register pre-baked (embedded) translations at startup — used by the
+ * self-contained (SEA) binary build where no locale files exist on disk.
+ * Flat dot-notation keys, same shape as flattenKeys() output.
+ */
+export function loadEmbeddedTranslations(lang: string, flat: Record<string, string>): void {
+  if (!flat || typeof flat !== 'object') return
+  const existing = fallbackCache[lang] || {}
+  Object.assign(existing, flat)
+  fallbackCache[lang] = existing
+}
+
+/**
  * Flatten a nested object (produced by loading .yml) into dot-notation flat
  * keys, e.g. `{ spak: { cli: { serve: { started: "..." } } } }` becomes
  * `{ "spak.cli.serve.started": "..." }`. This matches the dotted keys used by
@@ -239,4 +251,4 @@ export function getCurrentLanguage(): string {
   return getConfig('language') || 'en'
 }
 
-export default { init, t, T, setLanguage, getCurrentLanguage, loadYmlTranslation }
+export default { init, t, T, setLanguage, getCurrentLanguage, loadYmlTranslation, loadEmbeddedTranslations }

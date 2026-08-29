@@ -6,6 +6,12 @@ export declare namespace LocaleTree {
 }
 export declare function fallback(tree: LocaleTree, locales: string[]): string[];
 import type { I18n } from '@spakjs/core';
+/**
+ * Register pre-baked (embedded) translations at startup — used by the
+ * self-contained (SEA) binary build where no locale files exist on disk.
+ * Flat dot-notation keys, same shape as flattenKeys() output.
+ */
+export declare function loadEmbeddedTranslations(lang: string, flat: Record<string, string>): void;
 export declare function loadYmlTranslation(lang: string, rootDir?: string): Record<string, string>;
 /** Register the i18n instance from core. */
 export declare function init(i18n: I18n): void;
@@ -27,6 +33,7 @@ declare const _default: {
     setLanguage: typeof setLanguage;
     getCurrentLanguage: typeof getCurrentLanguage;
     loadYmlTranslation: typeof loadYmlTranslation;
+    loadEmbeddedTranslations: typeof loadEmbeddedTranslations;
 };
 export default _default;
 //# sourceMappingURL=index.d.ts.map

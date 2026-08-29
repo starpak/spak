@@ -17,6 +17,16 @@ export declare function runModuleWhitelistCheck(failHard?: boolean): {
     unauthorized: string[];
     total: number;
 };
+/**
+ * Sandbox worker 主进程内运行入口（SEA 二进制标记分支）。
+ *
+ * 封闭二进制里 spawn 子进程用「自 re-exec」：
+ *   spawn(process.execPath, ['--spak-sandbox', name])
+ * 主 bundle 启动时检测到该标记，直接执行本函数（内嵌代码）；
+ * 防火墙来自同包模块引用，无需 cwd 的 node_modules ——
+ * 与非 SEA 场景的 `node -e` 字符串脚本行为等价。
+ */
+export declare function runSandboxWorker(name: string): void;
 export declare function isolatePlugin(name: string): void;
 export declare function terminateSandbox(name: string): void;
 declare const circuitBreakers: Map<string, boolean>;

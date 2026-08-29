@@ -23,9 +23,18 @@ declare module '@spakjs/core' {
   }
 }
 
-// Use Node.require style module access via createRequire for both CJS and ESM builds
-const coreRequire = createRequire(require.resolve('@spakjs/core/package.json'))
-const loaderRequire = createRequire(require.resolve('@spakjs/loader/package.json'))
+// Use Node.require style module access via createRequire for both CJS and ESM builds.
+// Note: in bundle/SEA environments (esbuild __require) require.resolve does not
+// exist — fall back to the cwd.
+function safeRequire(base: string): NodeRequire {
+  try {
+    return createRequire(require.resolve(base))
+  } catch {
+    return createRequire(process.cwd())
+  }
+}
+const coreRequire = safeRequire('@spakjs/core/package.json')
+const loaderRequire = safeRequire('@spakjs/loader/package.json')
 
 function loadDependencies(filename: string, ignored: Set<string>) {
   const dependencies = new Set<string>()

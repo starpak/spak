@@ -42,7 +42,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.version = exports.i18nDeclarations = exports.cpcDeclarations = exports.configDeclarations = exports.serveDeclarations = exports.generateCommandHelp = exports.registerDeclarations = void 0;
+exports.version = exports.i18nDeclarations = exports.runSandboxWorker = exports.cpcDeclarations = exports.configDeclarations = exports.serveDeclarations = exports.generateCommandHelp = exports.registerDeclarations = void 0;
 exports.createApp = createApp;
 const i18n_1 = require("@spakjs/i18n");
 const log_1 = require("@spakjs/log");
@@ -58,6 +58,8 @@ var config_1 = require("./commands/config");
 Object.defineProperty(exports, "configDeclarations", { enumerable: true, get: function () { return __importDefault(config_1).default; } });
 var cpc_2 = require("./commands/cpc");
 Object.defineProperty(exports, "cpcDeclarations", { enumerable: true, get: function () { return __importDefault(cpc_2).default; } });
+var cpc_3 = require("./commands/cpc");
+Object.defineProperty(exports, "runSandboxWorker", { enumerable: true, get: function () { return cpc_3.runSandboxWorker; } });
 var i18n_2 = require("./commands/i18n");
 Object.defineProperty(exports, "i18nDeclarations", { enumerable: true, get: function () { return __importDefault(i18n_2).default; } });
 /**
