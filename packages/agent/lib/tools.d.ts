@@ -3,6 +3,11 @@
  * Reimagined from opencode's tools.go for TypeScript/Spak
  */
 import type { BaseTool, ToolInfo, ToolCall, ToolResult } from './types';
+/**
+ * Resolve a user-supplied path inside the working directory.
+ * Throws if the resolved path escapes the root (path traversal guard).
+ */
+export declare function resolveWithinRoot(cwd: string | undefined, userPath: string): string;
 /** Permission check function type */
 export type PermissionChecker = (action: string, target?: string) => Promise<boolean>;
 /** Context for tool execution */
@@ -52,28 +57,36 @@ export declare class EditTool implements BaseTool {
  * List directory tool
  */
 export declare class LsTool implements BaseTool {
+    private permissionChecker?;
     info: ToolInfo;
+    constructor(permissionChecker?: PermissionChecker | undefined);
     run(ctx: ToolContext, call: ToolCall): Promise<ToolResult>;
 }
 /**
  * Glob tool - Find files matching a pattern
  */
 export declare class GlobTool implements BaseTool {
+    private permissionChecker?;
     info: ToolInfo;
+    constructor(permissionChecker?: PermissionChecker | undefined);
     run(ctx: ToolContext, call: ToolCall): Promise<ToolResult>;
 }
 /**
  * Grep tool - Search for text in files
  */
 export declare class GrepTool implements BaseTool {
+    private permissionChecker?;
     info: ToolInfo;
+    constructor(permissionChecker?: PermissionChecker | undefined);
     run(ctx: ToolContext, call: ToolCall): Promise<ToolResult>;
 }
 /**
  * View tool - View a section of a file
  */
 export declare class ViewTool implements BaseTool {
+    private permissionChecker?;
     info: ToolInfo;
+    constructor(permissionChecker?: PermissionChecker | undefined);
     run(ctx: ToolContext, call: ToolCall): Promise<ToolResult>;
 }
 /**

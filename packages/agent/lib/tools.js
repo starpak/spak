@@ -5,12 +5,31 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PatchTool = exports.ViewTool = exports.GrepTool = exports.GlobTool = exports.LsTool = exports.EditTool = exports.WriteTool = exports.FetchTool = exports.BashTool = void 0;
+exports.resolveWithinRoot = resolveWithinRoot;
 exports.getBuiltinTools = getBuiltinTools;
 const fs_1 = require("fs");
 const path_1 = require("path");
 const child_process_1 = require("child_process");
-const log_1 = require("@spakjs/log");
-const logger = (0, log_1.createLogger)('agent:tools');
+const util_1 = require("util");
+const execAsync = (0, util_1.promisify)(child_process_1.exec);
+/** Maximum depth for recursive directory searches */
+const MAX_SEARCH_DEPTH = 10;
+/** Maximum number of results returned by glob/grep */
+const MAX_SEARCH_RESULTS = 500;
+/** Files larger than this are skipped by grep (5MB) */
+const MAX_GREP_FILE_SIZE = 5 * 1024 * 1024;
+/**
+ * Resolve a user-supplied path inside the working directory.
+ * Throws if the resolved path escapes the root (path traversal guard).
+ */
+function resolveWithinRoot(cwd, userPath) {
+    const root = (0, path_1.resolve)(cwd || process.cwd());
+    const fullPath = (0, path_1.resolve)(root, userPath);
+    if (fullPath !== root && !fullPath.startsWith(root + path_1.sep)) {
+        throw new Error(`Access denied: path escapes working directory: ${userPath}`);
+    }
+    return fullPath;
+}
 /**
  * Bash tool - Execute shell commands
  */
@@ -40,15 +59,16 @@ class BashTool {
             };
         }
         try {
-            const result = (0, child_process_1.execSync)(command, {
-                encoding: 'utf-8',
+            const { stdout, stderr } = await execAsync(command, {
                 cwd: ctx.cwd || process.cwd(),
                 maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+                timeout: 60_000, // 60s timeout
+                signal: ctx.signal,
             });
             return {
                 toolCallId: call.id,
-                content: result,
-                metadata: { exitCode: 0 },
+                content: stdout,
+                metadata: { exitCode: 0, stderr: stderr || undefined },
             };
         }
         catch (error) {
@@ -56,7 +76,7 @@ class BashTool {
                 toolCallId: call.id,
                 content: `Command failed: ${error.message}\n\nStdout: ${error.stdout || ''}\nStderr: ${error.stderr || ''}`,
                 isError: true,
-                metadata: { exitCode: error.status || 1 },
+                metadata: { exitCode: error.code || 1 },
             };
         }
     }
@@ -91,7 +111,7 @@ class FetchTool {
             };
         }
         try {
-            const fullPath = (0, path_1.resolve)(ctx.cwd || process.cwd(), filePath);
+            const fullPath = resolveWithinRoot(ctx.cwd, filePath);
             const content = (0, fs_1.readFileSync)(fullPath, 'utf-8');
             return {
                 toolCallId: call.id,
@@ -140,7 +160,8 @@ class WriteTool {
             };
         }
         try {
-            const fullPath = (0, path_1.resolve)(ctx.cwd || process.cwd(), filePath);
+            const fullPath = resolveWithinRoot(ctx.cwd, filePath);
+            (0, fs_1.mkdirSync)((0, path_1.dirname)(fullPath), { recursive: true });
             (0, fs_1.writeFileSync)(fullPath, content, 'utf-8');
             return {
                 toolCallId: call.id,
@@ -193,7 +214,7 @@ class EditTool {
             };
         }
         try {
-            const fullPath = (0, path_1.resolve)(ctx.cwd || process.cwd(), filePath);
+            const fullPath = resolveWithinRoot(ctx.cwd, filePath);
             const content = (0, fs_1.readFileSync)(fullPath, 'utf-8');
             const lines = content.split('\n');
             if (startLine < 0 || endLine > lines.length || startLine > endLine) {
@@ -230,6 +251,7 @@ exports.EditTool = EditTool;
  * List directory tool
  */
 class LsTool {
+    permissionChecker;
     info = {
         name: 'ls',
         description: 'List contents of a directory',
@@ -241,10 +263,20 @@ class LsTool {
             required: ['path'],
         },
     };
+    constructor(permissionChecker) {
+        this.permissionChecker = permissionChecker;
+    }
     async run(ctx, call) {
         const dirPath = call.input.path;
+        if (this.permissionChecker && !(await this.permissionChecker('list_dir', dirPath))) {
+            return {
+                toolCallId: call.id,
+                content: 'Permission denied: directory listing not allowed',
+                isError: true,
+            };
+        }
         try {
-            const fullPath = (0, path_1.resolve)(ctx.cwd || process.cwd(), dirPath);
+            const fullPath = resolveWithinRoot(ctx.cwd, dirPath);
             const entries = (0, fs_1.readdirSync)(fullPath, { withFileTypes: true });
             const result = entries.map(entry => {
                 const stats = (0, fs_1.statSync)((0, path_1.resolve)(fullPath, entry.name));
@@ -274,6 +306,7 @@ exports.LsTool = LsTool;
  * Glob tool - Find files matching a pattern
  */
 class GlobTool {
+    permissionChecker;
     info = {
         name: 'glob',
         description: 'Find files matching a glob pattern',
@@ -285,20 +318,34 @@ class GlobTool {
             required: ['pattern'],
         },
     };
+    constructor(permissionChecker) {
+        this.permissionChecker = permissionChecker;
+    }
     async run(ctx, call) {
         const pattern = call.input.pattern;
+        if (this.permissionChecker && !(await this.permissionChecker('search_files', pattern))) {
+            return {
+                toolCallId: call.id,
+                content: 'Permission denied: file search not allowed',
+                isError: true,
+            };
+        }
         try {
             // Simple glob implementation - can be enhanced with fast-glob or similar
             const cwd = ctx.cwd || process.cwd();
             const matches = [];
-            function search(dir) {
+            function search(dir, depth) {
+                if (depth > MAX_SEARCH_DEPTH || matches.length >= MAX_SEARCH_RESULTS)
+                    return;
                 const entries = (0, fs_1.readdirSync)(dir, { withFileTypes: true });
                 for (const entry of entries) {
-                    if (entry.name.startsWith('.'))
+                    if (matches.length >= MAX_SEARCH_RESULTS)
+                        return;
+                    if (entry.name.startsWith('.') || entry.isSymbolicLink())
                         continue;
                     const fullPath = (0, path_1.resolve)(dir, entry.name);
                     if (entry.isDirectory()) {
-                        search(fullPath);
+                        search(fullPath, depth + 1);
                     }
                     else if (entry.isFile()) {
                         const relPath = (0, path_1.relative)(cwd, fullPath);
@@ -308,7 +355,7 @@ class GlobTool {
                     }
                 }
             }
-            search(cwd);
+            search(cwd, 0);
             return {
                 toolCallId: call.id,
                 content: matches.join('\n'),
@@ -329,6 +376,7 @@ exports.GlobTool = GlobTool;
  * Grep tool - Search for text in files
  */
 class GrepTool {
+    permissionChecker;
     info = {
         name: 'grep',
         description: 'Search for a pattern in files',
@@ -341,29 +389,46 @@ class GrepTool {
             required: ['pattern'],
         },
     };
+    constructor(permissionChecker) {
+        this.permissionChecker = permissionChecker;
+    }
     async run(ctx, call) {
         const pattern = call.input.pattern;
         const searchPath = call.input.path || '.';
+        if (this.permissionChecker && !(await this.permissionChecker('search_files', pattern))) {
+            return {
+                toolCallId: call.id,
+                content: 'Permission denied: file search not allowed',
+                isError: true,
+            };
+        }
         try {
             const cwd = ctx.cwd || process.cwd();
-            const fullPath = (0, path_1.resolve)(cwd, searchPath);
+            const fullPath = resolveWithinRoot(ctx.cwd, searchPath);
             const results = [];
-            function search(dir) {
+            function search(dir, depth) {
+                if (depth > MAX_SEARCH_DEPTH || results.length >= MAX_SEARCH_RESULTS)
+                    return;
                 const entries = (0, fs_1.readdirSync)(dir, { withFileTypes: true });
                 for (const entry of entries) {
-                    if (ctx.signal?.aborted)
+                    if (ctx.signal?.aborted || results.length >= MAX_SEARCH_RESULTS)
                         break;
-                    if (entry.name.startsWith('.'))
+                    if (entry.name.startsWith('.') || entry.isSymbolicLink())
                         continue;
                     const entryPath = (0, path_1.resolve)(dir, entry.name);
                     if (entry.isDirectory()) {
-                        search(entryPath);
+                        search(entryPath, depth + 1);
                     }
                     else if (entry.isFile()) {
                         try {
+                            if ((0, fs_1.statSync)(entryPath).size > MAX_GREP_FILE_SIZE)
+                                return;
                             const content = (0, fs_1.readFileSync)(entryPath, 'utf-8');
                             const lines = content.split('\n');
-                            lines.forEach((line, idx) => {
+                            for (let idx = 0; idx < lines.length; idx++) {
+                                if (results.length >= MAX_SEARCH_RESULTS)
+                                    break;
+                                const line = lines[idx];
                                 if (line.includes(pattern)) {
                                     results.push({
                                         file: (0, path_1.relative)(cwd, entryPath),
@@ -371,15 +436,15 @@ class GrepTool {
                                         content: line.trim(),
                                     });
                                 }
-                            });
+                            }
                         }
                         catch {
-                            // Skip binary files
+                            // Skip binary/unreadable files
                         }
                     }
                 }
             }
-            search(fullPath);
+            search(fullPath, 0);
             return {
                 toolCallId: call.id,
                 content: results.map(r => `${r.file}:${r.line}: ${r.content}`).join('\n'),
@@ -400,6 +465,7 @@ exports.GrepTool = GrepTool;
  * View tool - View a section of a file
  */
 class ViewTool {
+    permissionChecker;
     info = {
         name: 'view',
         description: 'View a section of a file with line numbers',
@@ -413,12 +479,22 @@ class ViewTool {
             required: ['path'],
         },
     };
+    constructor(permissionChecker) {
+        this.permissionChecker = permissionChecker;
+    }
     async run(ctx, call) {
         const filePath = call.input.path;
         const startLine = call.input.startLine;
         const endLine = call.input.endLine;
+        if (this.permissionChecker && !(await this.permissionChecker('read_file', filePath))) {
+            return {
+                toolCallId: call.id,
+                content: 'Permission denied: file read not allowed',
+                isError: true,
+            };
+        }
         try {
-            const fullPath = (0, path_1.resolve)(ctx.cwd || process.cwd(), filePath);
+            const fullPath = resolveWithinRoot(ctx.cwd, filePath);
             const content = (0, fs_1.readFileSync)(fullPath, 'utf-8');
             const lines = content.split('\n');
             const start = startLine ?? 0;
@@ -472,12 +548,10 @@ class PatchTool {
             };
         }
         try {
-            // For now, just log that we would apply the patch
-            // A full implementation would parse and apply unified diffs
-            logger.info(`Would apply patch to ${filePath}`);
             return {
                 toolCallId: call.id,
-                content: `Patch prepared for ${filePath}. Note: Full patch application requires additional implementation.`,
+                content: `Patch application is not implemented yet. Patch for ${filePath} was NOT applied.`,
+                isError: true,
                 metadata: { path: filePath, patchSize: patchContent.length },
             };
         }
@@ -509,10 +583,10 @@ function getBuiltinTools(permissionChecker) {
         new FetchTool(permissionChecker),
         new WriteTool(permissionChecker),
         new EditTool(permissionChecker),
-        new LsTool(),
-        new GlobTool(),
-        new GrepTool(),
-        new ViewTool(),
+        new LsTool(permissionChecker),
+        new GlobTool(permissionChecker),
+        new GrepTool(permissionChecker),
+        new ViewTool(permissionChecker),
         new PatchTool(permissionChecker),
     ];
 }
