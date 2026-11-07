@@ -55,7 +55,9 @@ export namespace Argv {
     // chars. The old space was ~2.17B (36^6), which made it feasible for an
     // attacker to brute-force a collision via user-sent messages and bypass
     // the whitespace-quote escaping (command-injection style). 36^24 gives us
-    // roughly 2^124.6 combinations, which is cryptographically sound.
+    // roughly 2^124.6 combinations. Note: the Math.random() fallback below is
+    // NOT cryptographically secure — it only runs where crypto.randomUUID is
+    // unavailable (legacy/non-Node runtimes).
     const rand =
       (typeof crypto !== 'undefined' && 'randomUUID' in (crypto || {}))
         ? (crypto as any).randomUUID().replace(/-/g, '')

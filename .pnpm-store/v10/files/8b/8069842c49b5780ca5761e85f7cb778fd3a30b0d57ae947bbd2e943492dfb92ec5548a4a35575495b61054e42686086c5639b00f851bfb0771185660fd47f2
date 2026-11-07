@@ -1,0 +1,23 @@
+import { Context, h, MessageEncoder, Universal } from 'koishi';
+import { MockBot } from './adapter';
+export declare class MockMessenger extends MessageEncoder<Context, MockBot> {
+    private client;
+    private buffer;
+    constructor(client: MessageClient, options?: Universal.SendOptions);
+    flush(): Promise<void>;
+    visit(element: h): Promise<void>;
+}
+export declare class MessageClient {
+    bot: MockBot;
+    userId: string;
+    channelId?: string;
+    app: Context;
+    event: Universal.Event;
+    private replies;
+    private hooks;
+    constructor(bot: MockBot, userId: string, channelId?: string);
+    flush(buffer?: string): void;
+    receive(content: string, count?: number): Promise<string[]>;
+    shouldReply(message: string, reply?: string | RegExp | (string | RegExp)[]): Promise<void>;
+    shouldNotReply(message: string): Promise<void>;
+}

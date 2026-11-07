@@ -1,0 +1,39 @@
+# simple-git-hooks
+
+A simple, zero dependency tool for setting up git hooks for small projects.
+
+## Usage
+
+1. `npm install simple-git-hooks --save-dev`
+2. Add to `package.json`:
+   ```json
+   {
+     "simple-git-hooks": {
+       "pre-commit": "npx lint-staged",
+       "pre-push": "npm run format"
+     }
+   }
+   ```
+3. Run `npx simple-git-hooks`
+4. Add to `scripts` for auto-install:
+   ```json
+   { "scripts": { "prepare": "simple-git-hooks" } }
+   ```
+
+Config can also go in `.simple-git-hooks.cjs`, `.simple-git-hooks.js`, `.simple-git-hooks.mjs`, `.simple-git-hooks.json`, or `simple-git-hooks.{cjs,js,mjs,json}`.
+
+Use `preserveUnused: true` or `preserveUnused: ["commit-msg"]` to keep unused hooks.
+
+## Uninstall
+
+```sh
+node node_modules/simple-git-hooks/uninstall.js
+```
+
+## Environment variables
+
+- `SKIP_INSTALL_SIMPLE_GIT_HOOKS=1` — skip hook installation
+- `SKIP_SIMPLE_GIT_HOOKS=1` — skip hooks for a git operation
+- `SIMPLE_GIT_HOOKS_RC` — path to an init script (for node version managers)
+
+Full documentation: https://github.com/toplenboren/simple-git-hooks

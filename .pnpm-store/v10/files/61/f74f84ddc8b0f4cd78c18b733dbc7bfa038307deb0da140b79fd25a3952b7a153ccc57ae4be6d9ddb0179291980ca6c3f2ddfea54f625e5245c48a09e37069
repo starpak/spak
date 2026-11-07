@@ -1,0 +1,357 @@
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+// src/index.ts
+var src_exports = {};
+__export(src_exports, {
+  DEFAULT_SELF_ID: () => DEFAULT_SELF_ID,
+  MessageClient: () => MessageClient,
+  MockAdapter: () => MockAdapter,
+  MockBot: () => MockBot,
+  MockMessenger: () => MockMessenger,
+  Webhook: () => Webhook,
+  default: () => src_default
+});
+module.exports = __toCommonJS(src_exports);
+
+// src/adapter.ts
+var import_koishi2 = require("koishi");
+
+// src/client.ts
+var import_assert = __toESM(require("assert"));
+var import_koishi = require("koishi");
+var import_util = require("util");
+var RECEIVED_UNEXPECTED = 'expected "%s" to be not replied but received "%s"';
+var RECEIVED_NOTHING = 'expected "%s" to be replied but received nothing';
+var RECEIVED_OTHERWISE = 'expected "%s" to be replied with %s but received "%s"';
+var RECEIVED_NTH_NOTHING = 'expected "%s" to be replied at index %s but received nothing';
+var RECEIVED_NTH_OTHERWISE = 'expected "%s" to be replied with %s at index %s but received "%s"';
+var MockMessenger = class extends import_koishi.MessageEncoder {
+  constructor(client, options) {
+    super(client.bot, client.event.channel.id, client.event.guild?.id, options);
+    this.client = client;
+  }
+  static {
+    __name(this, "MockMessenger");
+  }
+  buffer = "";
+  async flush() {
+    this.buffer = this.buffer.trim();
+    if (!this.buffer)
+      return;
+    this.client.flush(this.buffer);
+    this.buffer = "";
+  }
+  async visit(element) {
+    const { type, attrs, children } = element;
+    if (type === "message" || type === "figure") {
+      await this.flush();
+      await this.render(children);
+      await this.flush();
+    } else if (type === "text") {
+      this.buffer += attrs.content;
+    } else if (type === "p") {
+      if (!this.buffer.endsWith("\n"))
+        this.buffer += "\n";
+      await this.render(children);
+      if (!this.buffer.endsWith("\n"))
+        this.buffer += "\n";
+    } else if (type === "template" || !type) {
+      await this.render(children);
+    } else {
+      const attrString = Object.entries(attrs).map(([key, value]) => {
+        if ((0, import_koishi.isNullable)(value))
+          return "";
+        key = (0, import_koishi.hyphenate)(key);
+        if (value === true)
+          return ` ${key}`;
+        if (value === false)
+          return ` no-${key}`;
+        return ` ${key}="${import_koishi.h.escape("" + value, true)}"`;
+      }).join("");
+      this.buffer += `<${type}${attrString}>`;
+      const length = this.buffer.length;
+      await this.render(children);
+      if (this.buffer.length === length) {
+        this.buffer = this.buffer.slice(0, -1) + `/>`;
+      } else {
+        this.buffer += `</${type}>`;
+      }
+    }
+  }
+};
+var counter = 0;
+var MessageClient = class {
+  constructor(bot, userId, channelId) {
+    this.bot = bot;
+    this.userId = userId;
+    this.channelId = channelId;
+    this.app = bot.ctx.root;
+    this.event = {
+      platform: "mock",
+      type: "message",
+      selfId: bot.selfId,
+      user: { id: userId, name: "" + userId }
+    };
+    if (channelId) {
+      this.event.guild = { id: channelId };
+      this.event.channel = { id: channelId, type: import_koishi.Universal.Channel.Type.TEXT };
+    } else {
+      this.event.channel = { id: "private:" + userId, type: import_koishi.Universal.Channel.Type.DIRECT };
+    }
+    this.app.on("middleware", (session) => {
+      const hook = this.hooks[session.id];
+      if (!hook)
+        return;
+      hook.done = true;
+      if (!hook.resolve)
+        delete this.hooks[session.id];
+      if (Object.values(this.hooks).every((hook2) => hook2.done)) {
+        this.flush();
+        this.hooks = {};
+      }
+    });
+  }
+  static {
+    __name(this, "MessageClient");
+  }
+  app;
+  event;
+  replies = [];
+  hooks = {};
+  flush(buffer) {
+    if (buffer)
+      this.replies.push(buffer);
+    for (const id in this.hooks) {
+      const hook = this.hooks[id];
+      if (!hook.resolve || buffer && this.replies.length < hook.count)
+        continue;
+      hook.resolve(this.replies);
+      hook.resolve = void 0;
+      hook.count = Infinity;
+      this.replies = [];
+    }
+  }
+  async receive(content, count = Infinity) {
+    const result = await new Promise((resolve) => {
+      let quote;
+      let elements = import_koishi.h.parse(content);
+      if (elements[0]?.type === "quote") {
+        const { attrs, children } = elements.shift();
+        quote = { id: attrs.id, messageId: attrs.id, elements: children, content: children.join("") };
+        content = elements.join("").trimStart();
+        elements = import_koishi.h.parse(content);
+      }
+      const id = this.bot.receive({
+        ...(0, import_koishi.clone)(this.event),
+        message: { id: ++counter + "", content, elements, quote }
+      }, this);
+      this.hooks[id] = { resolve, count };
+    });
+    await new Promise(process.nextTick);
+    return result;
+  }
+  async shouldReply(message, reply) {
+    function match(reply2, content) {
+      return typeof reply2 === "string" ? reply2 === content : reply2.test(content);
+    }
+    __name(match, "match");
+    function prettify(reply2) {
+      return typeof reply2 === "string" ? `"${reply2}"` : reply2.toString();
+    }
+    __name(prettify, "prettify");
+    if (!reply) {
+      const result2 = await this.receive(message);
+      import_assert.default.ok(result2.length, (0, import_util.format)(RECEIVED_NOTHING, message));
+      return;
+    }
+    if (!Array.isArray(reply)) {
+      const [result2] = await this.receive(message, 1);
+      import_assert.default.ok(result2, (0, import_util.format)(RECEIVED_NOTHING, message));
+      import_assert.default.ok(match(reply, result2), (0, import_util.format)(RECEIVED_OTHERWISE, message, prettify(reply), result2));
+      return;
+    }
+    const result = await this.receive(message);
+    for (const index in reply) {
+      const expected = reply[index];
+      const actual = result[index];
+      import_assert.default.ok(actual, (0, import_util.format)(RECEIVED_NTH_NOTHING, message, index));
+      import_assert.default.ok(match(expected, actual), (0, import_util.format)(RECEIVED_NTH_OTHERWISE, message, prettify(expected), index, actual));
+    }
+  }
+  async shouldNotReply(message) {
+    const result = await this.receive(message);
+    import_assert.default.ok(!result.length, (0, import_util.format)(RECEIVED_UNEXPECTED, message, result));
+  }
+};
+
+// src/webhook.ts
+var import_net = require("net");
+var import_http = require("http");
+var Webhook = class {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+  static {
+    __name(this, "Webhook");
+  }
+  static inject = ["server"];
+  async head(path, headers) {
+    const res = await this.receive("HEAD", path, headers, "");
+    return res.headers;
+  }
+  async get(path, headers) {
+    return this.receive("GET", path, headers, "");
+  }
+  async delete(path, headers) {
+    return this.receive("DELETE", path, headers, "");
+  }
+  async post(path, body, headers) {
+    return this.receive("POST", path, headers, body);
+  }
+  async put(path, body, headers) {
+    return this.receive("PUT", path, headers, body);
+  }
+  async patch(path, body, headers) {
+    return this.receive("PATCH", path, headers, body);
+  }
+  receive(method, path, headers, body) {
+    const socket = new import_net.Socket();
+    const req = new import_http.IncomingMessage(socket);
+    req.url = path;
+    req.method = method;
+    Object.assign(req.headers, headers);
+    if (typeof body === "string") {
+      req.headers["content-type"] = "text/plain";
+    } else if (Buffer.isBuffer(body)) {
+      req.headers["content-type"] = "application/octet-stream";
+    } else {
+      body = JSON.stringify(body);
+      req.headers["content-type"] = "application/json";
+    }
+    req.headers["content-length"] = "" + body.length;
+    return new Promise((resolve) => {
+      const res = new import_http.ServerResponse(req);
+      let body2 = "";
+      res.write = (chunk) => {
+        body2 += chunk;
+        return true;
+      };
+      res.end = (callback) => {
+        const code = res.statusCode;
+        const headers2 = res.getHeaders();
+        resolve({ code, body: body2, headers: headers2 });
+        if (typeof callback === "function")
+          callback();
+        return res;
+      };
+      this.ctx.server._http.emit("request", req, res);
+      req.emit("data", body2);
+      req.emit("end");
+    });
+  }
+};
+
+// src/adapter.ts
+var DEFAULT_SELF_ID = "514";
+var MockBot = class extends import_koishi2.Bot {
+  static {
+    __name(this, "MockBot");
+  }
+  constructor(ctx, config) {
+    super(ctx, config);
+    this.platform = "mock";
+    this.selfId = config.selfId ?? DEFAULT_SELF_ID;
+    this.status = import_koishi2.Universal.Status.ONLINE;
+    ctx.plugin(MockAdapter, this);
+  }
+  client(userId, channelId) {
+    return new MessageClient(this, userId, channelId);
+  }
+  receive(event, client) {
+    const session = this.session(event);
+    session["client"] = client;
+    this.dispatch(session);
+    return session.id;
+  }
+  async getMessage(channelId, id) {
+    const isDirect = channelId.startsWith("private:");
+    return {
+      id,
+      messageId: id,
+      channel: { id: channelId, type: isDirect ? import_koishi2.Universal.Channel.Type.DIRECT : import_koishi2.Universal.Channel.Type.TEXT },
+      content: "",
+      time: 0,
+      user: { id: this.selfId }
+    };
+  }
+  async sendMessage(channelId, fragment, guildId, options) {
+    const messages = await new MockMessenger(options.session["client"], options).send(fragment);
+    return messages.map((messages2) => messages2.id);
+  }
+};
+var MockAdapter = class extends import_koishi2.Adapter {
+  static {
+    __name(this, "MockAdapter");
+  }
+  webhook;
+  constructor(ctx, bot) {
+    super(ctx);
+    this.webhook = new Webhook(ctx.root);
+    ctx.provide("mock", this, true);
+  }
+  async initUser(id, authority = 1, data) {
+    await this.ctx.root.database.createUser("mock", id, { authority, ...data });
+  }
+  async initChannel(id, assignee = this.bots[0].selfId, data) {
+    await this.ctx.root.database.createChannel("mock", id, { assignee, ...data });
+  }
+  client(userId, channelId) {
+    return this.bots[0].client(userId, channelId);
+  }
+  receive(event, client) {
+    return this.bots[0].receive(event, client);
+  }
+  session(event) {
+    return this.bots[0].session(event);
+  }
+};
+
+// src/index.ts
+var src_default = MockBot;
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  DEFAULT_SELF_ID,
+  MessageClient,
+  MockAdapter,
+  MockBot,
+  MockMessenger,
+  Webhook
+});
+//# sourceMappingURL=index.js.map

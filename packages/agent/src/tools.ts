@@ -4,12 +4,32 @@
  */
 
 import type { BaseTool, ToolInfo, ToolCall, ToolResult } from './types'
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'fs'
-import { resolve, relative, dirname } from 'path'
-import { execSync, spawn } from 'child_process'
-import { createLogger } from '@spakjs/log'
+import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync } from 'fs'
+import { resolve, relative, dirname, sep } from 'path'
+import { exec } from 'child_process'
+import { promisify } from 'util'
 
-const logger = createLogger('agent:tools')
+const execAsync = promisify(exec)
+
+/** Maximum depth for recursive directory searches */
+const MAX_SEARCH_DEPTH = 10
+/** Maximum number of results returned by glob/grep */
+const MAX_SEARCH_RESULTS = 500
+/** Files larger than this are skipped by grep (5MB) */
+const MAX_GREP_FILE_SIZE = 5 * 1024 * 1024
+
+/**
+ * Resolve a user-supplied path inside the working directory.
+ * Throws if the resolved path escapes the root (path traversal guard).
+ */
+export function resolveWithinRoot(cwd: string | undefined, userPath: string): string {
+  const root = resolve(cwd || process.cwd())
+  const fullPath = resolve(root, userPath)
+  if (fullPath !== root && !fullPath.startsWith(root + sep)) {
+    throw new Error(`Access denied: path escapes working directory: ${userPath}`)
+  }
+  return fullPath
+}
 
 /** Permission check function type */
 export type PermissionChecker = (action: string, target?: string) => Promise<boolean>
@@ -52,23 +72,24 @@ export class BashTool implements BaseTool {
     }
 
     try {
-      const result = execSync(command, {
-        encoding: 'utf-8',
+      const { stdout, stderr } = await execAsync(command, {
         cwd: ctx.cwd || process.cwd(),
         maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+        timeout: 60_000, // 60s timeout
+        signal: ctx.signal,
       })
-      
+
       return {
         toolCallId: call.id,
-        content: result,
-        metadata: { exitCode: 0 },
+        content: stdout,
+        metadata: { exitCode: 0, stderr: stderr || undefined },
       }
     } catch (error: any) {
       return {
         toolCallId: call.id,
         content: `Command failed: ${error.message}\n\nStdout: ${error.stdout || ''}\nStderr: ${error.stderr || ''}`,
         isError: true,
-        metadata: { exitCode: error.status || 1 },
+        metadata: { exitCode: error.code || 1 },
       }
     }
   }
@@ -104,7 +125,7 @@ export class FetchTool implements BaseTool {
     }
 
     try {
-      const fullPath = resolve(ctx.cwd || process.cwd(), filePath)
+      const fullPath = resolveWithinRoot(ctx.cwd, filePath)
       const content = readFileSync(fullPath, 'utf-8')
       
       return {
@@ -154,7 +175,8 @@ export class WriteTool implements BaseTool {
     }
 
     try {
-      const fullPath = resolve(ctx.cwd || process.cwd(), filePath)
+      const fullPath = resolveWithinRoot(ctx.cwd, filePath)
+      mkdirSync(dirname(fullPath), { recursive: true })
       writeFileSync(fullPath, content, 'utf-8')
       
       return {
@@ -208,7 +230,7 @@ export class EditTool implements BaseTool {
     }
 
     try {
-      const fullPath = resolve(ctx.cwd || process.cwd(), filePath)
+      const fullPath = resolveWithinRoot(ctx.cwd, filePath)
       const content = readFileSync(fullPath, 'utf-8')
       const lines = content.split('\n')
       
@@ -260,11 +282,21 @@ export class LsTool implements BaseTool {
     },
   }
 
+  constructor(private permissionChecker?: PermissionChecker) {}
+
   async run(ctx: ToolContext, call: ToolCall): Promise<ToolResult> {
     const dirPath = call.input.path as string
 
+    if (this.permissionChecker && !(await this.permissionChecker('list_dir', dirPath))) {
+      return {
+        toolCallId: call.id,
+        content: 'Permission denied: directory listing not allowed',
+        isError: true,
+      }
+    }
+
     try {
-      const fullPath = resolve(ctx.cwd || process.cwd(), dirPath)
+      const fullPath = resolveWithinRoot(ctx.cwd, dirPath)
       const entries = readdirSync(fullPath, { withFileTypes: true })
       
       const result = entries.map(entry => {
@@ -307,21 +339,33 @@ export class GlobTool implements BaseTool {
     },
   }
 
+  constructor(private permissionChecker?: PermissionChecker) {}
+
   async run(ctx: ToolContext, call: ToolCall): Promise<ToolResult> {
     const pattern = call.input.pattern as string
+
+    if (this.permissionChecker && !(await this.permissionChecker('search_files', pattern))) {
+      return {
+        toolCallId: call.id,
+        content: 'Permission denied: file search not allowed',
+        isError: true,
+      }
+    }
 
     try {
       // Simple glob implementation - can be enhanced with fast-glob or similar
       const cwd = ctx.cwd || process.cwd()
       const matches: string[] = []
-      
-      function search(dir: string) {
+
+      function search(dir: string, depth: number) {
+        if (depth > MAX_SEARCH_DEPTH || matches.length >= MAX_SEARCH_RESULTS) return
         const entries = readdirSync(dir, { withFileTypes: true })
         for (const entry of entries) {
-          if (entry.name.startsWith('.')) continue
+          if (matches.length >= MAX_SEARCH_RESULTS) return
+          if (entry.name.startsWith('.') || entry.isSymbolicLink()) continue
           const fullPath = resolve(dir, entry.name)
           if (entry.isDirectory()) {
-            search(fullPath)
+            search(fullPath, depth + 1)
           } else if (entry.isFile()) {
             const relPath = relative(cwd, fullPath)
             if (matchesPattern(relPath, pattern)) {
@@ -330,8 +374,8 @@ export class GlobTool implements BaseTool {
           }
         }
       }
-      
-      search(cwd)
+
+      search(cwd, 0)
       
       return {
         toolCallId: call.id,
@@ -365,28 +409,42 @@ export class GrepTool implements BaseTool {
     },
   }
 
+  constructor(private permissionChecker?: PermissionChecker) {}
+
   async run(ctx: ToolContext, call: ToolCall): Promise<ToolResult> {
     const pattern = call.input.pattern as string
     const searchPath = call.input.path as string || '.'
 
+    if (this.permissionChecker && !(await this.permissionChecker('search_files', pattern))) {
+      return {
+        toolCallId: call.id,
+        content: 'Permission denied: file search not allowed',
+        isError: true,
+      }
+    }
+
     try {
       const cwd = ctx.cwd || process.cwd()
-      const fullPath = resolve(cwd, searchPath)
+      const fullPath = resolveWithinRoot(ctx.cwd, searchPath)
       const results: Array<{ file: string; line: number; content: string }> = []
-      
-      function search(dir: string) {
+
+      function search(dir: string, depth: number) {
+        if (depth > MAX_SEARCH_DEPTH || results.length >= MAX_SEARCH_RESULTS) return
         const entries = readdirSync(dir, { withFileTypes: true })
         for (const entry of entries) {
-          if (ctx.signal?.aborted) break
-          if (entry.name.startsWith('.')) continue
+          if (ctx.signal?.aborted || results.length >= MAX_SEARCH_RESULTS) break
+          if (entry.name.startsWith('.') || entry.isSymbolicLink()) continue
           const entryPath = resolve(dir, entry.name)
           if (entry.isDirectory()) {
-            search(entryPath)
+            search(entryPath, depth + 1)
           } else if (entry.isFile()) {
             try {
+              if (statSync(entryPath).size > MAX_GREP_FILE_SIZE) return
               const content = readFileSync(entryPath, 'utf-8')
               const lines = content.split('\n')
-              lines.forEach((line, idx) => {
+              for (let idx = 0; idx < lines.length; idx++) {
+                if (results.length >= MAX_SEARCH_RESULTS) break
+                const line = lines[idx]
                 if (line.includes(pattern)) {
                   results.push({
                     file: relative(cwd, entryPath),
@@ -394,15 +452,15 @@ export class GrepTool implements BaseTool {
                     content: line.trim(),
                   })
                 }
-              })
+              }
             } catch {
-              // Skip binary files
+              // Skip binary/unreadable files
             }
           }
         }
       }
-      
-      search(fullPath)
+
+      search(fullPath, 0)
       
       return {
         toolCallId: call.id,
@@ -437,13 +495,23 @@ export class ViewTool implements BaseTool {
     },
   }
 
+  constructor(private permissionChecker?: PermissionChecker) {}
+
   async run(ctx: ToolContext, call: ToolCall): Promise<ToolResult> {
     const filePath = call.input.path as string
     const startLine = call.input.startLine as number | undefined
     const endLine = call.input.endLine as number | undefined
 
+    if (this.permissionChecker && !(await this.permissionChecker('read_file', filePath))) {
+      return {
+        toolCallId: call.id,
+        content: 'Permission denied: file read not allowed',
+        isError: true,
+      }
+    }
+
     try {
-      const fullPath = resolve(ctx.cwd || process.cwd(), filePath)
+      const fullPath = resolveWithinRoot(ctx.cwd, filePath)
       const content = readFileSync(fullPath, 'utf-8')
       const lines = content.split('\n')
       
@@ -502,13 +570,10 @@ export class PatchTool implements BaseTool {
     }
 
     try {
-      // For now, just log that we would apply the patch
-      // A full implementation would parse and apply unified diffs
-      logger.info(`Would apply patch to ${filePath}`)
-      
       return {
         toolCallId: call.id,
-        content: `Patch prepared for ${filePath}. Note: Full patch application requires additional implementation.`,
+        content: `Patch application is not implemented yet. Patch for ${filePath} was NOT applied.`,
+        isError: true,
         metadata: { path: filePath, patchSize: patchContent.length },
       }
     } catch (error: any) {
@@ -541,10 +606,10 @@ export function getBuiltinTools(permissionChecker?: PermissionChecker): BaseTool
     new FetchTool(permissionChecker),
     new WriteTool(permissionChecker),
     new EditTool(permissionChecker),
-    new LsTool(),
-    new GlobTool(),
-    new GrepTool(),
-    new ViewTool(),
+    new LsTool(permissionChecker),
+    new GlobTool(permissionChecker),
+    new GrepTool(permissionChecker),
+    new ViewTool(permissionChecker),
     new PatchTool(permissionChecker),
   ]
 }

@@ -1,0 +1,49 @@
+import { Adapter, Bot, Channel, Context, Fragment, Universal, User } from 'koishi';
+import { MessageClient } from './client';
+import { Webhook } from './webhook';
+declare module 'koishi' {
+    interface Context {
+        mock: MockAdapter<this>;
+    }
+    interface User {
+        mock: string;
+    }
+}
+export declare const DEFAULT_SELF_ID = "514";
+export declare namespace MockBot {
+    interface Config {
+        selfId: string;
+    }
+}
+export declare class MockBot<C extends Context = Context> extends Bot<C> {
+    constructor(ctx: C, config: MockBot.Config);
+    client(userId: string, channelId?: string): MessageClient;
+    receive(event: Partial<Universal.Event>, client?: MessageClient): number;
+    getMessage(channelId: string, id: string): Promise<{
+        id: string;
+        messageId: string;
+        channel: {
+            id: string;
+            type: Universal.Channel.Type;
+        };
+        content: string;
+        time: number;
+        user: {
+            id: string;
+        };
+    }>;
+    sendMessage(channelId: string, fragment: Fragment, guildId?: string, options?: Universal.SendOptions): Promise<string[]>;
+}
+export declare class MockAdapter<C extends Context = Context> extends Adapter<C, MockBot<C>> {
+    webhook: Webhook;
+    constructor(ctx: C, bot: MockBot<C>);
+    initUser(id: string, authority?: number, data?: Partial<User>): Promise<void>;
+    initChannel(id: string, assignee?: string, data?: Partial<Channel>): Promise<void>;
+    client(userId: string, channelId?: string): MessageClient;
+    receive(event: Partial<Universal.Event>, client?: MessageClient): number;
+    session(event: Partial<Universal.Event>): C[typeof import("cordis").Context.session];
+}
+export declare namespace MockAdapter {
+    interface Config {
+    }
+}

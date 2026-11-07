@@ -1,0 +1,39 @@
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
+
+// src/index.ts
+var import_util = require("util");
+module.exports = ({ Assertion }) => {
+  function checkShape(expect, actual, path) {
+    if (actual === expect || Number.isNaN(expect) && Number.isNaN(actual)) return;
+    function formatError(expect2, actual2) {
+      return `expected to have ${expect2} but got ${actual2} at path ${path}`;
+    }
+    __name(formatError, "formatError");
+    if (!expect || ["string", "number", "boolean", "bigint"].includes(typeof expect)) {
+      return formatError((0, import_util.inspect)(expect), (0, import_util.inspect)(actual));
+    }
+    if (expect instanceof Date) {
+      if (!(actual instanceof Date) || +expect !== +actual) {
+        return formatError((0, import_util.inspect)(expect), (0, import_util.inspect)(actual));
+      }
+      return;
+    }
+    if (actual === null) {
+      const type = Object.prototype.toString.call(expect).slice(8, -1).toLowerCase();
+      return formatError(`a ${type}`, "null");
+    }
+    for (const prop in expect) {
+      if (typeof actual[prop] === "undefined" && typeof expect[prop] !== "undefined") {
+        return `expected "${prop}" field to be defined at path ${path}`;
+      }
+      const message = checkShape(expect[prop], actual[prop], `${path}${prop}/`);
+      if (message) return message;
+    }
+  }
+  __name(checkShape, "checkShape");
+  Assertion.addMethod("shape", function(expect) {
+    const message = checkShape(expect, this._obj, "/");
+    if (message) this.assert(false, message, void 0, expect, this._obj);
+  });
+};

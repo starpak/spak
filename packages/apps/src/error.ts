@@ -28,8 +28,8 @@ export function handleError(e: any, logger: Logger) {
         message: error.text,
       })
       logger.warn(`File: ${file}:${line}:${column}\n` + formatted)
-    } catch (e) {
-      logger.warn(e)
+    } catch (readError) {
+      logger.warn(`Failed to read source for ${error.location.file}: ${readError}`)
     }
   }
 }
